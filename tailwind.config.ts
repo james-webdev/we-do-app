@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -25,12 +26,16 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					DEFAULT: '#9b87f5',
+					foreground: '#ffffff',
+					light: '#e5deff',
+					dark: '#7E69AB'
 				},
 				secondary: {
-					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					DEFAULT: '#7E69AB',
+					foreground: '#ffffff',
+					light: '#D6BCFA',
+					dark: '#6E59A5'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
@@ -61,6 +66,32 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Task type colors
+				mental: {
+					DEFAULT: '#D3E4FD',
+					foreground: '#0EA5E9'
+				},
+				physical: {
+					DEFAULT: '#FDE1D3',
+					foreground: '#F97316'
+				},
+				both: {
+					DEFAULT: '#F2FCE2',
+					foreground: '#65a30d'
+				},
+				// Brownie point type colors
+				time: {
+					DEFAULT: '#FEF7CD',
+					foreground: '#d97706'
+				},
+				effort: {
+					DEFAULT: '#E5DEFF',
+					foreground: '#8B5CF6'
+				},
+				fun: {
+					DEFAULT: '#FFDEE2',
+					foreground: '#D946EF'
 				}
 			},
 			borderRadius: {
