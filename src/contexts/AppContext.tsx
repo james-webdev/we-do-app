@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { User, Task, BrowniePoint, Reward, TaskStatus, TaskRating, TaskType, BrowniePointType } from '@/types';
 import { toast } from '@/components/ui/sonner';
@@ -52,7 +51,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         .eq('id', user.id)
         .single();
       
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Error fetching user profile:', profileError);
+        toast.error('Failed to load user profile');
+        setIsLoading(false);
+        return;
+      }
       
       if (profileData) {
         const currentUserData: User = {
@@ -70,7 +74,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             .from('profiles')
             .select('*')
             .eq('id', profileData.partner_id)
-            .single();
+            .maybeSingle(); // Use maybeSingle instead of single to handle the case when partner doesn't exist
           
           if (!partnerError && partnerData) {
             setPartner({
@@ -79,47 +83,35 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               email: partnerData.email,
               partnerId: partnerData.partner_id
             });
+          } else {
+            console.log('Partner not found or error:', partnerError);
+            setPartner(null);
           }
+        } else {
+          // No partner set yet
+          setPartner(null);
         }
         
-        // Get approved tasks
+        // Get approved tasks if partner exists
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         
-        const { data: tasksData, error: tasksError } = await supabase
-          .from('tasks')
-          .select('*')
-          .or(`user_id.eq.${user.id}${profileData.partner_id ? `,user_id.eq.${profileData.partner_id}` : ''}`)
-          .eq('status', 'approved')
-          .gte('timestamp', oneWeekAgo.toISOString());
-          
-        if (tasksError) throw tasksError;
-        
-        if (tasksData) {
-          const formattedTasks: Task[] = tasksData.map(task => ({
-            id: task.id,
-            title: task.title,
-            type: task.type as TaskType,
-            rating: task.rating as TaskRating,
-            userId: task.user_id,
-            timestamp: new Date(task.timestamp),
-            status: task.status as TaskStatus,
-            comment: task.comment
-          }));
-          
-          setTasks(formattedTasks);
-        }
-        
-        // Get pending tasks
-        if (profileData.partner_id) {
-          const { data: pendingTasksData, error: pendingError } = await supabase
+        try {
+          const whereClause = profileData.partner_id 
+            ? `user_id.eq.${user.id},user_id.eq.${profileData.partner_id}` 
+            : `user_id.eq.${user.id}`;
+            
+          const { data: tasksData, error: tasksError } = await supabase
             .from('tasks')
             .select('*')
-            .eq('user_id', profileData.partner_id)
-            .eq('status', 'pending');
+            .or(whereClause)
+            .eq('status', 'approved')
+            .gte('timestamp', oneWeekAgo.toISOString());
             
-          if (!pendingError && pendingTasksData) {
-            const formattedPendingTasks: Task[] = pendingTasksData.map(task => ({
+          if (tasksError) {
+            console.error('Error fetching tasks:', tasksError);
+          } else if (tasksData) {
+            const formattedTasks: Task[] = tasksData.map(task => ({
               id: task.id,
               title: task.title,
               type: task.type as TaskType,
@@ -130,42 +122,87 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               comment: task.comment
             }));
             
-            setPendingTasks(formattedPendingTasks);
+            setTasks(formattedTasks);
           }
+        } catch (error) {
+          console.error('Error in tasks fetch:', error);
+        }
+        
+        // Get pending tasks if partner exists
+        if (profileData.partner_id) {
+          try {
+            const { data: pendingTasksData, error: pendingError } = await supabase
+              .from('tasks')
+              .select('*')
+              .eq('user_id', profileData.partner_id)
+              .eq('status', 'pending');
+              
+            if (!pendingError && pendingTasksData) {
+              const formattedPendingTasks: Task[] = pendingTasksData.map(task => ({
+                id: task.id,
+                title: task.title,
+                type: task.type as TaskType,
+                rating: task.rating as TaskRating,
+                userId: task.user_id,
+                timestamp: new Date(task.timestamp),
+                status: task.status as TaskStatus,
+                comment: task.comment
+              }));
+              
+              setPendingTasks(formattedPendingTasks);
+            }
+          } catch (error) {
+            console.error('Error in pending tasks fetch:', error);
+          }
+        } else {
+          // No partner, so no pending tasks
+          setPendingTasks([]);
         }
         
         // Get brownie points
-        const { data: browniePointsData, error: brownieError } = await supabase
-          .from('brownie_points')
-          .select('*')
-          .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
-          .gte('created_at', oneWeekAgo.toISOString());
-          
-        if (!brownieError && browniePointsData) {
-          const formattedPoints: BrowniePoint[] = browniePointsData.map(point => ({
-            id: point.id,
-            fromUserId: point.from_user_id,
-            toUserId: point.to_user_id,
-            type: point.type as BrowniePointType,
-            message: point.message,
-            redeemed: point.redeemed,
-            createdAt: new Date(point.created_at),
-            points: point.points
-          }));
-          
-          setBrowniePoints(formattedPoints);
+        try {
+          const pointsQuery = profileData.partner_id 
+            ? `from_user_id.eq.${user.id},to_user_id.eq.${user.id}` 
+            : `from_user_id.eq.${user.id},to_user_id.eq.${user.id}`;
+            
+          const { data: browniePointsData, error: brownieError } = await supabase
+            .from('brownie_points')
+            .select('*')
+            .or(pointsQuery)
+            .gte('created_at', oneWeekAgo.toISOString());
+            
+          if (!brownieError && browniePointsData) {
+            const formattedPoints: BrowniePoint[] = browniePointsData.map(point => ({
+              id: point.id,
+              fromUserId: point.from_user_id,
+              toUserId: point.to_user_id,
+              type: point.type as BrowniePointType,
+              message: point.message,
+              redeemed: point.redeemed,
+              createdAt: new Date(point.created_at),
+              points: point.points
+            }));
+            
+            setBrowniePoints(formattedPoints);
+          }
+        } catch (error) {
+          console.error('Error in brownie points fetch:', error);
         }
         
         // Calculate available points (points received that are not redeemed)
-        const { data: availablePointsData, error: availableError } = await supabase
-          .from('brownie_points')
-          .select('points')
-          .eq('to_user_id', user.id)
-          .eq('redeemed', false);
-          
-        if (!availableError && availablePointsData) {
-          const points = availablePointsData.reduce((sum, point) => sum + point.points, 0);
-          setAvailablePoints(points);
+        try {
+          const { data: availablePointsData, error: availableError } = await supabase
+            .from('brownie_points')
+            .select('points')
+            .eq('to_user_id', user.id)
+            .eq('redeemed', false);
+            
+          if (!availableError && availablePointsData) {
+            const points = availablePointsData.reduce((sum, point) => sum + point.points, 0);
+            setAvailablePoints(points);
+          }
+        } catch (error) {
+          console.error('Error calculating available points:', error);
         }
         
         // Get rewards (currently from mock data, would be from Supabase in real app)
@@ -194,47 +231,81 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         ]);
         
         // Calculate summary statistics
-        if (tasksData && tasksData.length > 0) {
-          const userTasks = tasksData.filter(t => t.user_id === user.id);
-          const partnerTasks = tasksData.filter(t => t.user_id === profileData.partner_id);
-          
-          const userTaskCount = userTasks.length;
-          const partnerTaskCount = partnerTasks.length;
-          const totalTasks = userTaskCount + partnerTaskCount;
-          
-          const userContribution = totalTasks > 0 ? Math.round((userTaskCount / totalTasks) * 100) : 50;
-          
-          const mentalTasks = tasksData.filter(t => t.type === 'mental' || t.type === 'both').length;
-          const physicalTasks = tasksData.filter(t => t.type === 'physical' || t.type === 'both').length;
-          
-          const userPoints = userTasks.reduce((sum, task) => sum + task.rating, 0);
-          const partnerPoints = partnerTasks.reduce((sum, task) => sum + task.rating, 0);
-          
-          // Count brownie points sent this week
-          const sentBrowniePoints = browniePointsData ? browniePointsData.filter(
-            p => p.from_user_id === user.id && 
-            new Date(p.created_at) >= oneWeekAgo
-          ).length : 0;
-          
-          setSummary({
-            userTaskCount,
-            partnerTaskCount,
-            totalTasks,
-            userContribution,
-            mentalTasks,
-            physicalTasks,
-            userPoints,
-            partnerPoints,
-            sentBrowniePoints,
-            browniePointsRemaining: 3 - sentBrowniePoints
-          });
-        }
+        calculateSummaryStats(tasksData || [], browniePointsData || [], oneWeekAgo, user.id, profileData.partner_id);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Failed to load data');
+      toast.error('Failed to load data. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Helper function to calculate summary statistics
+  const calculateSummaryStats = (
+    tasksData: any[], 
+    browniePointsData: any[], 
+    oneWeekAgo: Date, 
+    userId: string, 
+    partnerId: string | null
+  ) => {
+    // Default values for when there's no data or partner
+    const defaultSummary = {
+      userTaskCount: 0,
+      partnerTaskCount: 0,
+      totalTasks: 0,
+      userContribution: 50,
+      mentalTasks: 0,
+      physicalTasks: 0,
+      userPoints: 0,
+      partnerPoints: 0,
+      sentBrowniePoints: 0,
+      browniePointsRemaining: 3
+    };
+
+    if (tasksData.length === 0 && !partnerId) {
+      // No tasks and no partner, use default summary
+      setSummary(defaultSummary);
+      return;
+    }
+
+    if (tasksData.length > 0) {
+      const userTasks = tasksData.filter(t => t.user_id === userId);
+      const partnerTasks = partnerId ? tasksData.filter(t => t.user_id === partnerId) : [];
+      
+      const userTaskCount = userTasks.length;
+      const partnerTaskCount = partnerTasks.length;
+      const totalTasks = userTaskCount + partnerTaskCount;
+      
+      const userContribution = totalTasks > 0 ? Math.round((userTaskCount / totalTasks) * 100) : 50;
+      
+      const mentalTasks = tasksData.filter(t => t.type === 'mental' || t.type === 'both').length;
+      const physicalTasks = tasksData.filter(t => t.type === 'physical' || t.type === 'both').length;
+      
+      const userPoints = userTasks.reduce((sum, task) => sum + task.rating, 0);
+      const partnerPoints = partnerTasks.reduce((sum, task) => sum + task.rating, 0);
+      
+      // Count brownie points sent this week
+      const sentBrowniePoints = browniePointsData ? browniePointsData.filter(
+        p => p.from_user_id === userId && 
+        new Date(p.created_at) >= oneWeekAgo
+      ).length : 0;
+      
+      setSummary({
+        userTaskCount,
+        partnerTaskCount,
+        totalTasks,
+        userContribution,
+        mentalTasks,
+        physicalTasks,
+        userPoints,
+        partnerPoints,
+        sentBrowniePoints,
+        browniePointsRemaining: 3 - sentBrowniePoints
+      });
+    } else {
+      // No tasks but user exists
+      setSummary(defaultSummary);
     }
   };
 
@@ -449,6 +520,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (user) {
       fetchData();
+    } else {
+      // Reset states when user logs out
+      setCurrentUser(null);
+      setPartner(null);
+      setTasks([]);
+      setPendingTasks([]);
+      setBrowniePoints([]);
+      setSummary(null);
+      setAvailablePoints(0);
     }
   }, [user]);
 
