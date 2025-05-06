@@ -105,7 +105,85 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_new_profile: {
+        Args: {
+          user_id: string
+          user_name: string
+          user_email: string
+        }
+        Returns: void
+      }
+      get_profile_by_id: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          id: string
+          name: string
+          email: string
+          partner_id: string | null
+          created_at: string
+        }[]
+      }
+      get_profile_by_partner_id: {
+        Args: {
+          partner_id: string
+        }
+        Returns: {
+          id: string
+          name: string
+          email: string
+          partner_id: string | null
+          created_at: string
+        }[]
+      }
+      get_profile_for_user: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          id: string
+          name: string
+          email: string
+          partner_id: string | null
+          created_at: string
+        }[]
+      }
+      get_tasks_for_user: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          id: string
+          title: string
+          type: string
+          rating: number
+          user_id: string
+          timestamp: string
+          status: string
+          comment: string | null
+          created_at: string
+        }[]
+      }
+      get_profile_by_email: {
+        Args: {
+          email_param: string
+        }
+        Returns: {
+          id: string
+          name: string
+          email: string
+          partner_id: string | null
+          created_at: string
+        }[]
+      }
+      update_user_partner: {
+        Args: {
+          user_id_param: string
+          partner_id_param: string | null
+        }
+        Returns: void
+      }
     }
     Enums: {
       [_ in never]: never
