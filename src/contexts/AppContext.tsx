@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { User, Task, BrowniePoint, Reward, TaskStatus, TaskRating, TaskType, BrowniePointType } from '@/types';
 import { toast } from '@/components/ui/sonner';
@@ -49,7 +50,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
       
       if (profileError) {
         console.error('Error fetching user profile:', profileError);
@@ -96,12 +97,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         
+        let tasksData: any[] = [];
+        let browniePointsData: any[] = [];
+
         try {
           const whereClause = profileData.partner_id 
             ? `user_id.eq.${user.id},user_id.eq.${profileData.partner_id}` 
             : `user_id.eq.${user.id}`;
             
-          const { data: tasksData, error: tasksError } = await supabase
+          const { data: fetchedTasksData, error: tasksError } = await supabase
             .from('tasks')
             .select('*')
             .or(whereClause)
@@ -110,8 +114,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             
           if (tasksError) {
             console.error('Error fetching tasks:', tasksError);
-          } else if (tasksData) {
-            const formattedTasks: Task[] = tasksData.map(task => ({
+          } else if (fetchedTasksData) {
+            tasksData = fetchedTasksData;
+            const formattedTasks: Task[] = fetchedTasksData.map(task => ({
               id: task.id,
               title: task.title,
               type: task.type as TaskType,
@@ -165,14 +170,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             ? `from_user_id.eq.${user.id},to_user_id.eq.${user.id}` 
             : `from_user_id.eq.${user.id},to_user_id.eq.${user.id}`;
             
-          const { data: browniePointsData, error: brownieError } = await supabase
+          const { data: fetchedBrowniePointsData, error: brownieError } = await supabase
             .from('brownie_points')
             .select('*')
             .or(pointsQuery)
             .gte('created_at', oneWeekAgo.toISOString());
             
-          if (!brownieError && browniePointsData) {
-            const formattedPoints: BrowniePoint[] = browniePointsData.map(point => ({
+          if (!brownieError && fetchedBrowniePointsData) {
+            browniePointsData = fetchedBrowniePointsData;
+            const formattedPoints: BrowniePoint[] = fetchedBrowniePointsData.map(point => ({
               id: point.id,
               fromUserId: point.from_user_id,
               toUserId: point.to_user_id,
@@ -230,7 +236,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           }
         ]);
         
-        // Calculate summary statistics
+        // Calculate summary statistics using the fetched data
         calculateSummaryStats(tasksData || [], browniePointsData || [], oneWeekAgo, user.id, profileData.partner_id);
       }
     } catch (error) {
