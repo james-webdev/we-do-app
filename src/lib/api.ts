@@ -1,4 +1,4 @@
-import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, Reward, TaskStatus, TaskLevel } from "../types";
+import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, Reward, TaskStatus, TaskRating } from "../types";
 import { users, tasks as mockTasks, browniePoints as mockBrowniePoints, mockCurrentUser, mockRewards } from "./mock-data";
 
 // In a real application, these would be API calls to a backend server
@@ -189,26 +189,14 @@ export const getTaskSummary = (userId: string, days: number = 7) => {
   const mentalTasks = userTasks.filter(t => t.type === 'mental' || t.type === 'both').length;
   const physicalTasks = userTasks.filter(t => t.type === 'physical' || t.type === 'both').length;
   
-  // Convert levels to points for calculations (this maintains compatibility with the rest of the app)
-  const levelToPoints = (level: TaskLevel): number => {
-    switch (level) {
-      case 'easy': return 1;
-      case 'normal': return 3;
-      case 'hard': return 5;
-      case 'expert': return 8;
-      case 'master': return 10;
-      default: return 3;
-    }
-  };
-  
-  // Calculate levels distribution
+  // Use ratings directly for calculations
   const userPoints = userTasks
     .filter(t => t.userId === userId)
-    .reduce((sum, task) => sum + levelToPoints(task.level), 0);
+    .reduce((sum, task) => sum + task.rating, 0);
     
   const partnerPoints = userTasks
     .filter(t => t.userId === partnerId)
-    .reduce((sum, task) => sum + levelToPoints(task.level), 0);
+    .reduce((sum, task) => sum + task.rating, 0);
     
   const totalPoints = userPoints + partnerPoints;
   

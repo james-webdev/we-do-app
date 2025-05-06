@@ -3,7 +3,7 @@ export type TaskType = 'mental' | 'physical' | 'both';
 export type TaskLoad = 'light' | 'medium' | 'heavy';
 export type BrowniePointType = 'time' | 'effort' | 'fun';
 export type TaskStatus = 'pending' | 'approved' | 'rejected';
-export type TaskLevel = 'easy' | 'normal' | 'hard' | 'expert' | 'master';
+export type TaskRating = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 export interface User {
   id: string;
@@ -16,7 +16,7 @@ export interface Task {
   id: string;
   title: string;
   type: TaskType;
-  level: TaskLevel; // Changed from points to level
+  rating: TaskRating; // Changed from level to rating
   userId: string;
   timestamp: Date;
   status: TaskStatus;

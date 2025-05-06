@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/components/ui/sonner';
-import { TaskLevel, TaskType } from '@/types';
+import { TaskRating, TaskType } from '@/types';
+import { Slider } from '@/components/ui/slider';
 
 const AddTask = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const AddTask = () => {
   
   const [title, setTitle] = React.useState('');
   const [type, setType] = React.useState<TaskType>('mental');
-  const [level, setLevel] = React.useState<TaskLevel>('normal');
+  const [rating, setRating] = React.useState<TaskRating>(5);
   const [date, setDate] = React.useState<string>(
     new Date().toISOString().split('T')[0]
   );
@@ -48,7 +49,7 @@ const AddTask = () => {
       await addNewTask({
         title,
         type,
-        level,
+        rating,
         userId: currentUser.id,
         timestamp
       });
@@ -60,6 +61,10 @@ const AddTask = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleRatingChange = (value: number[]) => {
+    setRating(value[0] as TaskRating);
   };
   
   return (
@@ -110,25 +115,26 @@ const AddTask = () => {
               </RadioGroup>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="level">Task Difficulty Level</Label>
-              <Select
-                value={level}
-                onValueChange={(value) => setLevel(value as TaskLevel)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="easy">Easy</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="hard">Hard</SelectItem>
-                  <SelectItem value="expert">Expert</SelectItem>
-                  <SelectItem value="master">Master</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-500 mt-1">
-                Rate the difficulty level of this task from Easy to Master
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="rating">Task Difficulty Rating: {rating}</Label>
+                <Slider
+                  id="rating"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={[rating]}
+                  onValueChange={handleRatingChange}
+                  className="py-4"
+                />
+                <div className="flex justify-between text-xs text-gray-500 px-1">
+                  <span>Easy</span>
+                  <span>Moderate</span>
+                  <span>Challenging</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">
+                Rate the difficulty of this task from 1 (very easy) to 10 (extremely difficult)
               </p>
             </div>
             
