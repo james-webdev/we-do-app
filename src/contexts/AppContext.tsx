@@ -8,7 +8,8 @@ import {
   getBrowniePoints, 
   getTaskSummary,
   addTask,
-  addBrowniePoint
+  addBrowniePoint,
+  deleteTask
 } from '@/lib/api';
 import { toast } from '@/components/ui/sonner';
 
@@ -22,6 +23,7 @@ interface AppContextType {
   refreshData: () => void;
   addNewTask: (task: Omit<Task, "id">) => Promise<void>;
   addNewBrowniePoint: (point: Omit<BrowniePoint, "id" | "createdAt" | "redeemed">) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -89,6 +91,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      const success = deleteTask(taskId);
+      if (success) {
+        setTasks(prev => prev.filter(task => task.id !== taskId));
+        toast.success('Task deleted successfully');
+        fetchData(); // Refresh data to update summaries
+      } else {
+        toast.error('Failed to delete task');
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      toast.error('Failed to delete task');
+    }
+  };
+
   // Initial data fetch
   useEffect(() => {
     fetchData();
@@ -105,7 +123,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         refreshData: fetchData,
         addNewTask,
-        addNewBrowniePoint
+        addNewBrowniePoint,
+        deleteTask: handleDeleteTask
       }}
     >
       {children}

@@ -38,6 +38,12 @@ export const addTask = (task: Omit<Task, "id">): Task => {
   return newTask;
 };
 
+export const deleteTask = (taskId: string): boolean => {
+  const initialLength = localTasks.length;
+  localTasks = localTasks.filter(task => task.id !== taskId);
+  return localTasks.length !== initialLength;
+};
+
 // Brownie Points management
 export const getBrowniePoints = (userId: string, days: number = 7): BrowniePoint[] => {
   const today = new Date();
