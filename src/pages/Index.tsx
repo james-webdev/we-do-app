@@ -2,10 +2,20 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Dashboard from './Dashboard';
+import { useAuth } from '@/contexts/AuthContext';
 
-// This component will now render Dashboard instead of just redirecting
 const Index = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+  
+  if (!user) {
+    navigate('/signin');
+    return null;
+  }
   
   return <Dashboard />;
 };
