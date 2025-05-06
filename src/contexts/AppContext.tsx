@@ -45,12 +45,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      // Get current user profile
+      // Get current user profile using a direct query with the auth token
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .maybeSingle();
+        .single();
       
       if (profileError) {
         console.error('Error fetching user profile:', profileError);
@@ -75,7 +75,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             .from('profiles')
             .select('*')
             .eq('id', profileData.partner_id)
-            .maybeSingle(); // Use maybeSingle instead of single to handle the case when partner doesn't exist
+            .single();
           
           if (!partnerError && partnerData) {
             setPartner({
@@ -97,15 +97,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         
-        let tasksData: any[] = [];
-        let browniePointsData: any[] = [];
+        let fetchedTasksData: any[] = [];
+        let fetchedBrowniePointsData: any[] = [];
 
         try {
           const whereClause = profileData.partner_id 
             ? `user_id.eq.${user.id},user_id.eq.${profileData.partner_id}` 
             : `user_id.eq.${user.id}`;
             
-          const { data: fetchedTasksData, error: tasksError } = await supabase
+          const { data: tasksData, error: tasksError } = await supabase
             .from('tasks')
             .select('*')
             .or(whereClause)
@@ -114,9 +114,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             
           if (tasksError) {
             console.error('Error fetching tasks:', tasksError);
-          } else if (fetchedTasksData) {
-            tasksData = fetchedTasksData;
-            const formattedTasks: Task[] = fetchedTasksData.map(task => ({
+          } else if (tasksData) {
+            fetchedTasksData = tasksData;
+            const formattedTasks: Task[] = tasksData.map(task => ({
               id: task.id,
               title: task.title,
               type: task.type as TaskType,
@@ -170,15 +170,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             ? `from_user_id.eq.${user.id},to_user_id.eq.${user.id}` 
             : `from_user_id.eq.${user.id},to_user_id.eq.${user.id}`;
             
-          const { data: fetchedBrowniePointsData, error: brownieError } = await supabase
+          const { data: browniePointsData, error: brownieError } = await supabase
             .from('brownie_points')
             .select('*')
             .or(pointsQuery)
             .gte('created_at', oneWeekAgo.toISOString());
             
-          if (!brownieError && fetchedBrowniePointsData) {
-            browniePointsData = fetchedBrowniePointsData;
-            const formattedPoints: BrowniePoint[] = fetchedBrowniePointsData.map(point => ({
+          if (!brownieError && browniePointsData) {
+            fetchedBrowniePointsData = browniePointsData;
+            const formattedPoints: BrowniePoint[] = browniePointsData.map(point => ({
               id: point.id,
               fromUserId: point.from_user_id,
               toUserId: point.to_user_id,
@@ -237,7 +237,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         ]);
         
         // Calculate summary statistics using the fetched data
-        calculateSummaryStats(tasksData || [], browniePointsData || [], oneWeekAgo, user.id, profileData.partner_id);
+        calculateSummaryStats(fetchedTasksData, fetchedBrowniePointsData, oneWeekAgo, user.id, profileData.partner_id);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -525,7 +525,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   // Initial data fetch when user changes
   useEffect(() => {
     if (user) {
-      fetchData();
+      // Small delay to ensure auth is fully initialized
+      const timer = setTimeout(() => {
+        fetchData();
+      }, 100);
+      
+      return () => clearTimeout(timer);
     } else {
       // Reset states when user logs out
       setCurrentUser(null);

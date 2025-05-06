@@ -2,9 +2,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 const Header = () => {
   const { currentUser } = useApp();
+  const { loading, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
@@ -31,9 +34,24 @@ const Header = () => {
         </nav>
         
         <div className="flex items-center space-x-4">
-          <div className="text-sm font-medium text-gray-700">
-            {currentUser?.name || 'Loading...'}
-          </div>
+          {loading ? (
+            <div className="flex items-center text-gray-500">
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <span className="text-sm">Loading...</span>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-3">
+              <div className="text-sm font-medium text-gray-700">
+                {currentUser?.name || 'Guest'}
+              </div>
+              <button 
+                onClick={() => signOut()} 
+                className="text-sm text-gray-500 hover:text-primary"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
         </div>
       </div>
       
