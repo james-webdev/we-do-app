@@ -168,6 +168,7 @@ const Auth = () => {
         </Card>
       </div>
     </div>
-  };
+  );
+};
 
 export default Auth;
