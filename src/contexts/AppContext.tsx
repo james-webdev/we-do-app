@@ -1,23 +1,9 @@
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { User, Task, BrowniePoint, Reward, TaskStatus, TaskRating } from '@/types';
-import { 
-  getCurrentUser, 
-  getPartner, 
-  getTasks, 
-  getPendingTasks,
-  getBrowniePoints, 
-  getTaskSummary,
-  addTask,
-  updateTaskStatus,
-  addBrowniePoint,
-  deleteTask,
-  deleteBrowniePoint,
-  getRewards,
-  redeemReward,
-  getTotalAvailablePoints
-} from '@/lib/api';
 import { toast } from '@/components/ui/sonner';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from './AuthContext';
 
 interface AppContextType {
   currentUser: User | null;
@@ -42,6 +28,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [partner, setPartner] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -52,42 +39,193 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [availablePoints, setAvailablePoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchData = () => {
+  const fetchData = async () => {
+    if (!user) return;
+    
     try {
       setIsLoading(true);
-      // In a real app, we would fetch the current user from an auth service
-      const user = getCurrentUser();
-      setCurrentUser(user);
-
-      // Fetch partner
-      const partnerInfo = getPartner(user.id);
-      if (partnerInfo) {
-        setPartner(partnerInfo);
+      
+      // Get current user profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError) throw profileError;
+      
+      const currentUserData: User = {
+        id: profileData.id,
+        name: profileData.name,
+        email: profileData.email,
+        partnerId: profileData.partner_id
+      };
+      
+      setCurrentUser(currentUserData);
+      
+      // Get partner info if available
+      if (profileData.partner_id) {
+        const { data: partnerData, error: partnerError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', profileData.partner_id)
+          .single();
+        
+        if (!partnerError && partnerData) {
+          setPartner({
+            id: partnerData.id,
+            name: partnerData.name,
+            email: partnerData.email,
+            partnerId: partnerData.partner_id
+          });
+        }
       }
-
-      // Fetch approved tasks
-      const userTasks = getTasks(user.id);
-      setTasks(userTasks);
-
-      // Fetch pending tasks (tasks from partner that need approval)
-      const userPendingTasks = getPendingTasks(user.id);
-      setPendingTasks(userPendingTasks);
-
-      // Fetch brownie points
-      const userBrowniePoints = getBrowniePoints(user.id);
-      setBrowniePoints(userBrowniePoints);
-
-      // Get rewards
-      const allRewards = getRewards();
-      setRewards(allRewards);
-
-      // Get available points
-      const points = getTotalAvailablePoints(user.id);
-      setAvailablePoints(points);
-
-      // Get summary data
-      const summaryData = getTaskSummary(user.id);
-      setSummary(summaryData);
+      
+      // Get approved tasks
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
+      const { data: tasksData, error: tasksError } = await supabase
+        .from('tasks')
+        .select('*')
+        .or(`user_id.eq.${user.id}${profileData.partner_id ? `,user_id.eq.${profileData.partner_id}` : ''}`)
+        .eq('status', 'approved')
+        .gte('timestamp', oneWeekAgo.toISOString());
+        
+      if (tasksError) throw tasksError;
+      
+      const formattedTasks: Task[] = tasksData.map(task => ({
+        id: task.id,
+        title: task.title,
+        type: task.type as TaskType,
+        rating: task.rating as TaskRating,
+        userId: task.user_id,
+        timestamp: new Date(task.timestamp),
+        status: task.status as TaskStatus,
+        comment: task.comment
+      }));
+      
+      setTasks(formattedTasks);
+      
+      // Get pending tasks
+      if (profileData.partner_id) {
+        const { data: pendingTasksData, error: pendingError } = await supabase
+          .from('tasks')
+          .select('*')
+          .eq('user_id', profileData.partner_id)
+          .eq('status', 'pending');
+          
+        if (!pendingError && pendingTasksData) {
+          const formattedPendingTasks: Task[] = pendingTasksData.map(task => ({
+            id: task.id,
+            title: task.title,
+            type: task.type as TaskType,
+            rating: task.rating as TaskRating,
+            userId: task.user_id,
+            timestamp: new Date(task.timestamp),
+            status: task.status as TaskStatus,
+            comment: task.comment
+          }));
+          
+          setPendingTasks(formattedPendingTasks);
+        }
+      }
+      
+      // Get brownie points
+      const { data: browniePointsData, error: brownieError } = await supabase
+        .from('brownie_points')
+        .select('*')
+        .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
+        .gte('created_at', oneWeekAgo.toISOString());
+        
+      if (!brownieError && browniePointsData) {
+        const formattedPoints: BrowniePoint[] = browniePointsData.map(point => ({
+          id: point.id,
+          fromUserId: point.from_user_id,
+          toUserId: point.to_user_id,
+          type: point.type as BrowniePointType,
+          message: point.message,
+          redeemed: point.redeemed,
+          createdAt: new Date(point.created_at),
+          points: point.points
+        }));
+        
+        setBrowniePoints(formattedPoints);
+      }
+      
+      // Calculate available points (points received that are not redeemed)
+      const { data: availablePointsData, error: availableError } = await supabase
+        .from('brownie_points')
+        .select('points')
+        .eq('to_user_id', user.id)
+        .eq('redeemed', false);
+        
+      if (!availableError && availablePointsData) {
+        const points = availablePointsData.reduce((sum, point) => sum + point.points, 0);
+        setAvailablePoints(points);
+      }
+      
+      // Get rewards (currently from mock data, would be from Supabase in real app)
+      setRewards([
+        {
+          id: '1',
+          title: 'Dinner Out',
+          description: 'Partner cooks dinner of your choice',
+          pointsCost: 10,
+          imageIcon: '🍽️'
+        },
+        {
+          id: '2',
+          title: 'Movie Night',
+          description: 'Your choice of movie plus snacks',
+          pointsCost: 5,
+          imageIcon: '🎬'
+        },
+        {
+          id: '3',
+          title: 'Sleep In',
+          description: 'Partner takes morning duties',
+          pointsCost: 8,
+          imageIcon: '😴'
+        }
+      ]);
+      
+      // Calculate summary statistics
+      if (tasksData.length > 0) {
+        const userTasks = tasksData.filter(t => t.user_id === user.id);
+        const partnerTasks = tasksData.filter(t => t.user_id === profileData.partner_id);
+        
+        const userTaskCount = userTasks.length;
+        const partnerTaskCount = partnerTasks.length;
+        const totalTasks = userTaskCount + partnerTaskCount;
+        
+        const userContribution = totalTasks > 0 ? Math.round((userTaskCount / totalTasks) * 100) : 50;
+        
+        const mentalTasks = tasksData.filter(t => t.type === 'mental' || t.type === 'both').length;
+        const physicalTasks = tasksData.filter(t => t.type === 'physical' || t.type === 'both').length;
+        
+        const userPoints = userTasks.reduce((sum, task) => sum + task.rating, 0);
+        const partnerPoints = partnerTasks.reduce((sum, task) => sum + task.rating, 0);
+        
+        // Count brownie points sent this week
+        const sentBrowniePoints = browniePointsData.filter(
+          p => p.from_user_id === user.id && 
+          new Date(p.created_at) >= oneWeekAgo
+        ).length;
+        
+        setSummary({
+          userTaskCount,
+          partnerTaskCount,
+          totalTasks,
+          userContribution,
+          mentalTasks,
+          physicalTasks,
+          userPoints,
+          partnerPoints,
+          sentBrowniePoints,
+          browniePointsRemaining: 3 - sentBrowniePoints
+        });
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
@@ -98,121 +236,215 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const addNewTask = async (taskData: Omit<Task, "id" | "status">) => {
     try {
-      // Add task with pending status
-      const newTask = addTask({
-        ...taskData,
-        status: 'pending'
-      });
+      if (!currentUser) {
+        toast.error('User not authenticated');
+        return;
+      }
+      
+      // Insert task with pending status
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert({
+          title: taskData.title,
+          type: taskData.type,
+          rating: taskData.rating,
+          user_id: currentUser.id,
+          timestamp: taskData.timestamp.toISOString(),
+          status: 'pending',
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+        
+      if (error) throw error;
       
       toast.success('Task submitted for partner approval');
-      fetchData(); // Refresh all data to update summaries
-    } catch (error) {
+      await fetchData(); // Refresh all data
+    } catch (error: any) {
       console.error('Error adding task:', error);
-      toast.error('Failed to add task');
+      toast.error(error.message || 'Failed to add task');
     }
   };
 
   const approveTask = async (taskId: string) => {
     try {
-      const updatedTask = updateTaskStatus(taskId, 'approved');
-      if (updatedTask) {
-        toast.success('Task approved');
-        fetchData(); // Refresh data to update lists
-      } else {
-        toast.error('Failed to approve task');
-      }
-    } catch (error) {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ status: 'approved' })
+        .eq('id', taskId);
+        
+      if (error) throw error;
+      
+      toast.success('Task approved');
+      await fetchData(); // Refresh data
+    } catch (error: any) {
       console.error('Error approving task:', error);
-      toast.error('Failed to approve task');
+      toast.error(error.message || 'Failed to approve task');
     }
   };
 
   const rejectTask = async (taskId: string, comment: string) => {
     try {
-      const updatedTask = updateTaskStatus(taskId, 'rejected', comment);
-      if (updatedTask) {
-        toast.success('Task rejected');
-        fetchData(); // Refresh data to update lists
-      } else {
-        toast.error('Failed to reject task');
-      }
-    } catch (error) {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ 
+          status: 'rejected',
+          comment 
+        })
+        .eq('id', taskId);
+        
+      if (error) throw error;
+      
+      toast.success('Task rejected');
+      await fetchData(); // Refresh data
+    } catch (error: any) {
       console.error('Error rejecting task:', error);
-      toast.error('Failed to reject task');
+      toast.error(error.message || 'Failed to reject task');
     }
   };
 
   const addNewBrowniePoint = async (pointData: Omit<BrowniePoint, "id" | "createdAt" | "redeemed">) => {
     try {
-      const newPoint = addBrowniePoint(pointData);
-      setBrowniePoints(prev => [...prev, newPoint]);
+      // Determine points value based on type
+      const pointsValue = getPointsValueByType(pointData.type);
+      
+      const { error } = await supabase
+        .from('brownie_points')
+        .insert({
+          from_user_id: pointData.fromUserId,
+          to_user_id: pointData.toUserId,
+          type: pointData.type,
+          message: pointData.message,
+          redeemed: false,
+          created_at: new Date().toISOString(),
+          points: pointData.points
+        });
+        
+      if (error) throw error;
+      
       toast.success('Brownie Point sent successfully');
-      fetchData(); // Refresh all data to update brownie point limits
-    } catch (error) {
+      await fetchData(); // Refresh all data
+    } catch (error: any) {
       console.error('Error sending brownie point:', error);
-      toast.error('Failed to send Brownie Point');
+      toast.error(error.message || 'Failed to send Brownie Point');
     }
   };
 
   const handleDeleteTask = async (taskId: string) => {
     try {
-      const success = deleteTask(taskId);
-      if (success) {
-        setTasks(prev => prev.filter(task => task.id !== taskId));
-        toast.success('Task deleted successfully');
-        fetchData(); // Refresh data to update summaries
-      } else {
-        toast.error('Failed to delete task');
-      }
-    } catch (error) {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId);
+        
+      if (error) throw error;
+      
+      toast.success('Task deleted successfully');
+      await fetchData(); // Refresh data
+    } catch (error: any) {
       console.error('Error deleting task:', error);
-      toast.error('Failed to delete task');
+      toast.error(error.message || 'Failed to delete task');
     }
   };
 
   const handleDeleteBrowniePoint = async (pointId: string) => {
     try {
-      const success = deleteBrowniePoint(pointId);
-      if (success) {
-        setBrowniePoints(prev => prev.filter(point => point.id !== pointId));
-        toast.success('Brownie Point deleted successfully');
-        fetchData(); // Refresh data to update brownie point limits
-      } else {
-        toast.error('Failed to delete Brownie Point');
-      }
-    } catch (error) {
+      const { error } = await supabase
+        .from('brownie_points')
+        .delete()
+        .eq('id', pointId);
+        
+      if (error) throw error;
+      
+      toast.success('Brownie Point deleted successfully');
+      await fetchData(); // Refresh data
+    } catch (error: any) {
       console.error('Error deleting Brownie Point:', error);
-      toast.error('Failed to delete Brownie Point');
+      toast.error(error.message || 'Failed to delete Brownie Point');
     }
   };
 
   const handleRedeemReward = async (rewardId: string) => {
     try {
       if (!currentUser) {
-        toast.error('User not found');
+        toast.error('User not authenticated');
         return false;
       }
       
-      const success = redeemReward(currentUser.id, rewardId);
-      if (success) {
-        toast.success('Reward redeemed successfully!');
-        fetchData(); // Refresh data to update points
-        return true;
-      } else {
-        toast.error('Failed to redeem reward. You may not have enough points.');
+      // Get the reward details
+      const reward = rewards.find(r => r.id === rewardId);
+      if (!reward) {
+        toast.error('Reward not found');
         return false;
       }
-    } catch (error) {
+      
+      // Check if user has enough points
+      if (availablePoints < reward.pointsCost) {
+        toast.error('Not enough points to redeem this reward');
+        return false;
+      }
+      
+      // In a real app, we'd mark specific points as redeemed
+      // For now, we'll mark the oldest unredeemed points as redeemed
+      const { data: pointsToRedeem, error: fetchError } = await supabase
+        .from('brownie_points')
+        .select('*')
+        .eq('to_user_id', currentUser.id)
+        .eq('redeemed', false)
+        .order('created_at', { ascending: true });
+        
+      if (fetchError) throw fetchError;
+      
+      let remainingCost = reward.pointsCost;
+      const pointsToUpdate = [];
+      
+      for (const point of pointsToRedeem) {
+        if (remainingCost <= 0) break;
+        
+        pointsToUpdate.push(point.id);
+        remainingCost -= point.points;
+      }
+      
+      // Update points to redeemed
+      if (pointsToUpdate.length > 0) {
+        const { error: updateError } = await supabase
+          .from('brownie_points')
+          .update({ redeemed: true })
+          .in('id', pointsToUpdate);
+          
+        if (updateError) throw updateError;
+      }
+      
+      toast.success('Reward redeemed successfully!');
+      await fetchData(); // Refresh data
+      return true;
+    } catch (error: any) {
       console.error('Error redeeming reward:', error);
-      toast.error('Failed to redeem reward');
+      toast.error(error.message || 'Failed to redeem reward');
       return false;
     }
   };
 
-  // Initial data fetch
+  // Helper function to determine points value based on type
+  const getPointsValueByType = (type: BrowniePointType): number => {
+    switch (type) {
+      case 'time':
+        return 2;
+      case 'effort':
+        return 3;
+      case 'fun':
+        return 1;
+      default:
+        return 1;
+    }
+  };
+
+  // Initial data fetch when user changes
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   return (
     <AppContext.Provider
