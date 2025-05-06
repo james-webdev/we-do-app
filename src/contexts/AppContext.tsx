@@ -543,7 +543,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Add a new function to connect with a partner
+  // Updated connect partner function to use security definer function
   const connectPartner = async (partnerEmail: string) => {
     try {
       if (!currentUser) {
@@ -555,23 +555,24 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         toast.error('You already have a partner connected');
         return false;
       }
+
+      // Use an RPC call to run a function to find partner by email
+      const { data: partnerResult, error: rpcError } = await supabase.rpc('get_profile_by_email', {
+        email_param: partnerEmail
+      });
       
-      // First, find the partner by email
-      const { data: partnerData, error: findError } = await supabase
-        .from('profiles')
-        .select('id, name, email, partner_id')
-        .eq('email', partnerEmail)
-        .maybeSingle();
-      
-      if (findError) {
-        console.error('Error finding partner:', findError);
-        throw findError;
+      if (rpcError) {
+        console.error('Error finding partner:', rpcError);
+        toast.error('Failed to find user with that email');
+        return false;
       }
       
-      if (!partnerData) {
+      if (!partnerResult || partnerResult.length === 0) {
         toast.error('No user found with that email address');
         return false;
       }
+      
+      const partnerData = partnerResult[0];
       
       if (partnerData.id === currentUser.id) {
         toast.error('You cannot connect with yourself');
@@ -583,31 +584,33 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
       
-      // Update both users to be partners
-      const { error: updateCurrentError } = await supabase
-        .from('profiles')
-        .update({ partner_id: partnerData.id })
-        .eq('id', currentUser.id);
+      // Use RPC calls to update both user profiles
+      const { error: updateCurrentError } = await supabase.rpc('update_user_partner', {
+        user_id_param: currentUser.id,
+        partner_id_param: partnerData.id
+      });
       
       if (updateCurrentError) {
         console.error('Error updating current user:', updateCurrentError);
-        throw updateCurrentError;
+        toast.error('Failed to connect with partner');
+        return false;
       }
       
-      const { error: updatePartnerError } = await supabase
-        .from('profiles')
-        .update({ partner_id: currentUser.id })
-        .eq('id', partnerData.id);
+      const { error: updatePartnerError } = await supabase.rpc('update_user_partner', {
+        user_id_param: partnerData.id, 
+        partner_id_param: currentUser.id
+      });
       
       if (updatePartnerError) {
         console.error('Error updating partner user:', updatePartnerError);
         // Rollback the first update if the second fails
-        await supabase
-          .from('profiles')
-          .update({ partner_id: null })
-          .eq('id', currentUser.id);
+        await supabase.rpc('update_user_partner', {
+          user_id_param: currentUser.id,
+          partner_id_param: null
+        });
           
-        throw updatePartnerError;
+        toast.error('Failed to connect with partner');
+        return false;
       }
       
       toast.success(`Successfully connected with ${partnerData.name}`);
