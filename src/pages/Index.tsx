@@ -1,7 +1,7 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dashboard } from './Dashboard';
+import Dashboard from './Dashboard';
 
 // This component will now render Dashboard instead of just redirecting
 const Index = () => {
