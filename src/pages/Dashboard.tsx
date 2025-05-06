@@ -10,9 +10,10 @@ import TaskCard from '@/components/TaskCard';
 import BrowniePointCard from '@/components/BrowniePointCard';
 import { Award } from 'lucide-react';
 import PendingTasksList from '@/components/PendingTasksList';
+import ConnectPartner from '@/components/ConnectPartner';
 
 const Dashboard = () => {
-  const { currentUser, partner, tasks, browniePoints, summary, availablePoints, isLoading } = useApp();
+  const { currentUser, partner, tasks, browniePoints, summary, availablePoints, isLoading, hasPartner } = useApp();
 
   // Get the most recent tasks and brownie points
   const recentTasks = [...tasks].sort((a, b) => 
@@ -34,6 +35,25 @@ const Dashboard = () => {
           <Skeleton className="h-[120px] w-full" />
           <Skeleton className="h-[120px] w-full" />
           <Skeleton className="h-[120px] w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show partner connection screen if user doesn't have a partner yet
+  if (!hasPartner) {
+    return (
+      <div className="container py-8">
+        <h1 className="text-3xl font-bold mb-8">Welcome to FairShare</h1>
+        <div className="max-w-md mx-auto">
+          <ConnectPartner />
+          
+          <div className="mt-8 text-center text-gray-600">
+            <p className="mb-4">To start using FairShare, connect with your partner first.</p>
+            <p className="text-sm">
+              Don't have a partner on FairShare yet? Ask them to sign up and then connect using their email address.
+            </p>
+          </div>
         </div>
       </div>
     );

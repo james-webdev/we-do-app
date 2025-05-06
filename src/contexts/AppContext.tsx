@@ -22,6 +22,8 @@ interface AppContextType {
   deleteTask: (taskId: string) => Promise<void>;
   deleteBrowniePoint: (pointId: string) => Promise<void>;
   redeemReward: (rewardId: string) => Promise<boolean>;
+  connectPartner: (partnerEmail: string) => Promise<boolean>;
+  hasPartner: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -37,6 +39,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [summary, setSummary] = useState<any>(null);
   const [availablePoints, setAvailablePoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasPartner, setHasPartner] = useState(false);
 
   const fetchData = async () => {
     if (!user) {
@@ -71,6 +74,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         };
         
         setCurrentUser(currentUserData);
+        setHasPartner(!!profileData.partner_id);
         
         // Get partner info if available
         if (profileData.partner_id) {
@@ -101,7 +105,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         
         // Store tasks data at a higher scope so we can use it later
-        let fetchedTasksData = [];
+        let fetchedTasksData: any[] = [];
 
         // Key change: Use the security definer function for fetching tasks
         try {
@@ -348,6 +352,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       
+      if (!currentUser.partnerId) {
+        toast.error('You need to connect with a partner first');
+        return;
+      }
+      
       // Insert task with pending status
       const { data, error } = await supabase
         .from('tasks')
@@ -534,6 +543,83 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Add a new function to connect with a partner
+  const connectPartner = async (partnerEmail: string) => {
+    try {
+      if (!currentUser) {
+        toast.error('User not authenticated');
+        return false;
+      }
+      
+      if (currentUser.partnerId) {
+        toast.error('You already have a partner connected');
+        return false;
+      }
+      
+      // First, find the partner by email
+      const { data: partnerData, error: findError } = await supabase
+        .from('profiles')
+        .select('id, name, email, partner_id')
+        .eq('email', partnerEmail)
+        .maybeSingle();
+      
+      if (findError) {
+        console.error('Error finding partner:', findError);
+        throw findError;
+      }
+      
+      if (!partnerData) {
+        toast.error('No user found with that email address');
+        return false;
+      }
+      
+      if (partnerData.id === currentUser.id) {
+        toast.error('You cannot connect with yourself');
+        return false;
+      }
+      
+      if (partnerData.partner_id) {
+        toast.error('This user is already connected with someone else');
+        return false;
+      }
+      
+      // Update both users to be partners
+      const { error: updateCurrentError } = await supabase
+        .from('profiles')
+        .update({ partner_id: partnerData.id })
+        .eq('id', currentUser.id);
+      
+      if (updateCurrentError) {
+        console.error('Error updating current user:', updateCurrentError);
+        throw updateCurrentError;
+      }
+      
+      const { error: updatePartnerError } = await supabase
+        .from('profiles')
+        .update({ partner_id: currentUser.id })
+        .eq('id', partnerData.id);
+      
+      if (updatePartnerError) {
+        console.error('Error updating partner user:', updatePartnerError);
+        // Rollback the first update if the second fails
+        await supabase
+          .from('profiles')
+          .update({ partner_id: null })
+          .eq('id', currentUser.id);
+          
+        throw updatePartnerError;
+      }
+      
+      toast.success(`Successfully connected with ${partnerData.name}`);
+      await fetchData(); // Refresh data
+      return true;
+    } catch (error: any) {
+      console.error('Error connecting partner:', error);
+      toast.error(error.message || 'Failed to connect with partner');
+      return false;
+    }
+  };
+
   // Helper function to determine points value based on type
   const getPointsValueByType = (type: BrowniePointType): number => {
     switch (type) {
@@ -586,7 +672,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         addNewBrowniePoint,
         deleteTask: handleDeleteTask,
         deleteBrowniePoint: handleDeleteBrowniePoint,
-        redeemReward: handleRedeemReward
+        redeemReward: handleRedeemReward,
+        connectPartner,
+        hasPartner
       }}
     >
       {children}
