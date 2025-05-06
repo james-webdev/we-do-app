@@ -1,8 +1,8 @@
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { User, Task, BrowniePoint, Reward, TaskStatus, TaskRating } from '@/types';
+import { User, Task, BrowniePoint, Reward, TaskStatus, TaskRating, TaskType, BrowniePointType } from '@/types';
 import { toast } from '@/components/ui/sonner';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 
 interface AppContextType {
