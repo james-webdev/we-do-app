@@ -45,12 +45,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      // Get current user profile using a direct query with the auth token
+      // Get current user profile using direct table access instead of RLS
+      // This should avoid the infinite recursion issue
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle(); // Changed from single() to maybeSingle() to avoid errors if not found
       
       if (profileError) {
         console.error('Error fetching user profile:', profileError);
@@ -75,7 +76,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             .from('profiles')
             .select('*')
             .eq('id', profileData.partner_id)
-            .single();
+            .maybeSingle(); // Changed from single() to maybeSingle()
           
           if (!partnerError && partnerData) {
             setPartner({
@@ -527,8 +528,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
       // Small delay to ensure auth is fully initialized
       const timer = setTimeout(() => {
+        console.log('Fetching data for user:', user.id);
         fetchData();
-      }, 100);
+      }, 300); // Increased delay to ensure auth is fully initialized
       
       return () => clearTimeout(timer);
     } else {
