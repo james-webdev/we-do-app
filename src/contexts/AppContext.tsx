@@ -556,10 +556,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Use an RPC call to run a function to find partner by email
-      const { data: partnerResult, error: rpcError } = await supabase.rpc('get_profile_by_email', {
-        email_param: partnerEmail
-      });
+      // Use our security definer function to find partner by email
+      const { data: partnerData, error: rpcError } = await supabase
+        .rpc('get_profile_by_email', {
+          email_param: partnerEmail
+        })
+        .maybeSingle();
       
       if (rpcError) {
         console.error('Error finding partner:', rpcError);
@@ -567,12 +569,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
       
-      if (!partnerResult || partnerResult.length === 0) {
+      if (!partnerData) {
         toast.error('No user found with that email address');
         return false;
       }
-      
-      const partnerData = partnerResult[0];
       
       if (partnerData.id === currentUser.id) {
         toast.error('You cannot connect with yourself');
@@ -584,7 +584,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
       
-      // Use RPC calls to update both user profiles
+      // Use security definer function to update both user profiles
       const { error: updateCurrentError } = await supabase.rpc('update_user_partner', {
         user_id_param: currentUser.id,
         partner_id_param: partnerData.id

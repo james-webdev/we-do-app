@@ -111,6 +111,16 @@ export type Database = {
         Args: { user_id: string; user_name: string; user_email: string }
         Returns: undefined
       }
+      get_profile_by_email: {
+        Args: { email_param: string }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          partner_id: string | null
+        }[]
+      }
       get_profile_by_id: {
         Args: { user_id: string }
         Returns: {
@@ -154,6 +164,10 @@ export type Database = {
           type: string
           user_id: string
         }[]
+      }
+      update_user_partner: {
+        Args: { user_id_param: string; partner_id_param: string }
+        Returns: undefined
       }
     }
     Enums: {
