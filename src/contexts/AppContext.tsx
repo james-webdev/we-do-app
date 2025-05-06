@@ -103,17 +103,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         // Key change: Use the security definer function for fetching tasks
         try {
           console.log("Fetching tasks using security definer function");
-          const { data: tasksData, error: tasksError } = await supabase
+          const { data: fetchedTasksData, error: tasksError } = await supabase
             .rpc('get_tasks_for_user', { user_id: user.id });
 
           if (tasksError) {
             console.error('Error fetching tasks:', tasksError);
             toast.error('Failed to load tasks');
-          } else if (tasksData) {
-            console.log("Tasks loaded successfully:", tasksData.length);
+          } else if (fetchedTasksData) {
+            console.log("Tasks loaded successfully:", fetchedTasksData.length);
             
             // Filter for approved tasks within the last week
-            const approvedRecentTasks = tasksData
+            const approvedRecentTasks = fetchedTasksData
               .filter(task => 
                 task.status === 'approved' && 
                 new Date(task.timestamp) >= oneWeekAgo
@@ -134,7 +134,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
             // Filter for pending tasks from partner
             if (profileData.partner_id) {
-              const pendingPartnerTasks = tasksData.filter(task => 
+              const pendingPartnerTasks = fetchedTasksData.filter(task => 
                 task.status === 'pending' && 
                 task.user_id === profileData.partner_id
               );
@@ -154,6 +154,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             } else {
               setPendingTasks([]);
             }
+            
+            // Calculate summary stats using the fetched data
+            calculateSummaryStats(fetchedTasksData, [], oneWeekAgo, user.id, profileData.partner_id);
           }
         } catch (error) {
           console.error('Error in tasks fetch:', error);
@@ -246,9 +249,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             }
           ]);
           
-          // Calculate summary stats using the fetched data
-          if (tasksData) {
-            calculateSummaryStats(tasksData, fetchedBrowniePointsData, oneWeekAgo, user.id, profileData.partner_id);
+          // Update the summary with brownie points
+          if (fetchedTasksData && formattedPoints) {
+            calculateSummaryStats(fetchedTasksData, fetchedBrowniePointsData, oneWeekAgo, user.id, profileData.partner_id);
           }
         } catch (error) {
           console.error('Error in brownie points fetch:', error);
