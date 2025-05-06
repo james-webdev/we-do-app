@@ -121,6 +121,20 @@ export type Database = {
           partner_id: string | null
         }[]
       }
+      get_tasks_for_user: {
+        Args: { user_id: string }
+        Returns: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          status: string
+          timestamp: string
+          title: string
+          type: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

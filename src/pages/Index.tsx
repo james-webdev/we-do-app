@@ -1,15 +1,13 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Dashboard } from './Dashboard';
 
-// Keeping this as a simple redirect to the Dashboard
+// This component will now render Dashboard instead of just redirecting
 const Index = () => {
   const navigate = useNavigate();
   
-  useEffect(() => {
-    navigate('/');
-  }, [navigate]);
-  
-  return null;
+  return <Dashboard />;
 };
 
 export default Index;
