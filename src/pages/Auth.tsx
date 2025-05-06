@@ -1,55 +1,45 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/sonner';
+import { Loader2 } from 'lucide-react';
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, signIn, signUp } = useAuth();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Default to signin or signup based on the URL
+  const defaultTab = location.pathname.includes('signup') ? 'signup' : 'signin';
+  
+  useEffect(() => {
+    // If user is already logged in, redirect to home
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Sign up the user
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name,
-          }
-        }
-      });
-
-      if (signUpError) throw signUpError;
-
-      if (authData.user) {
-        // Create the profile using a server function or RPC to bypass RLS
-        // We need to use a service role or bypass RLS since the new user doesn't exist yet
-        const { error: profileError } = await supabase.rpc('create_new_profile', {
-          user_id: authData.user.id,
-          user_name: name,
-          user_email: email
-        } as any); // Cast to any to bypass TypeScript error
-
-        if (profileError) throw profileError;
-        
-        toast.success("Account created! Please check your email for verification.");
-        navigate('/signin');
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create account');
+      await signUp(email, password, name);
+      // The redirect is handled in the AuthContext
+    } catch (error) {
+      // Error is already handled in AuthContext
+      console.error('Sign up error in component:', error);
     } finally {
       setLoading(false);
     }
@@ -60,17 +50,11 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-      
-      toast.success("Login successful!");
-      navigate('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to sign in');
+      await signIn(email, password);
+      // The redirect is handled in the AuthContext
+    } catch (error) {
+      // Error is already handled in AuthContext
+      console.error('Sign in error in component:', error);
     } finally {
       setLoading(false);
     }
@@ -87,17 +71,27 @@ const Auth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs defaultValue={defaultTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsTrigger 
+                  value="signin"
+                  onClick={() => navigate('/signin')}
+                >
+                  Sign In
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="signup"
+                  onClick={() => navigate('/signup')}
+                >
+                  Sign Up
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="signin-email">Email</Label>
                     <Input
-                      id="email"
+                      id="signin-email"
                       type="email"
                       placeholder="name@example.com"
                       value={email}
@@ -106,9 +100,9 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="signin-password">Password</Label>
                     <Input
-                      id="password"
+                      id="signin-password"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -116,7 +110,14 @@ const Auth = () => {
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Signing in...' : 'Sign In'}
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      'Sign In'
+                    )}
                   </Button>
                 </form>
               </TabsContent>
@@ -133,9 +134,9 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="signup-email">Email</Label>
                     <Input
-                      id="email"
+                      id="signup-email"
                       type="email"
                       placeholder="name@example.com"
                       value={email}
@@ -144,9 +145,9 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="signup-password">Password</Label>
                     <Input
-                      id="password"
+                      id="signup-password"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -154,7 +155,14 @@ const Auth = () => {
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Creating Account...' : 'Sign Up'}
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Account...
+                      </>
+                    ) : (
+                      'Sign Up'
+                    )}
                   </Button>
                 </form>
               </TabsContent>
