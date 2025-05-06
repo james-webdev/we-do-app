@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
@@ -52,7 +50,8 @@ const GiveBrowniePoint = () => {
         fromUserId: currentUser.id,
         toUserId: partner.id,
         type,
-        message
+        message,
+        points: pointValues[type] // Add the points value based on type
       });
       
       navigate('/');

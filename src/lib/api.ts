@@ -67,7 +67,6 @@ export const addBrowniePoint = (point: Omit<BrowniePoint, "id" | "createdAt" | "
     id: `point${Date.now()}`, 
     createdAt: new Date(),
     redeemed: false,
-    points: pointsValue
   };
   localBrowniePoints.push(newPoint);
   return newPoint;

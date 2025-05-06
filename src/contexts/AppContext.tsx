@@ -28,7 +28,7 @@ interface AppContextType {
   isLoading: boolean;
   refreshData: () => void;
   addNewTask: (task: Omit<Task, "id">) => Promise<void>;
-  addNewBrowniePoint: (point: Omit<BrowniePoint, "id" | "createdAt" | "redeemed" | "points">) => Promise<void>;
+  addNewBrowniePoint: (point: Omit<BrowniePoint, "id" | "createdAt" | "redeemed">) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
   deleteBrowniePoint: (pointId: string) => Promise<void>;
   redeemReward: (rewardId: string) => Promise<boolean>;
@@ -97,7 +97,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addNewBrowniePoint = async (pointData: Omit<BrowniePoint, "id" | "createdAt" | "redeemed" | "points">) => {
+  const addNewBrowniePoint = async (pointData: Omit<BrowniePoint, "id" | "createdAt" | "redeemed">) => {
     try {
       const newPoint = addBrowniePoint(pointData);
       setBrowniePoints(prev => [...prev, newPoint]);

@@ -55,7 +55,7 @@ export const tasks: Task[] = generateMockTasks();
 
 // Mock Brownie Points Data
 const generateMockBrowniePoints = (): BrowniePoint[] => {
-  const points: BrowniePoint[] = [];
+  const browniePoints: BrowniePoint[] = []; // Renamed from 'points' to 'browniePoints'
   const types: BrowniePointType[] = ["time", "effort", "fun"];
   const messages = [
     "Thanks for taking care of the kids yesterday!",
@@ -75,11 +75,11 @@ const generateMockBrowniePoints = (): BrowniePoint[] => {
     const type = types[Math.floor(Math.random() * types.length)];
     
     // Determine points based on type
-    let points = 1;
-    if (type === 'time') points = 2;
-    if (type === 'effort') points = 3;
+    let pointsValue = 1;
+    if (type === 'time') pointsValue = 2;
+    if (type === 'effort') pointsValue = 3;
 
-    points.push({
+    browniePoints.push({
       id: `point${i}`,
       fromUserId,
       toUserId,
@@ -87,11 +87,11 @@ const generateMockBrowniePoints = (): BrowniePoint[] => {
       message: messages[Math.floor(Math.random() * messages.length)],
       redeemed: Math.random() > 0.7,
       createdAt,
-      points
+      points: pointsValue
     });
   }
 
-  return points;
+  return browniePoints;
 };
 
 export const browniePoints: BrowniePoint[] = generateMockBrowniePoints();
