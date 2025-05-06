@@ -1,5 +1,6 @@
+
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { User, Task, BrowniePoint } from '@/types';
+import { User, Task, BrowniePoint, Reward } from '@/types';
 import { 
   getCurrentUser, 
   getPartner, 
@@ -9,7 +10,10 @@ import {
   addTask,
   addBrowniePoint,
   deleteTask,
-  deleteBrowniePoint
+  deleteBrowniePoint,
+  getRewards,
+  redeemReward,
+  getTotalAvailablePoints
 } from '@/lib/api';
 import { toast } from '@/components/ui/sonner';
 
@@ -18,13 +22,16 @@ interface AppContextType {
   partner: User | null;
   tasks: Task[];
   browniePoints: BrowniePoint[];
+  rewards: Reward[];
   summary: any;
+  availablePoints: number;
   isLoading: boolean;
   refreshData: () => void;
   addNewTask: (task: Omit<Task, "id">) => Promise<void>;
-  addNewBrowniePoint: (point: Omit<BrowniePoint, "id" | "createdAt" | "redeemed">) => Promise<void>;
+  addNewBrowniePoint: (point: Omit<BrowniePoint, "id" | "createdAt" | "redeemed" | "points">) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
   deleteBrowniePoint: (pointId: string) => Promise<void>;
+  redeemReward: (rewardId: string) => Promise<boolean>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -34,7 +41,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [partner, setPartner] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [browniePoints, setBrowniePoints] = useState<BrowniePoint[]>([]);
+  const [rewards, setRewards] = useState<Reward[]>([]);
   const [summary, setSummary] = useState<any>(null);
+  const [availablePoints, setAvailablePoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = () => {
@@ -56,6 +65,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
       const userBrowniePoints = getBrowniePoints(user.id);
       setBrowniePoints(userBrowniePoints);
+
+      // Get rewards
+      const allRewards = getRewards();
+      setRewards(allRewards);
+
+      // Get available points
+      const points = getTotalAvailablePoints(user.id);
+      setAvailablePoints(points);
 
       // Get summary data
       const summaryData = getTaskSummary(user.id);
@@ -80,7 +97,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addNewBrowniePoint = async (pointData: Omit<BrowniePoint, "id" | "createdAt" | "redeemed">) => {
+  const addNewBrowniePoint = async (pointData: Omit<BrowniePoint, "id" | "createdAt" | "redeemed" | "points">) => {
     try {
       const newPoint = addBrowniePoint(pointData);
       setBrowniePoints(prev => [...prev, newPoint]);
@@ -124,6 +141,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const handleRedeemReward = async (rewardId: string) => {
+    try {
+      if (!currentUser) {
+        toast.error('User not found');
+        return false;
+      }
+      
+      const success = redeemReward(currentUser.id, rewardId);
+      if (success) {
+        toast.success('Reward redeemed successfully!');
+        fetchData(); // Refresh data to update points
+        return true;
+      } else {
+        toast.error('Failed to redeem reward. You may not have enough points.');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error redeeming reward:', error);
+      toast.error('Failed to redeem reward');
+      return false;
+    }
+  };
+
   // Initial data fetch
   useEffect(() => {
     fetchData();
@@ -136,13 +176,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         partner,
         tasks,
         browniePoints,
+        rewards,
         summary,
+        availablePoints,
         isLoading,
         refreshData: fetchData,
         addNewTask,
         addNewBrowniePoint,
         deleteTask: handleDeleteTask,
-        deleteBrowniePoint: handleDeleteBrowniePoint
+        deleteBrowniePoint: handleDeleteBrowniePoint,
+        redeemReward: handleRedeemReward
       }}
     >
       {children}

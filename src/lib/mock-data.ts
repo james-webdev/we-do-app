@@ -1,5 +1,5 @@
 
-import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType } from "../types";
+import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, Reward } from "../types";
 
 // Mock User Data
 export const users: User[] = [
@@ -64,7 +64,7 @@ const generateMockBrowniePoints = (): BrowniePoint[] => {
     "You're amazing for dealing with that tantrum.",
     "Thank you for picking up my slack this week."
   ];
-
+  
   // Generate brownie points for the past week
   for (let i = 0; i < 5; i++) {
     const fromUserId = i % 2 === 0 ? "user1" : "user2";
@@ -72,15 +72,22 @@ const generateMockBrowniePoints = (): BrowniePoint[] => {
     const daysAgo = Math.floor(Math.random() * 7);
     const createdAt = new Date();
     createdAt.setDate(createdAt.getDate() - daysAgo);
+    const type = types[Math.floor(Math.random() * types.length)];
+    
+    // Determine points based on type
+    let points = 1;
+    if (type === 'time') points = 2;
+    if (type === 'effort') points = 3;
 
     points.push({
       id: `point${i}`,
       fromUserId,
       toUserId,
-      type: types[Math.floor(Math.random() * types.length)],
+      type,
       message: messages[Math.floor(Math.random() * messages.length)],
       redeemed: Math.random() > 0.7,
-      createdAt
+      createdAt,
+      points
     });
   }
 
@@ -88,5 +95,37 @@ const generateMockBrowniePoints = (): BrowniePoint[] => {
 };
 
 export const browniePoints: BrowniePoint[] = generateMockBrowniePoints();
+
+// Mock Rewards
+export const mockRewards: Reward[] = [
+  {
+    id: "reward1",
+    title: "Back Rub",
+    description: "Enjoy a relaxing 15-minute back massage",
+    pointsCost: 3,
+    imageIcon: "gift"
+  },
+  {
+    id: "reward2",
+    title: "Nighttime Routine",
+    description: "Partner handles the entire bedtime routine tonight",
+    pointsCost: 4,
+    imageIcon: "star"
+  },
+  {
+    id: "reward3",
+    title: "Weekend Time Off",
+    description: "Get 2 hours to yourself on the weekend",
+    pointsCost: 5,
+    imageIcon: "circle-dollar-sign"
+  },
+  {
+    id: "reward4",
+    title: "Breakfast in Bed",
+    description: "Enjoy a peaceful morning with breakfast served in bed",
+    pointsCost: 2,
+    imageIcon: "award"
+  }
+];
 
 export const mockCurrentUser = users[0];

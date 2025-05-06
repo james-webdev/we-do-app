@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { BrowniePointBadge } from './LoadBadge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Award } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useState } from 'react';
 import { 
@@ -54,6 +54,10 @@ const BrowniePointCard = ({ browniePoint }: BrowniePointCardProps) => {
                 Redeemed
               </span>
             )}
+          </div>
+          <div className="flex items-center gap-1 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-sm font-medium">
+            <Award size={16} className="mr-1" />
+            {browniePoint.points} {browniePoint.points === 1 ? 'point' : 'points'}
           </div>
         </div>
         <p className="text-sm text-gray-700 my-2">"{browniePoint.message}"</p>

@@ -27,4 +27,13 @@ export interface BrowniePoint {
   message: string;
   redeemed: boolean;
   createdAt: Date;
+  points: number; // Added points value
+}
+
+export interface Reward {
+  id: string;
+  title: string;
+  description: string;
+  pointsCost: number;
+  imageIcon: string;
 }

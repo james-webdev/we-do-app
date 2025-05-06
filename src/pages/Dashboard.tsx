@@ -9,9 +9,10 @@ import LoadDistributionChart from '@/components/charts/LoadDistributionChart';
 import ContributionChart from '@/components/charts/ContributionChart';
 import TaskCard from '@/components/TaskCard';
 import BrowniePointCard from '@/components/BrowniePointCard';
+import { Award } from 'lucide-react';
 
 const Dashboard = () => {
-  const { currentUser, partner, tasks, browniePoints, summary, isLoading } = useApp();
+  const { currentUser, partner, tasks, browniePoints, summary, availablePoints, isLoading } = useApp();
 
   // Get the most recent tasks and brownie points
   const recentTasks = [...tasks].sort((a, b) => 
@@ -107,13 +108,28 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative">
           <CardHeader className="pb-2">
-            <CardTitle>Brownie Points</CardTitle>
+            <CardTitle className="flex items-center">
+              <span>Brownie Points</span>
+              <Link to="/rewards" className="ml-auto">
+                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                  View Rewards
+                </Button>
+              </Link>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold">{summary?.sentBrowniePoints || 0}</div>
-            <p className="text-sm text-gray-500 mt-1">sent this week</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="text-4xl font-bold">{summary?.sentBrowniePoints || 0}</div>
+                <p className="text-sm text-gray-500 mt-1">sent this week</p>
+              </div>
+              <div className="flex items-center bg-amber-100 text-amber-800 px-3 py-1 rounded-full">
+                <Award className="mr-1" size={16} />
+                <span className="font-medium">{availablePoints} available</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

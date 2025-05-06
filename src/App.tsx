@@ -10,6 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import AddTask from "@/pages/AddTask";
 import GiveBrowniePoint from "@/pages/GiveBrowniePoint";
 import History from "@/pages/History";
+import Rewards from "@/pages/Rewards";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
                 <Route path="/add-task" element={<AddTask />} />
                 <Route path="/give-brownie-point" element={<GiveBrowniePoint />} />
                 <Route path="/history" element={<History />} />
+                <Route path="/rewards" element={<Rewards />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

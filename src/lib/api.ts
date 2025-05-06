@@ -1,12 +1,12 @@
-
-import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType } from "../types";
-import { users, tasks as mockTasks, browniePoints as mockBrowniePoints, mockCurrentUser } from "./mock-data";
+import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, Reward } from "../types";
+import { users, tasks as mockTasks, browniePoints as mockBrowniePoints, mockCurrentUser, mockRewards } from "./mock-data";
 
 // In a real application, these would be API calls to a backend server
 // For now, we'll simulate with local storage and mock data
 
 let localTasks = [...mockTasks];
 let localBrowniePoints = [...mockBrowniePoints];
+let localRewards = [...mockRewards];
 
 // User management
 export const getCurrentUser = (): User => {
@@ -59,11 +59,15 @@ export const getBrowniePoints = (userId: string, days: number = 7): BrowniePoint
 };
 
 export const addBrowniePoint = (point: Omit<BrowniePoint, "id" | "createdAt" | "redeemed">): BrowniePoint => {
+  // Determine points value based on type
+  const pointsValue = getPointsValueByType(point.type);
+  
   const newPoint = { 
     ...point, 
     id: `point${Date.now()}`, 
     createdAt: new Date(),
-    redeemed: false
+    redeemed: false,
+    points: pointsValue
   };
   localBrowniePoints.push(newPoint);
   return newPoint;
@@ -85,6 +89,60 @@ export const redeemBrowniePoint = (pointId: string): BrowniePoint | undefined =>
     return localBrowniePoints[pointIndex];
   }
   return undefined;
+};
+
+// Helper function to determine points value based on type
+const getPointsValueByType = (type: BrowniePointType): number => {
+  switch (type) {
+    case 'time':
+      return 2;
+    case 'effort':
+      return 3;
+    case 'fun':
+      return 1;
+    default:
+      return 1;
+  }
+};
+
+// Rewards management
+export const getRewards = (): Reward[] => {
+  return localRewards;
+};
+
+export const getReward = (rewardId: string): Reward | undefined => {
+  return localRewards.find(reward => reward.id === rewardId);
+};
+
+export const redeemReward = (userId: string, rewardId: string): boolean => {
+  // Check if the reward exists
+  const reward = getReward(rewardId);
+  if (!reward) return false;
+  
+  // Get unredeemed brownie points received by the user
+  const availablePoints = localBrowniePoints
+    .filter(point => point.toUserId === userId && !point.redeemed)
+    .reduce((sum, point) => sum + point.points, 0);
+  
+  // Check if user has enough points
+  if (availablePoints < reward.pointsCost) {
+    return false;
+  }
+  
+  // Redeem points until the cost is covered
+  let remainingCost = reward.pointsCost;
+  const pointsToRedeem = localBrowniePoints
+    .filter(point => point.toUserId === userId && !point.redeemed)
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()); // Oldest first
+  
+  for (const point of pointsToRedeem) {
+    if (remainingCost <= 0) break;
+    
+    redeemBrowniePoint(point.id);
+    remainingCost -= point.points;
+  }
+  
+  return true;
 };
 
 // Analytics
@@ -137,4 +195,10 @@ export const getBrowniePointCount = (userId: string, days: number = 7): number =
   return localBrowniePoints.filter(
     p => p.fromUserId === userId && p.createdAt >= startDate
   ).length;
+};
+
+export const getTotalAvailablePoints = (userId: string): number => {
+  return localBrowniePoints
+    .filter(point => point.toUserId === userId && !point.redeemed)
+    .reduce((sum, point) => sum + point.points, 0);
 };

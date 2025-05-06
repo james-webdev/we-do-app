@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/sonner';
 import { BrowniePointType } from '@/types';
+import { Award } from 'lucide-react';
 
 const GiveBrowniePoint = () => {
   const navigate = useNavigate();
@@ -18,6 +19,12 @@ const GiveBrowniePoint = () => {
   const [type, setType] = React.useState<BrowniePointType>('effort');
   const [message, setMessage] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  
+  const pointValues = {
+    time: 2,
+    effort: 3,
+    fun: 1
+  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,19 +85,37 @@ const GiveBrowniePoint = () => {
               <RadioGroup
                 value={type}
                 onValueChange={(value) => setType(value as BrowniePointType)}
-                className="grid grid-cols-3 gap-4"
+                className="grid grid-cols-1 sm:grid-cols-3 gap-4"
               >
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-gray-50 cursor-pointer">
                   <RadioGroupItem value="time" id="time" />
-                  <Label htmlFor="time" className="cursor-pointer">Time</Label>
+                  <div>
+                    <Label htmlFor="time" className="cursor-pointer font-medium">Time</Label>
+                    <div className="flex items-center text-xs text-amber-600 mt-1">
+                      <Award size={14} className="mr-1" />
+                      {pointValues.time} points
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-gray-50 cursor-pointer">
                   <RadioGroupItem value="effort" id="effort" />
-                  <Label htmlFor="effort" className="cursor-pointer">Effort</Label>
+                  <div>
+                    <Label htmlFor="effort" className="cursor-pointer font-medium">Effort</Label>
+                    <div className="flex items-center text-xs text-amber-600 mt-1">
+                      <Award size={14} className="mr-1" />
+                      {pointValues.effort} points
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-gray-50 cursor-pointer">
                   <RadioGroupItem value="fun" id="fun" />
-                  <Label htmlFor="fun" className="cursor-pointer">Fun</Label>
+                  <div>
+                    <Label htmlFor="fun" className="cursor-pointer font-medium">Fun</Label>
+                    <div className="flex items-center text-xs text-amber-600 mt-1">
+                      <Award size={14} className="mr-1" />
+                      {pointValues.fun} points
+                    </div>
+                  </div>
                 </div>
               </RadioGroup>
             </div>
