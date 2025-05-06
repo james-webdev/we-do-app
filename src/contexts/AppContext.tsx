@@ -44,14 +44,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     
     try {
       setIsLoading(true);
+      console.log("Fetching profile data for user:", user.id);
       
-      // Get current user profile using direct table access instead of RLS
-      // This should avoid the infinite recursion issue
+      // Use the new secure function to get profile data
       const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle(); // Changed from single() to maybeSingle() to avoid errors if not found
+        .rpc('get_profile_by_id', { user_id: user.id })
+        .maybeSingle();
       
       if (profileError) {
         console.error('Error fetching user profile:', profileError);
@@ -61,6 +59,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (profileData) {
+        console.log("Profile data loaded successfully");
         const currentUserData: User = {
           id: profileData.id,
           name: profileData.name,
@@ -72,13 +71,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         
         // Get partner info if available
         if (profileData.partner_id) {
+          console.log("Fetching partner data for:", profileData.partner_id);
+          // Use the same secure function for partner data
           const { data: partnerData, error: partnerError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', profileData.partner_id)
-            .maybeSingle(); // Changed from single() to maybeSingle()
+            .rpc('get_profile_by_id', { user_id: profileData.partner_id })
+            .maybeSingle();
           
           if (!partnerError && partnerData) {
+            console.log("Partner data loaded successfully");
             setPartner({
               id: partnerData.id,
               name: partnerData.name,
@@ -106,6 +106,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             ? `user_id.eq.${user.id},user_id.eq.${profileData.partner_id}` 
             : `user_id.eq.${user.id}`;
             
+          console.log("Fetching tasks with clause:", whereClause);
           const { data: tasksData, error: tasksError } = await supabase
             .from('tasks')
             .select('*')
@@ -116,6 +117,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           if (tasksError) {
             console.error('Error fetching tasks:', tasksError);
           } else if (tasksData) {
+            console.log("Tasks loaded:", tasksData.length);
             fetchedTasksData = tasksData;
             const formattedTasks: Task[] = tasksData.map(task => ({
               id: task.id,
@@ -137,6 +139,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         // Get pending tasks if partner exists
         if (profileData.partner_id) {
           try {
+            console.log("Fetching pending tasks from partner");
             const { data: pendingTasksData, error: pendingError } = await supabase
               .from('tasks')
               .select('*')
@@ -144,6 +147,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               .eq('status', 'pending');
               
             if (!pendingError && pendingTasksData) {
+              console.log("Pending tasks loaded:", pendingTasksData.length);
               const formattedPendingTasks: Task[] = pendingTasksData.map(task => ({
                 id: task.id,
                 title: task.title,
@@ -171,6 +175,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             ? `from_user_id.eq.${user.id},to_user_id.eq.${user.id}` 
             : `from_user_id.eq.${user.id},to_user_id.eq.${user.id}`;
             
+          console.log("Fetching brownie points with query:", pointsQuery);
           const { data: browniePointsData, error: brownieError } = await supabase
             .from('brownie_points')
             .select('*')
@@ -178,6 +183,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             .gte('created_at', oneWeekAgo.toISOString());
             
           if (!brownieError && browniePointsData) {
+            console.log("Brownie points loaded:", browniePointsData.length);
             fetchedBrowniePointsData = browniePointsData;
             const formattedPoints: BrowniePoint[] = browniePointsData.map(point => ({
               id: point.id,
@@ -198,6 +204,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         
         // Calculate available points (points received that are not redeemed)
         try {
+          console.log("Calculating available points for user:", user.id);
           const { data: availablePointsData, error: availableError } = await supabase
             .from('brownie_points')
             .select('points')
@@ -206,6 +213,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             
           if (!availableError && availablePointsData) {
             const points = availablePointsData.reduce((sum, point) => sum + point.points, 0);
+            console.log("Available points:", points);
             setAvailablePoints(points);
           }
         } catch (error) {
@@ -239,6 +247,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         
         // Calculate summary statistics using the fetched data
         calculateSummaryStats(fetchedTasksData, fetchedBrowniePointsData, oneWeekAgo, user.id, profileData.partner_id);
+      } else {
+        console.warn("Profile data not found for user:", user.id);
+        setCurrentUser(null);
       }
     } catch (error) {
       console.error('Error fetching data:', error);

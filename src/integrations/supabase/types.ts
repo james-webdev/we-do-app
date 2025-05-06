@@ -111,6 +111,16 @@ export type Database = {
         Args: { user_id: string; user_name: string; user_email: string }
         Returns: undefined
       }
+      get_profile_by_id: {
+        Args: { user_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          partner_id: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
