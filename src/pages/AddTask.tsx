@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/components/ui/sonner';
-import { TaskType } from '@/types';
+import { TaskLevel, TaskType } from '@/types';
 
 const AddTask = () => {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ const AddTask = () => {
   
   const [title, setTitle] = React.useState('');
   const [type, setType] = React.useState<TaskType>('mental');
-  const [points, setPoints] = React.useState<number>(5);
+  const [level, setLevel] = React.useState<TaskLevel>('normal');
   const [date, setDate] = React.useState<string>(
     new Date().toISOString().split('T')[0]
   );
@@ -48,7 +48,7 @@ const AddTask = () => {
       await addNewTask({
         title,
         type,
-        points,
+        level,
         userId: currentUser.id,
         timestamp
       });
@@ -111,24 +111,24 @@ const AddTask = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="points">Task Points (1-10)</Label>
+              <Label htmlFor="level">Task Difficulty Level</Label>
               <Select
-                value={points.toString()}
-                onValueChange={(value) => setPoints(parseInt(value))}
+                value={level}
+                onValueChange={(value) => setLevel(value as TaskLevel)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select points" />
+                  <SelectValue placeholder="Select level" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map((value) => (
-                    <SelectItem key={value} value={value.toString()}>
-                      {value} {value === 1 ? 'point' : 'points'}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="easy">Easy</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="hard">Hard</SelectItem>
+                  <SelectItem value="expert">Expert</SelectItem>
+                  <SelectItem value="master">Master</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-gray-500 mt-1">
-                Rate the effort level of this task from 1 (minimal) to 10 (significant)
+                Rate the difficulty level of this task from Easy to Master
               </p>
             </div>
             

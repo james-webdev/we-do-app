@@ -1,5 +1,5 @@
 
-import { Task } from '@/types';
+import { Task, TaskLevel } from '@/types';
 import { format } from 'date-fns';
 import { TypeBadge } from './LoadBadge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -25,6 +25,18 @@ interface TaskCardProps {
   userName?: string;
 }
 
+// Function to get the appropriate color for each level
+const getLevelBadgeColor = (level: TaskLevel): string => {
+  switch (level) {
+    case 'easy': return 'bg-green-100 text-green-800 hover:bg-green-200';
+    case 'normal': return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+    case 'hard': return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
+    case 'expert': return 'bg-red-100 text-red-800 hover:bg-red-200';
+    case 'master': return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
+    default: return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+  }
+};
+
 const TaskCard = ({ task, userName }: TaskCardProps) => {
   const { deleteTask, currentUser } = useApp();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -38,6 +50,8 @@ const TaskCard = ({ task, userName }: TaskCardProps) => {
     setIsDeleting(false);
   };
 
+  const levelBadgeColor = getLevelBadgeColor(task.level);
+
   return (
     <Card className="w-full">
       <CardContent className="pt-6">
@@ -45,8 +59,8 @@ const TaskCard = ({ task, userName }: TaskCardProps) => {
           <h3 className="font-medium text-lg text-gray-900">{task.title}</h3>
           <div className="flex gap-2">
             <TypeBadge type={task.type} />
-            <Badge variant="outline" className="font-semibold">
-              {task.points} {task.points === 1 ? 'point' : 'points'}
+            <Badge variant="outline" className={`font-semibold ${levelBadgeColor}`}>
+              {task.level.charAt(0).toUpperCase() + task.level.slice(1)}
             </Badge>
           </div>
         </div>
