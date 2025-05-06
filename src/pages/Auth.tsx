@@ -41,7 +41,7 @@ const Auth = () => {
           user_id: authData.user.id,
           user_name: name,
           user_email: email
-        });
+        } as any); // Cast to any to bypass TypeScript error
 
         if (profileError) throw profileError;
         
@@ -168,7 +168,6 @@ const Auth = () => {
         </Card>
       </div>
     </div>
-  );
-};
+  };
 
 export default Auth;
