@@ -100,16 +100,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         
+        // Store tasks data at a higher scope so we can use it later
+        let fetchedTasksData = [];
+
         // Key change: Use the security definer function for fetching tasks
         try {
           console.log("Fetching tasks using security definer function");
-          const { data: fetchedTasksData, error: tasksError } = await supabase
+          const { data: tasksResult, error: tasksError } = await supabase
             .rpc('get_tasks_for_user', { user_id: user.id });
 
           if (tasksError) {
             console.error('Error fetching tasks:', tasksError);
             toast.error('Failed to load tasks');
-          } else if (fetchedTasksData) {
+          } else if (tasksResult) {
+            fetchedTasksData = tasksResult; // Store the tasks data
             console.log("Tasks loaded successfully:", fetchedTasksData.length);
             
             // Filter for approved tasks within the last week
@@ -161,6 +165,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
           console.error('Error in tasks fetch:', error);
           toast.error('Failed to load tasks');
+          fetchedTasksData = []; // Reset to empty array in case of error
         }
         
         // Get brownie points - use separate queries to avoid RLS recursion
@@ -250,7 +255,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           ]);
           
           // Update the summary with brownie points
-          if (fetchedTasksData && formattedPoints) {
+          if (fetchedTasksData && fetchedTasksData.length > 0 && fetchedBrowniePointsData) {
             calculateSummaryStats(fetchedTasksData, fetchedBrowniePointsData, oneWeekAgo, user.id, profileData.partner_id);
           }
         } catch (error) {
