@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,20 +25,23 @@ const Auth = () => {
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            name: name,
+          }
+        }
       });
 
       if (signUpError) throw signUpError;
 
       if (authData.user) {
-        // Add user profile info
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            name,
-            email,
-            created_at: new Date().toISOString(),
-          });
+        // Create the profile using a server function or RPC to bypass RLS
+        // We need to use a service role or bypass RLS since the new user doesn't exist yet
+        const { error: profileError } = await supabase.rpc('create_new_profile', {
+          user_id: authData.user.id,
+          user_name: name,
+          user_email: email
+        });
 
         if (profileError) throw profileError;
         

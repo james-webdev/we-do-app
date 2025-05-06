@@ -48,18 +48,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Sign up with email and password
   const signUp = async (email: string, password: string, name: string) => {
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+    const { data, error: signUpError } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          name,
+        }
+      }
+    });
     
     if (signUpError) throw signUpError;
     
     if (data.user) {
-      await supabase.from('profiles').insert({
-        id: data.user.id,
-        name,
-        email,
-        created_at: new Date().toISOString()
+      // Use RPC function to create profile to bypass RLS
+      const { error: profileError } = await supabase.rpc('create_new_profile', {
+        user_id: data.user.id,
+        user_name: name,
+        user_email: email
       });
+      
+      if (profileError) throw profileError;
     }
+    
+    // Navigate to signin page after successful signup
+    navigate('/signin');
   };
 
   // Sign out
