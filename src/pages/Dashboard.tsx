@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Link } from 'react-router-dom';
@@ -10,6 +9,7 @@ import ContributionChart from '@/components/charts/ContributionChart';
 import TaskCard from '@/components/TaskCard';
 import BrowniePointCard from '@/components/BrowniePointCard';
 import { Award } from 'lucide-react';
+import PendingTasksList from '@/components/PendingTasksList';
 
 const Dashboard = () => {
   const { currentUser, partner, tasks, browniePoints, summary, availablePoints, isLoading } = useApp();
@@ -143,6 +143,7 @@ const Dashboard = () => {
             </Link>
           </div>
           <div className="space-y-4">
+            <PendingTasksList />
             {recentTasks.length > 0 ? (
               recentTasks.map((task) => (
                 <TaskCard 

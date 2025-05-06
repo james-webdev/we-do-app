@@ -1,9 +1,10 @@
 
 import { Task } from '@/types';
 import { format } from 'date-fns';
-import { LoadBadge, TypeBadge } from './LoadBadge';
+import { TypeBadge } from './LoadBadge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Trash2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useState } from 'react';
@@ -28,8 +29,8 @@ const TaskCard = ({ task, userName }: TaskCardProps) => {
   const { deleteTask, currentUser } = useApp();
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Only show delete button if the task belongs to the current user
-  const canDelete = currentUser?.id === task.userId;
+  // Only show delete button if the task belongs to the current user and is approved
+  const canDelete = currentUser?.id === task.userId && task.status === 'approved';
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -44,7 +45,9 @@ const TaskCard = ({ task, userName }: TaskCardProps) => {
           <h3 className="font-medium text-lg text-gray-900">{task.title}</h3>
           <div className="flex gap-2">
             <TypeBadge type={task.type} />
-            <LoadBadge load={task.load} />
+            <Badge variant="outline" className="font-semibold">
+              {task.points} {task.points === 1 ? 'point' : 'points'}
+            </Badge>
           </div>
         </div>
         {userName && (

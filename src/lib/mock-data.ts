@@ -1,5 +1,5 @@
 
-import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, Reward } from "../types";
+import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, Reward, TaskStatus } from "../types";
 
 // Mock User Data
 export const users: User[] = [
@@ -21,7 +21,7 @@ export const users: User[] = [
 const generateMockTasks = (): Task[] => {
   const tasks: Task[] = [];
   const types: TaskType[] = ["mental", "physical", "both"];
-  const loads: TaskLoad[] = ["light", "medium", "heavy"];
+  const statuses: TaskStatus[] = ["approved", "approved", "approved", "pending"]; // Most tasks approved, some pending
   const taskNames = [
     "School pickup", "Doctor appointment", "Grocery shopping", 
     "Meal planning", "Bath time", "Bedtime routine",
@@ -42,9 +42,10 @@ const generateMockTasks = (): Task[] => {
       id: `task${i}`,
       title: taskNames[Math.floor(Math.random() * taskNames.length)],
       type: types[Math.floor(Math.random() * types.length)],
-      load: loads[Math.floor(Math.random() * loads.length)],
+      points: Math.floor(Math.random() * 10) + 1, // Points from 1-10
       userId,
-      timestamp
+      timestamp,
+      status: statuses[Math.floor(Math.random() * statuses.length)]
     });
   }
 

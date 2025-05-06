@@ -1,13 +1,14 @@
-
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { User, Task, BrowniePoint, Reward } from '@/types';
+import { User, Task, BrowniePoint, Reward, TaskStatus } from '@/types';
 import { 
   getCurrentUser, 
   getPartner, 
   getTasks, 
+  getPendingTasks,
   getBrowniePoints, 
   getTaskSummary,
   addTask,
+  updateTaskStatus,
   addBrowniePoint,
   deleteTask,
   deleteBrowniePoint,
@@ -21,13 +22,16 @@ interface AppContextType {
   currentUser: User | null;
   partner: User | null;
   tasks: Task[];
+  pendingTasks: Task[];
   browniePoints: BrowniePoint[];
   rewards: Reward[];
   summary: any;
   availablePoints: number;
   isLoading: boolean;
   refreshData: () => void;
-  addNewTask: (task: Omit<Task, "id">) => Promise<void>;
+  addNewTask: (task: Omit<Task, "id" | "status">) => Promise<void>;
+  approveTask: (taskId: string) => Promise<void>;
+  rejectTask: (taskId: string, comment: string) => Promise<void>;
   addNewBrowniePoint: (point: Omit<BrowniePoint, "id" | "createdAt" | "redeemed">) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
   deleteBrowniePoint: (pointId: string) => Promise<void>;
@@ -40,6 +44,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [partner, setPartner] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [browniePoints, setBrowniePoints] = useState<BrowniePoint[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [summary, setSummary] = useState<any>(null);
@@ -59,10 +64,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setPartner(partnerInfo);
       }
 
-      // Fetch tasks and brownie points
+      // Fetch approved tasks
       const userTasks = getTasks(user.id);
       setTasks(userTasks);
 
+      // Fetch pending tasks (tasks from partner that need approval)
+      const userPendingTasks = getPendingTasks(user.id);
+      setPendingTasks(userPendingTasks);
+
+      // Fetch brownie points
       const userBrowniePoints = getBrowniePoints(user.id);
       setBrowniePoints(userBrowniePoints);
 
@@ -85,15 +95,49 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addNewTask = async (taskData: Omit<Task, "id">) => {
+  const addNewTask = async (taskData: Omit<Task, "id" | "status">) => {
     try {
-      const newTask = addTask(taskData);
-      setTasks(prev => [...prev, newTask]);
-      toast.success('Task added successfully');
+      // Add task with pending status
+      const newTask = addTask({
+        ...taskData,
+        status: 'pending'
+      });
+      
+      toast.success('Task submitted for partner approval');
       fetchData(); // Refresh all data to update summaries
     } catch (error) {
       console.error('Error adding task:', error);
       toast.error('Failed to add task');
+    }
+  };
+
+  const approveTask = async (taskId: string) => {
+    try {
+      const updatedTask = updateTaskStatus(taskId, 'approved');
+      if (updatedTask) {
+        toast.success('Task approved');
+        fetchData(); // Refresh data to update lists
+      } else {
+        toast.error('Failed to approve task');
+      }
+    } catch (error) {
+      console.error('Error approving task:', error);
+      toast.error('Failed to approve task');
+    }
+  };
+
+  const rejectTask = async (taskId: string, comment: string) => {
+    try {
+      const updatedTask = updateTaskStatus(taskId, 'rejected', comment);
+      if (updatedTask) {
+        toast.success('Task rejected');
+        fetchData(); // Refresh data to update lists
+      } else {
+        toast.error('Failed to reject task');
+      }
+    } catch (error) {
+      console.error('Error rejecting task:', error);
+      toast.error('Failed to reject task');
     }
   };
 
@@ -175,6 +219,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         currentUser,
         partner,
         tasks,
+        pendingTasks,
         browniePoints,
         rewards,
         summary,
@@ -182,6 +227,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         refreshData: fetchData,
         addNewTask,
+        approveTask,
+        rejectTask,
         addNewBrowniePoint,
         deleteTask: handleDeleteTask,
         deleteBrowniePoint: handleDeleteBrowniePoint,

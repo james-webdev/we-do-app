@@ -1,4 +1,5 @@
-import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, Reward } from "../types";
+
+import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, Reward, TaskStatus } from "../types";
 import { users, tasks as mockTasks, browniePoints as mockBrowniePoints, mockCurrentUser, mockRewards } from "./mock-data";
 
 // In a real application, these would be API calls to a backend server
@@ -22,20 +23,48 @@ export const getPartner = (userId: string): User | undefined => {
 };
 
 // Task management
-export const getTasks = (userId: string, days: number = 7): Task[] => {
+export const getTasks = (userId: string, days: number = 7, includeStatus: TaskStatus[] = ['approved']): Task[] => {
   const today = new Date();
   const startDate = new Date(today);
   startDate.setDate(today.getDate() - days);
   
   return localTasks.filter(task => {
-    return task.timestamp >= startDate && (task.userId === userId || getPartner(userId)?.id === task.userId);
+    return (
+      task.timestamp >= startDate && 
+      (task.userId === userId || getPartner(userId)?.id === task.userId) &&
+      includeStatus.includes(task.status)
+    );
   });
+};
+
+export const getPendingTasks = (userId: string): Task[] => {
+  const partnerId = getPartner(userId)?.id;
+  if (!partnerId) return [];
+  
+  // Return tasks from partner that need approval
+  return localTasks.filter(task => 
+    task.userId === partnerId && 
+    task.status === 'pending'
+  );
 };
 
 export const addTask = (task: Omit<Task, "id">): Task => {
   const newTask = { ...task, id: `task${Date.now()}` };
   localTasks.push(newTask);
   return newTask;
+};
+
+export const updateTaskStatus = (taskId: string, status: TaskStatus, comment?: string): Task | undefined => {
+  const taskIndex = localTasks.findIndex(task => task.id === taskId);
+  if (taskIndex >= 0) {
+    localTasks[taskIndex] = {
+      ...localTasks[taskIndex],
+      status,
+      comment
+    };
+    return localTasks[taskIndex];
+  }
+  return undefined;
 };
 
 export const deleteTask = (taskId: string): boolean => {
@@ -146,7 +175,7 @@ export const redeemReward = (userId: string, rewardId: string): boolean => {
 
 // Analytics
 export const getTaskSummary = (userId: string, days: number = 7) => {
-  const userTasks = getTasks(userId, days);
+  const userTasks = getTasks(userId, days, ['approved']);
   const partnerId = getPartner(userId)?.id;
   
   const userTaskCount = userTasks.filter(t => t.userId === userId).length;
@@ -161,10 +190,13 @@ export const getTaskSummary = (userId: string, days: number = 7) => {
   const mentalTasks = userTasks.filter(t => t.type === 'mental' || t.type === 'both').length;
   const physicalTasks = userTasks.filter(t => t.type === 'physical' || t.type === 'both').length;
   
-  // Calculate load distribution
-  const lightTasks = userTasks.filter(t => t.load === 'light').length;
-  const mediumTasks = userTasks.filter(t => t.load === 'medium').length;
-  const heavyTasks = userTasks.filter(t => t.load === 'heavy').length;
+  // Calculate points distribution
+  const userPoints = userTasks.filter(t => t.userId === userId).reduce((sum, task) => sum + task.points, 0);
+  const partnerPoints = userTasks.filter(t => t.userId === partnerId).reduce((sum, task) => sum + task.points, 0);
+  const totalPoints = userPoints + partnerPoints;
+  
+  // Count pending tasks
+  const pendingTasksCount = localTasks.filter(t => t.status === 'pending' && t.userId === userId).length;
   
   // Count brownie points
   const sentBrowniePoints = localBrowniePoints.filter(
@@ -179,9 +211,10 @@ export const getTaskSummary = (userId: string, days: number = 7) => {
     partnerContribution,
     mentalTasks,
     physicalTasks,
-    lightTasks,
-    mediumTasks,
-    heavyTasks,
+    userPoints,
+    partnerPoints,
+    totalPoints,
+    pendingTasksCount,
     sentBrowniePoints,
     browniePointsRemaining: 3 - sentBrowniePoints
   };

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/components/ui/sonner';
-import { TaskType, TaskLoad } from '@/types';
+import { TaskType } from '@/types';
 
 const AddTask = () => {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ const AddTask = () => {
   
   const [title, setTitle] = React.useState('');
   const [type, setType] = React.useState<TaskType>('mental');
-  const [load, setLoad] = React.useState<TaskLoad>('medium');
+  const [points, setPoints] = React.useState<number>(5);
   const [date, setDate] = React.useState<string>(
     new Date().toISOString().split('T')[0]
   );
@@ -48,7 +48,7 @@ const AddTask = () => {
       await addNewTask({
         title,
         type,
-        load,
+        points,
         userId: currentUser.id,
         timestamp
       });
@@ -71,7 +71,9 @@ const AddTask = () => {
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
           <CardTitle>Task Details</CardTitle>
-          <CardDescription>Record a parenting task you've completed</CardDescription>
+          <CardDescription>
+            Record a parenting task you've completed (will be sent to your partner for approval)
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -109,20 +111,25 @@ const AddTask = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="load">Task Load</Label>
+              <Label htmlFor="points">Task Points (1-10)</Label>
               <Select
-                value={load}
-                onValueChange={(value) => setLoad(value as TaskLoad)}
+                value={points.toString()}
+                onValueChange={(value) => setPoints(parseInt(value))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select load" />
+                  <SelectValue placeholder="Select points" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="heavy">Heavy</SelectItem>
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((value) => (
+                    <SelectItem key={value} value={value.toString()}>
+                      {value} {value === 1 ? 'point' : 'points'}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                Rate the effort level of this task from 1 (minimal) to 10 (significant)
+              </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -157,7 +164,7 @@ const AddTask = () => {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Adding...' : 'Add Task'}
+                {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
               </Button>
             </div>
           </form>

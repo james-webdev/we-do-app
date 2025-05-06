@@ -2,6 +2,7 @@
 export type TaskType = 'mental' | 'physical' | 'both';
 export type TaskLoad = 'light' | 'medium' | 'heavy';
 export type BrowniePointType = 'time' | 'effort' | 'fun';
+export type TaskStatus = 'pending' | 'approved' | 'rejected';
 
 export interface User {
   id: string;
@@ -14,9 +15,11 @@ export interface Task {
   id: string;
   title: string;
   type: TaskType;
-  load: TaskLoad;
+  points: number; // Changed from load to points (1-10 scale)
   userId: string;
   timestamp: Date;
+  status: TaskStatus; // New field for task status
+  comment?: string; // Optional comment for rejected tasks
 }
 
 export interface BrowniePoint {
@@ -27,7 +30,7 @@ export interface BrowniePoint {
   message: string;
   redeemed: boolean;
   createdAt: Date;
-  points: number; // Added points value
+  points: number;
 }
 
 export interface Reward {
