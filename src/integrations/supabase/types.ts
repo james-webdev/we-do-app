@@ -9,7 +9,99 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      brownie_points: {
+        Row: {
+          created_at: string
+          from_user_id: string
+          id: string
+          message: string
+          points: number
+          redeemed: boolean
+          to_user_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          from_user_id: string
+          id?: string
+          message: string
+          points: number
+          redeemed?: boolean
+          to_user_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          message?: string
+          points?: number
+          redeemed?: boolean
+          to_user_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          partner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          name: string
+          partner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          partner_id?: string | null
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          status: string
+          timestamp: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          status: string
+          timestamp: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          status?: string
+          timestamp?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
