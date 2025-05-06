@@ -1,5 +1,6 @@
+
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { User, Task, BrowniePoint, Reward, TaskStatus, TaskLevel } from '@/types';
+import { User, Task, BrowniePoint, Reward, TaskStatus, TaskRating } from '@/types';
 import { 
   getCurrentUser, 
   getPartner, 
