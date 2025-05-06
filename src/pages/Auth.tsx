@@ -26,20 +26,28 @@ const Auth = () => {
   useEffect(() => {
     // If user is already logged in, redirect to home
     if (user) {
+      console.log('User authenticated, redirecting to home');
       navigate('/');
     }
   }, [user, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password || !name) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
     setLoading(true);
 
     try {
       await signUp(email, password, name);
-      // The redirect is handled in the AuthContext
-    } catch (error) {
-      // Error is already handled in AuthContext
+      toast.success('Account created! Please check your email for verification.');
+      // Direct to sign in tab after successful signup
+      navigate('/signin');
+    } catch (error: any) {
       console.error('Sign up error in component:', error);
+      toast.error(error.message || 'Failed to create account');
     } finally {
       setLoading(false);
     }
@@ -47,14 +55,20 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
     setLoading(true);
 
     try {
       await signIn(email, password);
-      // The redirect is handled in the AuthContext
-    } catch (error) {
-      // Error is already handled in AuthContext
+      toast.success('Successfully signed in');
+      navigate('/');
+    } catch (error: any) {
       console.error('Sign in error in component:', error);
+      toast.error(error.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }

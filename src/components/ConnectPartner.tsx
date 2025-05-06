@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { UserPlus, Loader2 } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
 
 const ConnectPartner = () => {
   const { connectPartner } = useApp();
@@ -14,12 +15,23 @@ const ConnectPartner = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!partnerEmail.trim()) return;
+    if (!partnerEmail.trim()) {
+      toast.error('Please enter your partner\'s email address');
+      return;
+    }
     
     setIsSubmitting(true);
-    await connectPartner(partnerEmail);
-    setIsSubmitting(false);
-    setPartnerEmail('');
+    try {
+      const success = await connectPartner(partnerEmail);
+      if (success) {
+        setPartnerEmail('');
+        toast.success('Successfully connected with partner!');
+      }
+    } catch (error) {
+      console.error('Error connecting partner:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

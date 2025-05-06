@@ -121,6 +121,16 @@ export type Database = {
           partner_id: string | null
         }[]
       }
+      get_profile_by_partner_id: {
+        Args: { partner_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          partner_id: string | null
+        }[]
+      }
       get_profile_for_user: {
         Args: { user_id: string }
         Returns: {
