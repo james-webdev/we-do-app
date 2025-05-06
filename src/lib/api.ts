@@ -69,6 +69,12 @@ export const addBrowniePoint = (point: Omit<BrowniePoint, "id" | "createdAt" | "
   return newPoint;
 };
 
+export const deleteBrowniePoint = (pointId: string): boolean => {
+  const initialLength = localBrowniePoints.length;
+  localBrowniePoints = localBrowniePoints.filter(point => point.id !== pointId);
+  return localBrowniePoints.length !== initialLength;
+};
+
 export const redeemBrowniePoint = (pointId: string): BrowniePoint | undefined => {
   const pointIndex = localBrowniePoints.findIndex(p => p.id === pointId);
   if (pointIndex >= 0) {

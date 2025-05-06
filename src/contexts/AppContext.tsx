@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { User, Task, BrowniePoint } from '@/types';
 import { 
@@ -9,7 +8,8 @@ import {
   getTaskSummary,
   addTask,
   addBrowniePoint,
-  deleteTask
+  deleteTask,
+  deleteBrowniePoint
 } from '@/lib/api';
 import { toast } from '@/components/ui/sonner';
 
@@ -24,6 +24,7 @@ interface AppContextType {
   addNewTask: (task: Omit<Task, "id">) => Promise<void>;
   addNewBrowniePoint: (point: Omit<BrowniePoint, "id" | "createdAt" | "redeemed">) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
+  deleteBrowniePoint: (pointId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -107,6 +108,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const handleDeleteBrowniePoint = async (pointId: string) => {
+    try {
+      const success = deleteBrowniePoint(pointId);
+      if (success) {
+        setBrowniePoints(prev => prev.filter(point => point.id !== pointId));
+        toast.success('Brownie Point deleted successfully');
+        fetchData(); // Refresh data to update brownie point limits
+      } else {
+        toast.error('Failed to delete Brownie Point');
+      }
+    } catch (error) {
+      console.error('Error deleting Brownie Point:', error);
+      toast.error('Failed to delete Brownie Point');
+    }
+  };
+
   // Initial data fetch
   useEffect(() => {
     fetchData();
@@ -124,7 +141,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         refreshData: fetchData,
         addNewTask,
         addNewBrowniePoint,
-        deleteTask: handleDeleteTask
+        deleteTask: handleDeleteTask,
+        deleteBrowniePoint: handleDeleteBrowniePoint
       }}
     >
       {children}
