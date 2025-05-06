@@ -1,10 +1,10 @@
+
 import React from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import LoadDistributionChart from '@/components/charts/LoadDistributionChart';
 import ContributionChart from '@/components/charts/ContributionChart';
 import TaskCard from '@/components/TaskCard';
 import BrowniePointCard from '@/components/BrowniePointCard';
@@ -28,7 +28,6 @@ const Dashboard = () => {
       <div className="container py-8">
         <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Skeleton className="h-[200px] w-full" />
           <Skeleton className="h-[200px] w-full" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -59,20 +58,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Task Distribution</CardTitle>
-            <CardDescription>Mental vs Physical Load</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <LoadDistributionChart 
-              mentalTasks={summary?.mentalTasks || 0} 
-              physicalTasks={summary?.physicalTasks || 0} 
-            />
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 mb-8">
         <Card>
           <CardHeader>
             <CardTitle>Weekly Contribution</CardTitle>
