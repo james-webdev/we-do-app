@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { User, Task, BrowniePoint, Reward, TaskStatus, TaskRating, TaskType, BrowniePointType } from '@/types';
 import { toast } from '@/components/ui/sonner';
@@ -98,78 +97,49 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           setPartner(null);
         }
 
-        // We'll use direct queries that rely on RLS instead of OR conditions that can cause recursion
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         
-        let fetchedTasksData: any[] = [];
-        let fetchedBrowniePointsData: any[] = [];
-
+        // Key change: Use the security definer function for fetching tasks
         try {
-          // First get user's own tasks
-          console.log("Fetching user's own tasks");
-          const { data: userTasksData, error: userTasksError } = await supabase
-            .from('tasks')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('status', 'approved')
-            .gte('timestamp', oneWeekAgo.toISOString());
+          console.log("Fetching tasks using security definer function");
+          const { data: tasksData, error: tasksError } = await supabase
+            .rpc('get_tasks_for_user', { user_id: user.id });
 
-          if (userTasksError) {
-            console.error('Error fetching user tasks:', userTasksError);
-          }
-
-          // Then get partner's tasks if partner exists
-          let partnerTasksData: any[] = [];
-          if (profileData.partner_id) {
-            console.log("Fetching partner's tasks");
-            const { data: pTasksData, error: pTasksError } = await supabase
-              .from('tasks')
-              .select('*')
-              .eq('user_id', profileData.partner_id)
-              .eq('status', 'approved')
-              .gte('timestamp', oneWeekAgo.toISOString());
+          if (tasksError) {
+            console.error('Error fetching tasks:', tasksError);
+            toast.error('Failed to load tasks');
+          } else if (tasksData) {
+            console.log("Tasks loaded successfully:", tasksData.length);
             
-            if (pTasksError) {
-              console.error('Error fetching partner tasks:', pTasksError);
-            } else if (pTasksData) {
-              partnerTasksData = pTasksData;
-            }
-          }
+            // Filter for approved tasks within the last week
+            const approvedRecentTasks = tasksData
+              .filter(task => 
+                task.status === 'approved' && 
+                new Date(task.timestamp) >= oneWeekAgo
+              );
 
-          // Combine tasks
-          fetchedTasksData = [...(userTasksData || []), ...partnerTasksData];
-          console.log("Combined tasks loaded:", fetchedTasksData.length);
+            const formattedTasks: Task[] = approvedRecentTasks.map(task => ({
+              id: task.id,
+              title: task.title,
+              type: task.type as TaskType,
+              rating: task.rating as TaskRating,
+              userId: task.user_id,
+              timestamp: new Date(task.timestamp),
+              status: task.status as TaskStatus,
+              comment: task.comment
+            }));
             
-          const formattedTasks: Task[] = fetchedTasksData.map(task => ({
-            id: task.id,
-            title: task.title,
-            type: task.type as TaskType,
-            rating: task.rating as TaskRating,
-            userId: task.user_id,
-            timestamp: new Date(task.timestamp),
-            status: task.status as TaskStatus,
-            comment: task.comment
-          }));
-          
-          setTasks(formattedTasks);
-        } catch (error) {
-          console.error('Error in tasks fetch:', error);
-        }
-        
-        // Get pending tasks if partner exists
-        if (profileData.partner_id) {
-          try {
-            console.log("Fetching pending tasks from partner");
-            const { data: pendingTasksData, error: pendingError } = await supabase
-              .from('tasks')
-              .select('*')
-              .eq('user_id', profileData.partner_id)
-              .eq('status', 'pending');
+            setTasks(formattedTasks);
+
+            // Filter for pending tasks from partner
+            if (profileData.partner_id) {
+              const pendingPartnerTasks = tasksData.filter(task => 
+                task.status === 'pending' && 
+                task.user_id === profileData.partner_id
+              );
               
-            if (!pendingError && pendingTasksData) {
-              console.log("Pending tasks loaded:", pendingTasksData.length);
-              const formattedPendingTasks: Task[] = pendingTasksData.map(task => ({
+              const formattedPendingTasks: Task[] = pendingPartnerTasks.map(task => ({
                 id: task.id,
                 title: task.title,
                 type: task.type as TaskType,
@@ -181,16 +151,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               }));
               
               setPendingTasks(formattedPendingTasks);
+            } else {
+              setPendingTasks([]);
             }
-          } catch (error) {
-            console.error('Error in pending tasks fetch:', error);
           }
-        } else {
-          // No partner, so no pending tasks
-          setPendingTasks([]);
+        } catch (error) {
+          console.error('Error in tasks fetch:', error);
+          toast.error('Failed to load tasks');
         }
         
-        // Get brownie points
+        // Get brownie points - use separate queries to avoid RLS recursion
         try {
           // Get sent brownie points
           console.log("Fetching brownie points sent by user");
@@ -217,7 +187,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           }
 
           // Combine points
-          fetchedBrowniePointsData = [...(sentPoints || []), ...(receivedPoints || [])];
+          const fetchedBrowniePointsData = [...(sentPoints || []), ...(receivedPoints || [])];
           console.log("Brownie points loaded:", fetchedBrowniePointsData.length);
           
           const formattedPoints: BrowniePoint[] = fetchedBrowniePointsData.map(point => ({
@@ -232,55 +202,57 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           }));
           
           setBrowniePoints(formattedPoints);
+          
+          // Calculate available points
+          try {
+            console.log("Calculating available points for user:", user.id);
+            const { data: availablePointsData, error: availableError } = await supabase
+              .from('brownie_points')
+              .select('points')
+              .eq('to_user_id', user.id)
+              .eq('redeemed', false);
+              
+            if (!availableError && availablePointsData) {
+              const points = availablePointsData.reduce((sum, point) => sum + point.points, 0);
+              console.log("Available points:", points);
+              setAvailablePoints(points);
+            }
+          } catch (error) {
+            console.error('Error calculating available points:', error);
+          }
+          
+          // Get rewards (mockup data)
+          setRewards([
+            {
+              id: '1',
+              title: 'Dinner Out',
+              description: 'Partner cooks dinner of your choice',
+              pointsCost: 10,
+              imageIcon: '🍽️'
+            },
+            {
+              id: '2',
+              title: 'Movie Night',
+              description: 'Your choice of movie plus snacks',
+              pointsCost: 5,
+              imageIcon: '🎬'
+            },
+            {
+              id: '3',
+              title: 'Sleep In',
+              description: 'Partner takes morning duties',
+              pointsCost: 8,
+              imageIcon: '😴'
+            }
+          ]);
+          
+          // Calculate summary stats using the fetched data
+          if (tasksData) {
+            calculateSummaryStats(tasksData, fetchedBrowniePointsData, oneWeekAgo, user.id, profileData.partner_id);
+          }
         } catch (error) {
           console.error('Error in brownie points fetch:', error);
         }
-        
-        // Calculate available points (points received that are not redeemed)
-        try {
-          console.log("Calculating available points for user:", user.id);
-          const { data: availablePointsData, error: availableError } = await supabase
-            .from('brownie_points')
-            .select('points')
-            .eq('to_user_id', user.id)
-            .eq('redeemed', false);
-            
-          if (!availableError && availablePointsData) {
-            const points = availablePointsData.reduce((sum, point) => sum + point.points, 0);
-            console.log("Available points:", points);
-            setAvailablePoints(points);
-          }
-        } catch (error) {
-          console.error('Error calculating available points:', error);
-        }
-        
-        // Get rewards (currently from mock data, would be from Supabase in real app)
-        setRewards([
-          {
-            id: '1',
-            title: 'Dinner Out',
-            description: 'Partner cooks dinner of your choice',
-            pointsCost: 10,
-            imageIcon: '🍽️'
-          },
-          {
-            id: '2',
-            title: 'Movie Night',
-            description: 'Your choice of movie plus snacks',
-            pointsCost: 5,
-            imageIcon: '🎬'
-          },
-          {
-            id: '3',
-            title: 'Sleep In',
-            description: 'Partner takes morning duties',
-            pointsCost: 8,
-            imageIcon: '😴'
-          }
-        ]);
-        
-        // Calculate summary statistics using the fetched data
-        calculateSummaryStats(fetchedTasksData, fetchedBrowniePointsData, oneWeekAgo, user.id, profileData.partner_id);
       } else {
         console.warn("Profile data not found for user:", user.id);
         setCurrentUser(null);
