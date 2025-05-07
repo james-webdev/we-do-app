@@ -177,6 +177,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      update_profile_name: {
+        Args: { user_id_param: string; name_param: string }
+        Returns: undefined
+      }
       update_user_partner: {
         Args: { user_id_param: string; partner_id_param: string }
         Returns: undefined
