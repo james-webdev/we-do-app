@@ -184,6 +184,13 @@ export interface Database {
         }
         Returns: void
       }
+      is_partner_of: {
+        Args: {
+          user_id: string
+          potential_partner_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

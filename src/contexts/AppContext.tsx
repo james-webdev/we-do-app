@@ -4,6 +4,27 @@ import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 
+// Define types for the RPC function results to fix TypeScript errors
+type ProfileResult = {
+  id: string;
+  name: string;
+  email: string;
+  partner_id: string | null;
+  created_at: string;
+};
+
+type TaskResult = {
+  id: string;
+  title: string;
+  type: string;
+  rating: number;
+  user_id: string;
+  timestamp: string;
+  status: string;
+  comment: string | null;
+  created_at: string;
+};
+
 interface AppContextType {
   currentUser: User | null;
   partner: User | null;
@@ -84,31 +105,37 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       
       if (profileData) {
         console.log("Profile data loaded successfully", profileData);
+        // Use explicit type assertion to fix TypeScript errors
+        const profileResult = profileData as ProfileResult;
+        
         const currentUserData: User = {
-          id: profileData.id,
-          name: profileData.name,
-          email: profileData.email,
-          partnerId: profileData.partner_id
+          id: profileResult.id,
+          name: profileResult.name,
+          email: profileResult.email,
+          partnerId: profileResult.partner_id
         };
         
         setCurrentUser(currentUserData);
-        setHasPartner(!!profileData.partner_id);
+        setHasPartner(!!profileResult.partner_id);
         
         // Get partner info if available
-        if (profileData.partner_id) {
-          console.log("Fetching partner data for:", profileData.partner_id);
+        if (profileResult.partner_id) {
+          console.log("Fetching partner data for:", profileResult.partner_id);
           // Use the same security definer function for partner data
           const { data: partnerData, error: partnerError } = await supabase
-            .rpc('get_profile_by_id', { user_id: profileData.partner_id })
+            .rpc('get_profile_by_id', { user_id: profileResult.partner_id })
             .maybeSingle();
           
           if (!partnerError && partnerData) {
             console.log("Partner data loaded successfully", partnerData);
+            // Use explicit type assertion
+            const partnerResult = partnerData as ProfileResult;
+            
             setPartner({
-              id: partnerData.id,
-              name: partnerData.name,
-              email: partnerData.email,
-              partnerId: partnerData.partner_id
+              id: partnerResult.id,
+              name: partnerResult.name,
+              email: partnerResult.email,
+              partnerId: partnerResult.partner_id
             });
           } else {
             console.log('Partner not found or error:', partnerError);
@@ -123,7 +150,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         
         // Store tasks data at a higher scope so we can use it later
-        let fetchedTasksData: any[] = [];
+        let fetchedTasksData: TaskResult[] = [];
 
         // Key change: Use the security definer function for fetching tasks
         try {
@@ -135,7 +162,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             console.error('Error fetching tasks:', tasksError);
             toast.error('Failed to load tasks');
           } else if (tasksResult) {
-            fetchedTasksData = tasksResult; // Store the tasks data
+            // Use explicit type assertion
+            fetchedTasksData = tasksResult as TaskResult[];
             console.log("Tasks loaded successfully:", fetchedTasksData.length);
             
             // Filter for approved tasks within the last week
@@ -159,10 +187,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             setTasks(formattedTasks);
 
             // Filter for pending tasks from partner
-            if (profileData.partner_id) {
+            if (profileResult.partner_id) {
               const pendingPartnerTasks = fetchedTasksData.filter(task => 
                 task.status === 'pending' && 
-                task.user_id === profileData.partner_id
+                task.user_id === profileResult.partner_id
               );
               
               const formattedPendingTasks: Task[] = pendingPartnerTasks.map(task => ({
@@ -182,7 +210,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             }
             
             // Calculate summary stats using the fetched data
-            calculateSummaryStats(fetchedTasksData, [], oneWeekAgo, user.id, profileData.partner_id);
+            calculateSummaryStats(fetchedTasksData, [], oneWeekAgo, user.id, profileResult.partner_id);
           }
         } catch (error) {
           console.error('Error in tasks fetch:', error);
@@ -278,7 +306,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           
           // Update the summary with brownie points
           if (fetchedTasksData && fetchedTasksData.length > 0 && fetchedBrowniePointsData) {
-            calculateSummaryStats(fetchedTasksData, fetchedBrowniePointsData, oneWeekAgo, user.id, profileData.partner_id);
+            calculateSummaryStats(fetchedTasksData, fetchedBrowniePointsData, oneWeekAgo, user.id, profileResult.partner_id);
           }
         } catch (error) {
           console.error('Error in brownie points fetch:', error);
@@ -296,8 +324,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Helper function to calculate summary statistics
+  // We need to update the types for the parameters
   const calculateSummaryStats = (
-    tasksData: any[], 
+    tasksData: TaskResult[], 
     browniePointsData: any[], 
     oneWeekAgo: Date, 
     userId: string, 
@@ -592,12 +621,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
       
-      if (partnerData.id === currentUser.id) {
+      // Type assertion for partnerData
+      const partnerResult = partnerData as ProfileResult;
+      
+      if (partnerResult.id === currentUser.id) {
         toast.error('You cannot connect with yourself');
         return false;
       }
       
-      if (partnerData.partner_id) {
+      if (partnerResult.partner_id) {
         toast.error('This user is already connected with someone else');
         return false;
       }
@@ -605,7 +637,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       // Use security definer function to update both user profiles
       const { error: updateCurrentError } = await supabase.rpc('update_user_partner', {
         user_id_param: currentUser.id,
-        partner_id_param: partnerData.id
+        partner_id_param: partnerResult.id
       });
       
       if (updateCurrentError) {
@@ -615,7 +647,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
       
       const { error: updatePartnerError } = await supabase.rpc('update_user_partner', {
-        user_id_param: partnerData.id, 
+        user_id_param: partnerResult.id, 
         partner_id_param: currentUser.id
       });
       
@@ -631,7 +663,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
       
-      toast.success(`Successfully connected with ${partnerData.name}`);
+      toast.success(`Successfully connected with ${partnerResult.name}`);
       await fetchData(); // Refresh data
       return true;
     } catch (error: any) {
