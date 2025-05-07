@@ -3,10 +3,11 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { TypeBadge } from '@/components/LoadBadge';
 import { getRatingBadgeColor } from '@/utils/taskUtils';
+import { TaskType } from '@/types';
 
 interface TaskHeaderProps {
   title: string;
-  type: string;
+  type: TaskType;  // Now properly typed as TaskType instead of string
   rating: number;
   userName?: string;
 }
