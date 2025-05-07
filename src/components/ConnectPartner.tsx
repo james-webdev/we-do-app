@@ -42,7 +42,7 @@ const ConnectPartner = () => {
           Connect with Partner
         </CardTitle>
         <CardDescription>
-          To start tracking tasks together, connect with your partner using their email address
+          To start using WeDo, connect with your partner using their email address
         </CardDescription>
       </CardHeader>
       <CardContent>
