@@ -73,25 +73,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       console.log("Fetching profile data for user:", user.id);
       
-      // First, do a simple test query to check if RLS is working correctly
-      try {
-        console.log("Testing basic query access...");
-        const { data: testData, error: testError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        if (testError) {
-          console.error('Test query error:', testError);
-        } else {
-          console.log('Test query successful:', testData);
-        }
-      } catch (testErr) {
-        console.error('Test query exception:', testErr);
-      }
-      
-      // Continue with regular profile fetch using security definer function
+      // Use our security definer function to get the current user's profile
       const { data: profileData, error: profileError } = await supabase
         .rpc('get_profile_by_id', { user_id: user.id })
         .maybeSingle();
@@ -121,7 +103,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         // Get partner info if available
         if (profileResult.partner_id) {
           console.log("Fetching partner data for:", profileResult.partner_id);
-          // Use the same security definer function for partner data
+          // Use the security definer function for partner data
           const { data: partnerData, error: partnerError } = await supabase
             .rpc('get_profile_by_id', { user_id: profileResult.partner_id })
             .maybeSingle();
@@ -218,7 +200,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           fetchedTasksData = []; // Reset to empty array in case of error
         }
         
-        // Get brownie points - use separate queries to avoid RLS recursion
+        // Get brownie points - since we now have simple RLS policies, we can query directly
         try {
           // Get sent brownie points
           console.log("Fetching brownie points sent by user");
@@ -324,7 +306,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Helper function to calculate summary statistics
-  // We need to update the types for the parameters
   const calculateSummaryStats = (
     tasksData: TaskResult[], 
     browniePointsData: any[], 
