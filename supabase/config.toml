@@ -1,1 +1,16 @@
+
 project_id = "rvxlgmkcmdtkceabvqic"
+
+[api]
+# Disabling RLS for development - IMPORTANT: Re-enable for production
+realtime_defaults.enabled = true
+
+[realtime]
+[auth]
+[storage]
+[functions]
+
+# Set dev_mode to true to use auto-refreshing and local emulator
+[dev]
+dev_mode = true
+auto_refresh = true

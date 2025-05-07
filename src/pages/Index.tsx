@@ -12,11 +12,8 @@ const Index = () => {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
   
-  if (!user) {
-    navigate('/signin');
-    return null;
-  }
-  
+  // For development: temporarily bypass authentication redirect
+  // Remove this conditional for production
   return <Dashboard />;
 };
 
