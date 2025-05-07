@@ -49,11 +49,17 @@ const History = () => {
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
   
-  // Important fix: Apply correct filtering based on task filter tab
+  // Apply filtering based on task filter tab
   const filteredTasks = sortedTasks.filter(task => {
     if (taskFilterTab === "all") return true;
-    if (taskFilterTab === "my-tasks" && currentUser) return task.userId === currentUser.id;
-    if (taskFilterTab === "partner-tasks" && partner) return task.userId === partner.id;
+    if (taskFilterTab === "my-tasks" && currentUser) {
+      console.log("Filtering for my tasks", task.userId, currentUser.id, task.userId === currentUser.id);
+      return task.userId === currentUser.id;
+    }
+    if (taskFilterTab === "partner-tasks" && partner) {
+      console.log("Filtering for partner tasks", task.userId, partner.id, task.userId === partner.id);
+      return task.userId === partner.id;
+    }
     return false;
   });
   
@@ -75,17 +81,7 @@ const History = () => {
   
   const groupedBrowniePoints = groupByDate(filteredBrowniePoints);
   
-  // Handle tab changes
-  const handleTaskFilterChange = (value: string) => {
-    console.log("Changing task filter to:", value);
-    setTaskFilterTab(value);
-  };
-  
-  const handlePointFilterChange = (value: string) => {
-    console.log("Changing point filter to:", value);
-    setPointFilterTab(value);
-  };
-  
+  // Fix the tab selection issue - use actual Tabs component state
   return (
     <div className="container py-8">
       <div className="mb-8">
@@ -100,31 +96,13 @@ const History = () => {
         </TabsList>
         
         <TabsContent value="tasks" className="space-y-6">
-          <div className="flex overflow-x-auto pb-2">
+          <Tabs value={taskFilterTab} onValueChange={setTaskFilterTab} className="w-full">
             <TabsList className="justify-start">
-              <TabsTrigger 
-                value="all" 
-                onClick={() => handleTaskFilterChange("all")}
-                className={taskFilterTab === "all" ? "bg-primary text-white" : ""}
-              >
-                All Tasks
-              </TabsTrigger>
-              <TabsTrigger 
-                value="my-tasks" 
-                onClick={() => handleTaskFilterChange("my-tasks")}
-                className={taskFilterTab === "my-tasks" ? "bg-primary text-white" : ""}
-              >
-                My Tasks
-              </TabsTrigger>
-              <TabsTrigger 
-                value="partner-tasks" 
-                onClick={() => handleTaskFilterChange("partner-tasks")}
-                className={taskFilterTab === "partner-tasks" ? "bg-primary text-white" : ""}
-              >
-                Partner's Tasks
-              </TabsTrigger>
+              <TabsTrigger value="all">All Tasks</TabsTrigger>
+              <TabsTrigger value="my-tasks">My Tasks</TabsTrigger>
+              <TabsTrigger value="partner-tasks">Partner's Tasks</TabsTrigger>
             </TabsList>
-          </div>
+          </Tabs>
           
           {filteredTasks.length > 0 ? (
             groupedTasks.map(({ date, items }) => (
@@ -157,31 +135,13 @@ const History = () => {
         </TabsContent>
         
         <TabsContent value="browniePoints" className="space-y-6">
-          <div className="flex overflow-x-auto pb-2">
+          <Tabs value={pointFilterTab} onValueChange={setPointFilterTab} className="w-full">
             <TabsList className="justify-start">
-              <TabsTrigger 
-                value="all" 
-                onClick={() => handlePointFilterChange("all")}
-                className={pointFilterTab === "all" ? "bg-primary text-white" : ""}
-              >
-                All Points
-              </TabsTrigger>
-              <TabsTrigger 
-                value="sent" 
-                onClick={() => handlePointFilterChange("sent")}
-                className={pointFilterTab === "sent" ? "bg-primary text-white" : ""}
-              >
-                Points Sent
-              </TabsTrigger>
-              <TabsTrigger 
-                value="received" 
-                onClick={() => handlePointFilterChange("received")}
-                className={pointFilterTab === "received" ? "bg-primary text-white" : ""}
-              >
-                Points Received
-              </TabsTrigger>
+              <TabsTrigger value="all">All Points</TabsTrigger>
+              <TabsTrigger value="sent">Points Sent</TabsTrigger>
+              <TabsTrigger value="received">Points Received</TabsTrigger>
             </TabsList>
-          </div>
+          </Tabs>
           
           {filteredBrowniePoints.length > 0 ? (
             groupedBrowniePoints.map(({ date, items }) => (
