@@ -1,36 +1,28 @@
 
 import React, { useState } from 'react';
-import { Task, TaskRating } from '@/types';
+import { Task } from '@/types';
 import { format } from 'date-fns';
 import { TypeBadge } from './LoadBadge';
-import { useApp } from '@/contexts/AppContext';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ThumbsUp, ThumbsDown, AlertCircle } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useApp } from '@/contexts/AppContext';
 
 interface PendingTaskCardProps {
   task: Task;
-  userName: string;
+  userName?: string;
 }
 
-// Function to get the appropriate color for each rating
-const getRatingBadgeColor = (rating: TaskRating): string => {
+const getRatingBadgeColor = (rating: number): string => {
   if (rating <= 2) return 'bg-green-100 text-green-800 hover:bg-green-200';
   if (rating <= 4) return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
   if (rating <= 6) return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
@@ -38,112 +30,121 @@ const getRatingBadgeColor = (rating: TaskRating): string => {
   return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
 };
 
+// Calculate the points that will be earned for a task based on its rating
+const calculateTaskPointsDescription = (rating: number): string => {
+  if (rating <= 3) return "Will earn 1 brownie point";
+  if (rating <= 6) return "Will earn 2 brownie points";
+  if (rating <= 8) return "Will earn 3 brownie points";
+  return "Will earn 4 brownie points";
+};
+
 const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
   const { approveTask, rejectTask } = useApp();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [rejectOpen, setRejectOpen] = useState(false);
-  const [comment, setComment] = useState('');
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [rejectComment, setRejectComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleApprove = async () => {
-    setIsProcessing(true);
+    setIsSubmitting(true);
     await approveTask(task.id);
-    setIsProcessing(false);
+    setIsSubmitting(false);
+  };
+  
+  const handleOpenRejectDialog = () => {
+    setIsRejecting(true);
+  };
+  
+  const handleCloseRejectDialog = () => {
+    setIsRejecting(false);
+    setRejectComment('');
   };
   
   const handleReject = async () => {
-    setIsProcessing(true);
-    await rejectTask(task.id, comment);
-    setRejectOpen(false);
-    setIsProcessing(false);
+    setIsSubmitting(true);
+    await rejectTask(task.id, rejectComment);
+    setIsSubmitting(false);
+    handleCloseRejectDialog();
   };
-
-  const ratingBadgeColor = getRatingBadgeColor(task.rating);
   
+  const ratingBadgeColor = getRatingBadgeColor(task.rating);
+  const pointsDescription = calculateTaskPointsDescription(task.rating);
+
   return (
-    <Card className="w-full border-amber-300">
-      <CardContent className="pt-6">
-        <div className="flex justify-between items-start mb-2">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <AlertCircle size={16} className="text-amber-500" />
-              <span className="text-sm text-amber-600 font-medium">Pending Approval</span>
-            </div>
+    <>
+      <Card className="w-full">
+        <CardContent className="pt-6">
+          <div className="flex justify-between items-start mb-2">
             <h3 className="font-medium text-lg text-gray-900">{task.title}</h3>
+            <div className="flex gap-2">
+              <TypeBadge type={task.type} />
+              <Badge variant="outline" className={`font-semibold ${ratingBadgeColor}`}>
+                {task.rating} ★
+              </Badge>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <TypeBadge type={task.type} />
-            <Badge variant="outline" className={`font-semibold ${ratingBadgeColor}`}>
-              {task.rating} ★
-            </Badge>
-          </div>
-        </div>
-        <p className="text-sm text-gray-500">Added by {userName}</p>
-      </CardContent>
-      <CardFooter className="flex justify-between items-center border-t pt-3">
-        <span className="text-xs text-gray-500">
-          {format(new Date(task.timestamp), 'MMM d, yyyy • h:mm a')}
-        </span>
-        <div className="flex gap-2">
-          <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-                disabled={isProcessing}
-              >
-                <ThumbsDown size={14} className="mr-1" />
-                Reject
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Reject Task</DialogTitle>
-                <DialogDescription>
-                  Please provide a reason for rejecting this task. Your partner will see this message.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="py-4">
-                <Label htmlFor="comment">Reason for rejection</Label>
-                <Textarea
-                  id="comment"
-                  placeholder="This task doesn't deserve that rating..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
-              <DialogFooter>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setRejectOpen(false)}
-                  disabled={isProcessing}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  variant="destructive"
-                  onClick={handleReject}
-                  disabled={isProcessing || !comment.trim()}
-                >
-                  Reject Task
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          {userName && (
+            <p className="text-sm text-gray-500 mb-2">By {userName}</p>
+          )}
+          <p className="text-xs text-blue-600 font-medium mt-1">
+            {pointsDescription}
+          </p>
+        </CardContent>
+        <CardFooter className="flex justify-between items-center border-t pt-4">
+          <span className="text-xs text-gray-500">
+            {format(new Date(task.timestamp), 'MMM d, yyyy • h:mm a')}
+          </span>
           
-          <Button
-            size="sm"
-            className="bg-green-600 hover:bg-green-700"
-            onClick={handleApprove}
-            disabled={isProcessing}
-          >
-            <ThumbsUp size={14} className="mr-1" />
-            Approve
-          </Button>
-        </div>
-      </CardFooter>
-    </Card>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleOpenRejectDialog}
+              disabled={isSubmitting}
+            >
+              Reject
+            </Button>
+            <Button 
+              onClick={handleApprove}
+              size="sm"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Processing...' : 'Approve'}
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
+      
+      <Dialog open={isRejecting} onOpenChange={handleCloseRejectDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Task</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting this task.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Textarea
+            value={rejectComment}
+            onChange={(e) => setRejectComment(e.target.value)}
+            placeholder="Reason for rejection..."
+            className="min-h-[100px]"
+          />
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseRejectDialog} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleReject}
+              disabled={isSubmitting || rejectComment.trim() === ''}
+            >
+              {isSubmitting ? 'Processing...' : 'Reject Task'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

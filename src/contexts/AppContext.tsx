@@ -410,16 +410,65 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const calculateTaskBrowniePoints = (taskRating: number): number => {
+    // Higher rated tasks earn more points
+    // This formula creates a progressive reward system
+    // Tasks rated 1-3: 1 point
+    // Tasks rated 4-6: 2 points
+    // Tasks rated 7-8: 3 points
+    // Tasks rated 9-10: 4 points
+    if (taskRating <= 3) return 1;
+    if (taskRating <= 6) return 2;
+    if (taskRating <= 8) return 3;
+    return 4; // For ratings 9-10
+  };
+
   const approveTask = async (taskId: string) => {
     try {
-      const { error } = await supabase
+      // First update the task status to approved
+      const { error, data } = await supabase
         .from('tasks')
         .update({ status: 'approved' })
-        .eq('id', taskId);
+        .eq('id', taskId)
+        .select('*')
+        .single();
         
       if (error) throw error;
       
-      toast.success('Task approved');
+      if (data && currentUser && partner) {
+        // Calculate brownie points to award based on task rating
+        const pointsToAward = calculateTaskBrowniePoints(data.rating);
+        
+        // Award brownie points to the task creator
+        // Points are sent from the partner who approved the task to the task creator
+        if (data.user_id !== currentUser.id) {
+          // Only award points if the task was created by the partner (not self-approval)
+          const { error: brownieError } = await supabase
+            .from('brownie_points')
+            .insert({
+              from_user_id: currentUser.id,
+              to_user_id: data.user_id,
+              type: 'effort', // Default to effort type for task-based rewards
+              message: `Reward for completing task: ${data.title}`,
+              redeemed: false,
+              created_at: new Date().toISOString(),
+              points: pointsToAward
+            });
+            
+          if (brownieError) {
+            console.error('Error awarding brownie points:', brownieError);
+            // Continue despite error in awarding points
+          } else {
+            toast.success(`Task approved! ${pointsToAward} brownie point${pointsToAward > 1 ? 's' : ''} awarded.`);
+          }
+        } else {
+          // Just show approval toast without points for self-approval
+          toast.success('Task approved');
+        }
+      } else {
+        toast.success('Task approved');
+      }
+      
       await fetchData(); // Refresh data
     } catch (error: any) {
       console.error('Error approving task:', error);
