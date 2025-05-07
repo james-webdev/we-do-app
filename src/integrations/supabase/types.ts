@@ -165,8 +165,16 @@ export type Database = {
           user_id: string
         }[]
       }
+      is_partner: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       is_partner_of: {
         Args: { user_id: string; potential_partner_id: string }
+        Returns: boolean
+      }
+      is_same_user: {
+        Args: { user_id: string }
         Returns: boolean
       }
       update_user_partner: {
