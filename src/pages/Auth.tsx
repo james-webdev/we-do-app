@@ -79,7 +79,7 @@ const Auth = () => {
       <div className="w-full max-w-md p-4">
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">FairShare</CardTitle>
+            <CardTitle className="text-2xl text-center">WeDo</CardTitle>
             <CardDescription className="text-center">
               Track and balance household tasks with your partner
             </CardDescription>
