@@ -12,6 +12,7 @@ import AddTask from "@/pages/AddTask";
 import GiveBrowniePoint from "@/pages/GiveBrowniePoint";
 import History from "@/pages/History";
 import Rewards from "@/pages/Rewards";
+import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 import Auth from "@/pages/Auth";
 
@@ -91,6 +92,17 @@ const AppRoutes = () => {
             <Header />
             <main className="flex-1 pb-12">
               <Rewards />
+            </main>
+          </div>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <div className="min-h-screen flex flex-col bg-gray-50">
+            <Header />
+            <main className="flex-1 pb-12">
+              <Settings />
             </main>
           </div>
         </ProtectedRoute>
