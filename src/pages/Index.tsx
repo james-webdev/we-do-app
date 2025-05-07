@@ -12,8 +12,9 @@ const Index = () => {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
   
-  // For development: temporarily bypass authentication redirect
-  // Remove this conditional for production
+  // TEMPORARY FIX: Always render Dashboard to bypass authentication checks during development
+  // This helps us test functionality while fixing the RLS recursion issue
+  // IMPORTANT: This should be removed and replaced with proper authentication checks before production
   return <Dashboard />;
 };
 
