@@ -44,6 +44,38 @@ const Rewards = () => {
     }
   };
   
+  // Updated rewards with higher point costs
+  const updatedRewards = [
+    {
+      id: '1',
+      title: 'Dinner Out',
+      description: 'Partner cooks dinner of your choice',
+      pointsCost: 20,
+      imageIcon: 'gift'
+    },
+    {
+      id: '2',
+      title: 'Movie Night',
+      description: 'Your choice of movie plus snacks',
+      pointsCost: 10,
+      imageIcon: 'star'
+    },
+    {
+      id: '3',
+      title: 'Sleep In',
+      description: 'Partner takes morning duties',
+      pointsCost: 15,
+      imageIcon: 'circle-dollar-sign'
+    },
+    {
+      id: '4',
+      title: 'Day Off',
+      description: 'Partner handles all tasks for a full day',
+      pointsCost: 30,
+      imageIcon: 'award'
+    }
+  ];
+  
   if (isLoading) {
     return (
       <div className="container py-8">
@@ -68,7 +100,7 @@ const Rewards = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rewards.map((reward) => (
+        {updatedRewards.map((reward) => (
           <Card key={reward.id} className="overflow-hidden hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center gap-4 mb-4">
