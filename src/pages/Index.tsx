@@ -12,9 +12,16 @@ const Index = () => {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
   
-  // TEMPORARY FIX: Always render Dashboard to bypass authentication checks during development
-  // This helps us test functionality while fixing the RLS recursion issue
-  // IMPORTANT: This should be removed and replaced with proper authentication checks before production
+  // If user is not authenticated, redirect to sign in
+  if (!user) {
+    // Using setTimeout to avoid immediate redirect which can cause issues
+    setTimeout(() => {
+      navigate('/signin');
+    }, 0);
+    return <div className="flex items-center justify-center h-screen">Redirecting to login...</div>;
+  }
+  
+  // User is authenticated, show Dashboard
   return <Dashboard />;
 };
 

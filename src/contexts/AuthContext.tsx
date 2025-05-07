@@ -78,38 +78,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, name: string) => {
     try {
       setLoading(true);
-      const { data, error: signUpError } = await supabase.auth.signUp({ 
-        email, 
+      
+      // Step 1: Sign up the user with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
         password,
         options: {
-          data: {
-            name,
-          }
+          data: { name }
         }
       });
       
-      if (signUpError) throw signUpError;
+      if (error) throw error;
       
-      if (data.user) {
-        try {
-          // Use RPC function to create profile to bypass RLS
-          const { error: profileError } = await supabase.rpc('create_new_profile', {
-            user_id: data.user.id,
-            user_name: name,
-            user_email: email
-          } as any); // Cast to any to bypass TypeScript error
-          
-          if (profileError) throw profileError;
-
-          toast.success("Account created! Please check your email for verification.");
-        } catch (profileError: any) {
-          console.error('Profile creation error:', profileError);
-          toast.error('Account created but profile setup failed: ' + profileError.message);
-        }
+      // Step 2: If signup succeeded but we don't have a user yet (email confirmation required)
+      // We'll create the profile manually later when they confirm their email
+      if (!data.user) {
+        toast.success("Account created! Please check your email for verification.");
+        navigate('/signin');
+        return;
       }
       
-      // Navigate to signin page after successful signup
-      navigate('/signin');
+      // Step 3: If we have a user (email confirmation not required), create the profile
+      if (data.user) {
+        // Wait a moment to ensure the user is fully created in auth.users
+        // This helps prevent the foreign key constraint error
+        setTimeout(async () => {
+          try {
+            const { error: profileError } = await supabase.rpc('create_new_profile', {
+              user_id: data.user!.id,
+              user_name: name,
+              user_email: email
+            });
+            
+            if (profileError) {
+              console.error('Profile creation error:', profileError);
+              toast.error('Profile setup encountered an issue. Please contact support.');
+            } else {
+              toast.success("Account created successfully!");
+              
+              // If email confirmation is not required, sign in the user directly
+              if (data.session) {
+                setSession(data.session);
+                setUser(data.user);
+                navigate('/');
+              } else {
+                navigate('/signin');
+              }
+            }
+          } catch (profileError: any) {
+            console.error('Profile creation error:', profileError);
+            toast.error('Account created but profile setup failed. Please sign in to retry.');
+          }
+        }, 1000); // Add a delay to ensure auth.users is updated first
+      }
     } catch (error: any) {
       console.error('Sign up error:', error);
       toast.error(error.message || 'Failed to create account');
