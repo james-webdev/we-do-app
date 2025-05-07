@@ -1,19 +1,25 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import PendingTaskCard from './PendingTaskCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const PendingTasksList = () => {
-  const { pendingTasks, partner, refreshData } = useApp();
+  const { pendingTasks, partner, refreshData, isLoading } = useApp();
+  const [initialLoadAttempted, setInitialLoadAttempted] = useState(false);
 
   // Refresh data when component mounts to ensure we have the latest pending tasks
   useEffect(() => {
-    refreshData();
-  }, [refreshData]);
+    if (!initialLoadAttempted) {
+      refreshData();
+      setInitialLoadAttempted(true);
+    }
+  }, [refreshData, initialLoadAttempted]);
 
-  if (pendingTasks.length === 0) {
+  // If there are no pending tasks and we're not still loading, don't render anything
+  if (pendingTasks.length === 0 && !isLoading) {
     return null;
   }
 
@@ -30,7 +36,24 @@ const PendingTasksList = () => {
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
-          {pendingTasks.map((task) => (
+          {isLoading ? (
+            // Show skeleton loaders while data is loading
+            Array(2).fill(0).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <Skeleton className="h-5 w-3/4" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-6 w-16" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-4 w-1/3 mb-4" />
+                  <Skeleton className="h-4 w-1/4" />
+                </CardContent>
+              </Card>
+            ))
+          ) : pendingTasks.map((task) => (
             <PendingTaskCard
               key={task.id}
               task={task}

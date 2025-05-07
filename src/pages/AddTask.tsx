@@ -14,7 +14,7 @@ import { Slider } from '@/components/ui/slider';
 
 const AddTask = () => {
   const navigate = useNavigate();
-  const { currentUser, addNewTask, partner } = useApp();
+  const { currentUser, addNewTask, partner, isLoading } = useApp();
   
   const [title, setTitle] = React.useState('');
   const [type, setType] = React.useState<TaskType>('mental');
@@ -59,11 +59,11 @@ const AddTask = () => {
         timestamp
       });
       
-      toast.success('Task submitted for partner approval');
-      navigate('/');
+      // Success toast is handled in addNewTask function now
+      setTimeout(() => navigate('/'), 500);
     } catch (error) {
       console.error('Error adding task:', error);
-      toast.error('Failed to add task');
+      toast.error('Failed to add task. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -175,7 +175,7 @@ const AddTask = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || isLoading}>
                 {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
               </Button>
             </div>

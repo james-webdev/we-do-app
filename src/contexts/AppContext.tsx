@@ -66,6 +66,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [availablePoints, setAvailablePoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPartner, setHasPartner] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshAttempt, setLastRefreshAttempt] = useState<number>(0);
 
   const fetchData = async () => {
     if (!user) {
@@ -73,6 +75,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
       return;
     }
+    
+    // Prevent multiple simultaneous refresh requests
+    if (isRefreshing) {
+      console.log("Already refreshing data, skipping duplicate request");
+      return;
+    }
+
+    // Implement throttling - don't allow refreshes more frequently than every 5 seconds
+    const now = Date.now();
+    if (now - lastRefreshAttempt < 5000) {
+      console.log("Refresh attempt too soon after previous attempt, skipping");
+      return;
+    }
+    
+    setLastRefreshAttempt(now);
+    setIsRefreshing(true);
     
     try {
       setIsLoading(true);
@@ -147,7 +165,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
           if (tasksError) {
             console.error('Error fetching tasks:', tasksError);
-            toast.error('Failed to load tasks');
+            toast.error('Failed to load tasks. Please try again later.');
+            throw tasksError;
           } else if (tasksResult) {
             // Use explicit type assertion
             fetchedTasksData = tasksResult as TaskResult[];
@@ -205,8 +224,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           }
         } catch (error) {
           console.error('Error in tasks fetch:', error);
-          toast.error('Failed to load tasks');
-          fetchedTasksData = []; // Reset to empty array in case of error
+          // Don't reset to empty array on error - keep existing data
+          fetchedTasksData = fetchedTasksData.length > 0 ? fetchedTasksData : []; 
         }
         
         // Get brownie points - since we now have simple RLS policies, we can query directly
@@ -311,6 +330,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       toast.error('Failed to load data. Please try again.');
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -418,7 +438,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       
       console.log("Task submitted successfully:", data);
       toast.success('Task submitted for partner approval');
-      await fetchData(); // Refresh all data to update pendingTasks for the partner
+      
+      // Add a slight delay before refreshing data to allow the database to update
+      setTimeout(() => {
+        fetchData(); // Refresh all data to update pendingTasks for the partner
+      }, 300);
     } catch (error: any) {
       console.error('Error adding task:', error);
       toast.error(error.message || 'Failed to add task');

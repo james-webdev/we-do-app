@@ -5,9 +5,15 @@ import ConnectPartner from '@/components/ConnectPartner';
 import TaskList from '@/components/TaskList';
 import PointsDisplay from '@/components/PointsDisplay';
 import PendingTasksList from '@/components/PendingTasksList';
+import { Button } from '@/components/ui/button';
+import { RefreshCcw } from 'lucide-react';
 
 const Dashboard = () => {
-  const { hasPartner, partner } = useApp();
+  const { hasPartner, partner, refreshData, isLoading } = useApp();
+  
+  const handleRefresh = () => {
+    refreshData();
+  };
   
   // If user doesn't have a partner, show the connect partner flow
   if (!hasPartner) {
@@ -30,7 +36,18 @@ const Dashboard = () => {
   // If user has a partner, show the dashboard
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleRefresh} 
+          disabled={isLoading}
+        >
+          <RefreshCcw size={16} className={`mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh Data
+        </Button>
+      </div>
       
       {/* Show pending tasks first */}
       <PendingTasksList />
