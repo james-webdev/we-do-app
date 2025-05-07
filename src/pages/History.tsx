@@ -9,7 +9,9 @@ import { format } from 'date-fns';
 
 const History = () => {
   const { currentUser, partner, tasks, browniePoints } = useApp();
-  const [tab, setTab] = useState<string>("all");
+  const [mainTab, setMainTab] = useState<string>("tasks");
+  const [taskFilterTab, setTaskFilterTab] = useState<string>("all");
+  const [pointFilterTab, setPointFilterTab] = useState<string>("all");
   
   // Group items by date for displaying in sections
   const groupByDate = (items: { timestamp?: Date, createdAt?: Date }[]) => {
@@ -43,16 +45,16 @@ const History = () => {
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
   
-  // Fix task filtering logic
+  // Fix task filtering logic with the dedicated taskFilterTab
   const filteredTasks = sortedTasks.filter(task => {
-    if (tab === "all") return true;
-    if (tab === "my-tasks" && currentUser) return task.userId === currentUser.id;
-    if (tab === "partner-tasks" && partner) return task.userId === partner.id;
-    return true;
+    if (taskFilterTab === "all") return true;
+    if (taskFilterTab === "my-tasks" && currentUser) return task.userId === currentUser.id;
+    if (taskFilterTab === "partner-tasks" && partner) return task.userId === partner.id;
+    return false; // Default to not showing if criteria not met
   });
   
   console.log("Filtered tasks:", filteredTasks);
-  console.log("Current filter tab:", tab);
+  console.log("Current task filter tab:", taskFilterTab);
   
   const groupedTasks = groupByDate(filteredTasks);
   
@@ -62,10 +64,10 @@ const History = () => {
   );
   
   const filteredBrowniePoints = sortedBrowniePoints.filter(point => {
-    if (tab === "all") return true;
-    if (tab === "sent" && currentUser) return point.fromUserId === currentUser.id;
-    if (tab === "received" && currentUser) return point.toUserId === currentUser.id;
-    return true;
+    if (pointFilterTab === "all") return true;
+    if (pointFilterTab === "sent" && currentUser) return point.fromUserId === currentUser.id;
+    if (pointFilterTab === "received" && currentUser) return point.toUserId === currentUser.id;
+    return false; // Default to not showing if criteria not met
   });
   
   const groupedBrowniePoints = groupByDate(filteredBrowniePoints);
@@ -77,7 +79,7 @@ const History = () => {
         <p className="text-gray-500">View your activity history and contributions</p>
       </div>
       
-      <Tabs defaultValue="tasks" className="w-full">
+      <Tabs defaultValue="tasks" className="w-full" value={mainTab} onValueChange={setMainTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="browniePoints">Brownie Points</TabsTrigger>
@@ -88,22 +90,22 @@ const History = () => {
             <TabsList className="justify-start">
               <TabsTrigger 
                 value="all" 
-                onClick={() => setTab("all")}
-                className={tab === "all" ? "bg-primary text-white" : ""}
+                onClick={() => setTaskFilterTab("all")}
+                className={taskFilterTab === "all" ? "bg-primary text-white" : ""}
               >
                 All Tasks
               </TabsTrigger>
               <TabsTrigger 
                 value="my-tasks" 
-                onClick={() => setTab("my-tasks")}
-                className={tab === "my-tasks" ? "bg-primary text-white" : ""}
+                onClick={() => setTaskFilterTab("my-tasks")}
+                className={taskFilterTab === "my-tasks" ? "bg-primary text-white" : ""}
               >
                 My Tasks
               </TabsTrigger>
               <TabsTrigger 
                 value="partner-tasks" 
-                onClick={() => setTab("partner-tasks")}
-                className={tab === "partner-tasks" ? "bg-primary text-white" : ""}
+                onClick={() => setTaskFilterTab("partner-tasks")}
+                className={taskFilterTab === "partner-tasks" ? "bg-primary text-white" : ""}
               >
                 Partner's Tasks
               </TabsTrigger>
@@ -139,22 +141,22 @@ const History = () => {
             <TabsList className="justify-start">
               <TabsTrigger 
                 value="all" 
-                onClick={() => setTab("all")}
-                className={tab === "all" ? "bg-primary text-white" : ""}
+                onClick={() => setPointFilterTab("all")}
+                className={pointFilterTab === "all" ? "bg-primary text-white" : ""}
               >
                 All Points
               </TabsTrigger>
               <TabsTrigger 
                 value="sent" 
-                onClick={() => setTab("sent")}
-                className={tab === "sent" ? "bg-primary text-white" : ""}
+                onClick={() => setPointFilterTab("sent")}
+                className={pointFilterTab === "sent" ? "bg-primary text-white" : ""}
               >
                 Points Sent
               </TabsTrigger>
               <TabsTrigger 
                 value="received" 
-                onClick={() => setTab("received")}
-                className={tab === "received" ? "bg-primary text-white" : ""}
+                onClick={() => setPointFilterTab("received")}
+                className={pointFilterTab === "received" ? "bg-primary text-white" : ""}
               >
                 Points Received
               </TabsTrigger>
