@@ -144,14 +144,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Clear session and user state before making the signOut API call
+      setSession(null);
+      setUser(null);
+      
+      // Attempt to sign out, but don't throw an error if it fails
+      await supabase.auth.signOut().catch((error) => {
+        console.log('Sign out API call error (ignoring):', error);
+        // We'll still navigate to signin even if the API call fails
+      });
+      
       toast.success('Successfully signed out');
       navigate('/signin');
     } catch (error: any) {
       console.error('Sign out error:', error);
-      toast.error(error.message || 'Failed to sign out');
-      throw error;
+      // Don't show error toast since we're ignoring the error
+      // Just ensure we still navigate to signin
+      navigate('/signin');
     } finally {
       setLoading(false);
     }
