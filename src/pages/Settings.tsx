@@ -10,14 +10,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/sonner';
 import { useForm } from 'react-hook-form';
-import { User, Users, UserX } from 'lucide-react';
+import { User, Users, UserX, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Settings = () => {
   const { currentUser, partner, hasPartner, refreshData } = useApp();
   const { signOut } = useAuth();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUncoupling, setIsUncoupling] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   
   const form = useForm({
     defaultValues: {
@@ -86,6 +98,49 @@ const Settings = () => {
       toast.error(error.message || 'Failed to uncouple partner');
     } finally {
       setIsUncoupling(false);
+    }
+  };
+
+  const handleResetData = async () => {
+    try {
+      if (!currentUser) {
+        toast.error('You need to be logged in');
+        return;
+      }
+
+      setIsResetting(true);
+
+      // Delete all tasks created by the user
+      const { error: tasksError } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('user_id', currentUser.id);
+
+      if (tasksError) throw tasksError;
+
+      // Delete all brownie points sent by the user
+      const { error: sentPointsError } = await supabase
+        .from('brownie_points')
+        .delete()
+        .eq('from_user_id', currentUser.id);
+
+      if (sentPointsError) throw sentPointsError;
+
+      // Delete all brownie points received by the user
+      const { error: receivedPointsError } = await supabase
+        .from('brownie_points')
+        .delete()
+        .eq('to_user_id', currentUser.id);
+
+      if (receivedPointsError) throw receivedPointsError;
+
+      toast.success('All your tasks and brownie points have been deleted');
+      refreshData(); // Refresh to update the UI
+    } catch (error: any) {
+      console.error('Error resetting data:', error);
+      toast.error(error.message || 'Failed to reset data');
+    } finally {
+      setIsResetting(false);
     }
   };
   
@@ -230,9 +285,42 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Actions here can't be undone
                   </p>
-                  <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10">
-                    Delete Account
-                  </Button>
+                  
+                  <div className="space-y-4">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          className="text-destructive border-destructive hover:bg-destructive/10 w-full sm:w-auto flex items-center"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Reset All Data
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Reset All Data</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will delete all your tasks and brownie points. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={handleResetData} 
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={isResetting}
+                          >
+                            {isResetting ? 'Resetting...' : 'Reset Data'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    
+                    <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10">
+                      Delete Account
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
