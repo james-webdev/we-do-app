@@ -52,7 +52,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       console.log("Fetching profile data for user:", user.id);
       
-      // Use the security definer function to get profile data
+      // First, do a simple test query to check if RLS is working correctly
+      try {
+        console.log("Testing basic query access...");
+        const { data: testData, error: testError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (testError) {
+          console.error('Test query error:', testError);
+        } else {
+          console.log('Test query successful:', testData);
+        }
+      } catch (testErr) {
+        console.error('Test query exception:', testErr);
+      }
+      
+      // Continue with regular profile fetch using security definer function
       const { data: profileData, error: profileError } = await supabase
         .rpc('get_profile_by_id', { user_id: user.id })
         .maybeSingle();
