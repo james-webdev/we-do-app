@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { User, Task, BrowniePoint, Reward, TaskStatus, TaskRating, TaskType, BrowniePointType } from '@/types';
+import { User, Task, BrowniePoint, Reward, TaskStatus, TaskRating, TaskType, BrowniePointType, RewardStatus } from '@/types';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
@@ -32,6 +32,7 @@ interface AppContextType {
   pendingTasks: Task[];
   browniePoints: BrowniePoint[];
   rewards: Reward[];
+  pendingRewards: Reward[]; // New: rewards pending approval
   summary: any;
   availablePoints: number;
   isLoading: boolean;
@@ -45,6 +46,9 @@ interface AppContextType {
   redeemReward: (rewardId: string) => Promise<boolean>;
   connectPartner: (partnerEmail: string) => Promise<boolean>;
   hasPartner: boolean;
+  proposeReward: (reward: Reward) => Promise<boolean>; // New
+  approveReward: (rewardId: string) => Promise<boolean>; // New
+  rejectReward: (rewardId: string) => Promise<boolean>; // New
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -57,6 +61,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [browniePoints, setBrowniePoints] = useState<BrowniePoint[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
+  const [pendingRewards, setPendingRewards] = useState<Reward[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [availablePoints, setAvailablePoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -717,6 +722,77 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Mock function for proposing a reward
+  const proposeReward = async (reward: Reward): Promise<boolean> => {
+    try {
+      if (!currentUser) {
+        toast.error('User not authenticated');
+        return false;
+      }
+      
+      if (!currentUser.partnerId) {
+        toast.error('You need to connect with a partner first');
+        return false;
+      }
+
+      // In a real implementation, this would save to a database table
+      // For now, we'll store it in memory
+      const proposedReward = {
+        ...reward,
+        id: `proposed-${Date.now()}`, // Generate a temporary ID
+        createdById: currentUser.id,
+        status: 'pending' as RewardStatus
+      };
+
+      // Add to pending rewards list
+      setPendingRewards([...pendingRewards, proposedReward]);
+      
+      toast.success('Reward proposal submitted');
+      return true;
+    } catch (error: any) {
+      console.error('Error proposing reward:', error);
+      toast.error(error.message || 'Failed to propose reward');
+      return false;
+    }
+  };
+
+  // Mock function for approving a proposed reward
+  const approveReward = async (rewardId: string): Promise<boolean> => {
+    try {
+      // Find the reward and update its status
+      const updatedPendingRewards = pendingRewards.filter(r => r.id !== rewardId);
+      const approvedReward = pendingRewards.find(r => r.id === rewardId);
+      
+      if (approvedReward) {
+        approvedReward.status = 'approved';
+        setRewards([...rewards, approvedReward]);
+      }
+      
+      setPendingRewards(updatedPendingRewards);
+      toast.success('Reward approved');
+      return true;
+    } catch (error: any) {
+      console.error('Error approving reward:', error);
+      toast.error(error.message || 'Failed to approve reward');
+      return false;
+    }
+  };
+
+  // Mock function for rejecting a proposed reward
+  const rejectReward = async (rewardId: string): Promise<boolean> => {
+    try {
+      // Simply remove from pending rewards
+      const updatedPendingRewards = pendingRewards.filter(r => r.id !== rewardId);
+      setPendingRewards(updatedPendingRewards);
+      toast.success('Reward rejected');
+      return true;
+    } catch (error: any) {
+      console.error('Error rejecting reward:', error);
+      toast.error(error.message || 'Failed to reject reward');
+      return false;
+    }
+  };
+
   // Initial data fetch when user changes
   useEffect(() => {
     if (user) {
@@ -745,6 +821,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         pendingTasks,
         browniePoints,
         rewards,
+        pendingRewards,
         summary,
         availablePoints,
         isLoading,
@@ -757,7 +834,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         deleteBrowniePoint: handleDeleteBrowniePoint,
         redeemReward: handleRedeemReward,
         connectPartner,
-        hasPartner
+        hasPartner,
+        proposeReward,
+        approveReward,
+        rejectReward
       }}
     >
       {children}
