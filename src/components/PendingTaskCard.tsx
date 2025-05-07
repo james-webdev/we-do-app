@@ -46,6 +46,7 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
   const [rejectComment, setRejectComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
+  const [isRejected, setIsRejected] = useState(false);
   
   const handleApprove = async () => {
     if (isSubmitting || isApproved) return; // Prevent multiple clicks
@@ -61,6 +62,9 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
       // Mark as approved to disable the button
       setIsApproved(true);
       setIsSubmitting(false);
+      
+      // Success notification
+      toast.success('Task approved successfully!');
       
       // Delay refresh to ensure database has updated
       setTimeout(() => {
@@ -83,13 +87,22 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
   };
   
   const handleReject = async () => {
-    if (isSubmitting) return; // Prevent multiple clicks
+    if (isSubmitting || rejectComment.trim() === '') return; // Validate input and prevent multiple submissions
     
     try {
       setIsSubmitting(true);
       toast.loading(`Rejecting task: ${task.title}...`);
       
-      await rejectTask(task.id, rejectComment);
+      // Call the rejection function with the comment
+      const success = await rejectTask(task.id, rejectComment);
+      
+      if (success) {
+        // Mark as rejected to update UI
+        setIsRejected(true);
+        toast.success('Task rejected with feedback');
+      } else {
+        toast.error('Failed to reject task. Please try again.');
+      }
       
       setIsSubmitting(false);
       handleCloseRejectDialog();
@@ -102,14 +115,15 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
       console.error('Error during rejection:', error);
       setIsSubmitting(false);
       toast.error('Rejection failed. Please try again.');
+      handleCloseRejectDialog();
     }
   };
   
   const ratingBadgeColor = getRatingBadgeColor(task.rating);
   const pointsDescription = calculateTaskPointsDescription(task.rating);
 
-  // If task is approved, remove it from the UI completely
-  if (isApproved) {
+  // If task is approved or rejected, remove it from the UI completely
+  if (isApproved || isRejected) {
     return null;
   }
 
@@ -143,7 +157,7 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
               variant="outline" 
               size="sm" 
               onClick={handleOpenRejectDialog}
-              disabled={isSubmitting || isApproved}
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
@@ -155,7 +169,7 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
             <Button 
               onClick={handleApprove}
               size="sm"
-              disabled={isSubmitting || isApproved}
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>

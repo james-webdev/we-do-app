@@ -39,7 +39,7 @@ interface AppContextType {
   refreshData: () => void;
   addNewTask: (task: Omit<Task, "id" | "status">) => Promise<void>;
   approveTask: (taskId: string) => Promise<void>;
-  rejectTask: (taskId: string, comment: string) => Promise<void>;
+  rejectTask: (taskId: string, comment: string) => Promise<boolean>;
   addNewBrowniePoint: (point: Omit<BrowniePoint, "id" | "createdAt" | "redeemed">) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
   deleteBrowniePoint: (pointId: string) => Promise<void>;
@@ -529,9 +529,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       
       toast.success('Task rejected');
       await fetchData(); // Refresh data
+      return true; // Return success status
     } catch (error: any) {
       console.error('Error rejecting task:', error);
       toast.error(error.message || 'Failed to reject task');
+      return false; // Return failure status
     }
   };
 
