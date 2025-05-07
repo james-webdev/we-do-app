@@ -84,9 +84,17 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
       if (success) {
         // Mark as rejected to update UI
         setIsRejected(true);
-        toast.success('Task rejected with feedback', {
-          duration: 3000,
-        });
+        
+        // Show success toast WITH the rejection reason so the partner can see what they wrote
+        toast.success(
+          <div>
+            <p className="font-medium">Task rejected with feedback</p>
+            <p className="text-sm mt-1 text-gray-600">"{rejectComment}"</p>
+          </div>,
+          {
+            duration: 5000, // Longer duration to read the feedback
+          }
+        );
       } else {
         toast.error('Failed to reject task. Please try again.', {
           duration: 3000,
