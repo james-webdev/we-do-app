@@ -28,8 +28,8 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
     
     try {
       setIsSubmitting(true);
-      // Show immediate feedback
-      toast.loading(`Approving task: ${task.title}...`);
+      // Show immediate feedback with a loading toast that we can dismiss later
+      const loadingToast = toast.loading(`Approving task: ${task.title}...`);
       
       // Approval process
       await approveTask(task.id);
@@ -38,8 +38,13 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
       setIsApproved(true);
       setIsSubmitting(false);
       
+      // Dismiss the loading toast
+      toast.dismiss(loadingToast);
+      
       // Success notification
-      toast.success('Task approved successfully!');
+      toast.success('Task approved successfully!', {
+        duration: 3000, // Auto-close after 3 seconds
+      });
       
       // Delay refresh to ensure database has updated
       setTimeout(() => {
@@ -48,7 +53,9 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
     } catch (error) {
       console.error('Error during approval:', error);
       setIsSubmitting(false);
-      toast.error('Approval failed. Please try again.');
+      toast.error('Approval failed. Please try again.', {
+        duration: 3000,
+      });
     }
   };
   
@@ -66,17 +73,24 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
     
     try {
       setIsSubmitting(true);
-      toast.loading(`Rejecting task: ${task.title}...`);
+      const loadingToast = toast.loading(`Rejecting task: ${task.title}...`);
       
       // Call the rejection function with the comment
       const success = await rejectTask(task.id, rejectComment);
       
+      // Dismiss the loading toast
+      toast.dismiss(loadingToast);
+      
       if (success) {
         // Mark as rejected to update UI
         setIsRejected(true);
-        toast.success('Task rejected with feedback');
+        toast.success('Task rejected with feedback', {
+          duration: 3000,
+        });
       } else {
-        toast.error('Failed to reject task. Please try again.');
+        toast.error('Failed to reject task. Please try again.', {
+          duration: 3000,
+        });
       }
       
       setIsSubmitting(false);
@@ -89,7 +103,9 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
     } catch (error) {
       console.error('Error during rejection:', error);
       setIsSubmitting(false);
-      toast.error('Rejection failed. Please try again.');
+      toast.error('Rejection failed. Please try again.', {
+        duration: 3000,
+      });
       handleCloseRejectDialog();
     }
   };
