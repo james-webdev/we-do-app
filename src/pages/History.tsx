@@ -34,17 +34,25 @@ const History = () => {
       }));
   };
 
+  console.log("Current tasks in History:", tasks);
+  console.log("Current user:", currentUser);
+  console.log("Partner:", partner);
+
   // Filter and sort tasks
   const sortedTasks = [...tasks].sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
   
+  // Fix task filtering logic
   const filteredTasks = sortedTasks.filter(task => {
     if (tab === "all") return true;
-    if (tab === "my-tasks") return task.userId === currentUser?.id;
-    if (tab === "partner-tasks") return task.userId === partner?.id;
+    if (tab === "my-tasks" && currentUser) return task.userId === currentUser.id;
+    if (tab === "partner-tasks" && partner) return task.userId === partner.id;
     return true;
   });
+  
+  console.log("Filtered tasks:", filteredTasks);
+  console.log("Current filter tab:", tab);
   
   const groupedTasks = groupByDate(filteredTasks);
   
@@ -55,8 +63,8 @@ const History = () => {
   
   const filteredBrowniePoints = sortedBrowniePoints.filter(point => {
     if (tab === "all") return true;
-    if (tab === "sent") return point.fromUserId === currentUser?.id;
-    if (tab === "received") return point.toUserId === currentUser?.id;
+    if (tab === "sent" && currentUser) return point.fromUserId === currentUser.id;
+    if (tab === "received" && currentUser) return point.toUserId === currentUser.id;
     return true;
   });
   
@@ -121,7 +129,7 @@ const History = () => {
             ))
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No tasks found</p>
+              <p className="text-gray-500">No tasks found for the selected filter</p>
             </div>
           )}
         </TabsContent>
@@ -168,7 +176,7 @@ const History = () => {
             ))
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No brownie points found</p>
+              <p className="text-gray-500">No brownie points found for the selected filter</p>
             </div>
           )}
         </TabsContent>
