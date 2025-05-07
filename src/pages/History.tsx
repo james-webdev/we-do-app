@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +12,14 @@ const History = () => {
   const [mainTab, setMainTab] = useState<string>("tasks");
   const [taskFilterTab, setTaskFilterTab] = useState<string>("all");
   const [pointFilterTab, setPointFilterTab] = useState<string>("all");
+  
+  // Debug logs to see what's happening
+  useEffect(() => {
+    console.log("Current user in History:", currentUser);
+    console.log("Partner in History:", partner);
+    console.log("All tasks in History:", tasks);
+    console.log("Current task filter tab:", taskFilterTab);
+  }, [currentUser, partner, tasks, taskFilterTab]);
   
   // Group items by date for displaying in sections
   const groupByDate = (items: { timestamp?: Date, createdAt?: Date }[]) => {
@@ -36,25 +44,20 @@ const History = () => {
       }));
   };
 
-  console.log("Current tasks in History:", tasks);
-  console.log("Current user:", currentUser);
-  console.log("Partner:", partner);
-
   // Filter and sort tasks
   const sortedTasks = [...tasks].sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
   
-  // Fix task filtering logic with the dedicated taskFilterTab
+  // Important fix: Apply correct filtering based on task filter tab
   const filteredTasks = sortedTasks.filter(task => {
     if (taskFilterTab === "all") return true;
     if (taskFilterTab === "my-tasks" && currentUser) return task.userId === currentUser.id;
     if (taskFilterTab === "partner-tasks" && partner) return task.userId === partner.id;
-    return false; // Default to not showing if criteria not met
+    return false;
   });
   
-  console.log("Filtered tasks:", filteredTasks);
-  console.log("Current task filter tab:", taskFilterTab);
+  console.log("Filtered tasks for current tab:", filteredTasks, "using filter:", taskFilterTab);
   
   const groupedTasks = groupByDate(filteredTasks);
   
@@ -67,10 +70,21 @@ const History = () => {
     if (pointFilterTab === "all") return true;
     if (pointFilterTab === "sent" && currentUser) return point.fromUserId === currentUser.id;
     if (pointFilterTab === "received" && currentUser) return point.toUserId === currentUser.id;
-    return false; // Default to not showing if criteria not met
+    return false;
   });
   
   const groupedBrowniePoints = groupByDate(filteredBrowniePoints);
+  
+  // Handle tab changes
+  const handleTaskFilterChange = (value: string) => {
+    console.log("Changing task filter to:", value);
+    setTaskFilterTab(value);
+  };
+  
+  const handlePointFilterChange = (value: string) => {
+    console.log("Changing point filter to:", value);
+    setPointFilterTab(value);
+  };
   
   return (
     <div className="container py-8">
@@ -90,21 +104,21 @@ const History = () => {
             <TabsList className="justify-start">
               <TabsTrigger 
                 value="all" 
-                onClick={() => setTaskFilterTab("all")}
+                onClick={() => handleTaskFilterChange("all")}
                 className={taskFilterTab === "all" ? "bg-primary text-white" : ""}
               >
                 All Tasks
               </TabsTrigger>
               <TabsTrigger 
                 value="my-tasks" 
-                onClick={() => setTaskFilterTab("my-tasks")}
+                onClick={() => handleTaskFilterChange("my-tasks")}
                 className={taskFilterTab === "my-tasks" ? "bg-primary text-white" : ""}
               >
                 My Tasks
               </TabsTrigger>
               <TabsTrigger 
                 value="partner-tasks" 
-                onClick={() => setTaskFilterTab("partner-tasks")}
+                onClick={() => handleTaskFilterChange("partner-tasks")}
                 className={taskFilterTab === "partner-tasks" ? "bg-primary text-white" : ""}
               >
                 Partner's Tasks
@@ -112,7 +126,7 @@ const History = () => {
             </TabsList>
           </div>
           
-          {groupedTasks.length > 0 ? (
+          {filteredTasks.length > 0 ? (
             groupedTasks.map(({ date, items }) => (
               <div key={date} className="space-y-4">
                 <h2 className="text-xl font-semibold sticky top-0 bg-white py-2 border-b">
@@ -131,7 +145,13 @@ const History = () => {
             ))
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No tasks found for the selected filter</p>
+              <p className="text-gray-500">
+                {taskFilterTab === "all" 
+                  ? "No tasks found yet. Try adding some tasks!" 
+                  : taskFilterTab === "my-tasks"
+                    ? "You haven't completed any tasks yet."
+                    : "Your partner hasn't completed any tasks yet."}
+              </p>
             </div>
           )}
         </TabsContent>
@@ -141,21 +161,21 @@ const History = () => {
             <TabsList className="justify-start">
               <TabsTrigger 
                 value="all" 
-                onClick={() => setPointFilterTab("all")}
+                onClick={() => handlePointFilterChange("all")}
                 className={pointFilterTab === "all" ? "bg-primary text-white" : ""}
               >
                 All Points
               </TabsTrigger>
               <TabsTrigger 
                 value="sent" 
-                onClick={() => setPointFilterTab("sent")}
+                onClick={() => handlePointFilterChange("sent")}
                 className={pointFilterTab === "sent" ? "bg-primary text-white" : ""}
               >
                 Points Sent
               </TabsTrigger>
               <TabsTrigger 
                 value="received" 
-                onClick={() => setPointFilterTab("received")}
+                onClick={() => handlePointFilterChange("received")}
                 className={pointFilterTab === "received" ? "bg-primary text-white" : ""}
               >
                 Points Received
@@ -163,7 +183,7 @@ const History = () => {
             </TabsList>
           </div>
           
-          {groupedBrowniePoints.length > 0 ? (
+          {filteredBrowniePoints.length > 0 ? (
             groupedBrowniePoints.map(({ date, items }) => (
               <div key={date} className="space-y-4">
                 <h2 className="text-xl font-semibold sticky top-0 bg-white py-2 border-b">
@@ -178,7 +198,13 @@ const History = () => {
             ))
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No brownie points found for the selected filter</p>
+              <p className="text-gray-500">
+                {pointFilterTab === "all" 
+                  ? "No brownie points found yet." 
+                  : pointFilterTab === "sent"
+                    ? "You haven't sent any brownie points yet."
+                    : "You haven't received any brownie points yet."}
+              </p>
             </div>
           )}
         </TabsContent>
