@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useApp } from '@/contexts/AppContext';
+import { toast } from '@/components/ui/sonner';
+import { Loader2 } from 'lucide-react';
 
 interface PendingTaskCardProps {
   task: Task;
@@ -39,15 +41,36 @@ const calculateTaskPointsDescription = (rating: number): string => {
 };
 
 const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
-  const { approveTask, rejectTask } = useApp();
+  const { approveTask, rejectTask, refreshData } = useApp();
   const [isRejecting, setIsRejecting] = useState(false);
   const [rejectComment, setRejectComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
   
   const handleApprove = async () => {
-    setIsSubmitting(true);
-    await approveTask(task.id);
-    setIsSubmitting(false);
+    if (isSubmitting || isApproved) return; // Prevent multiple clicks
+    
+    try {
+      setIsSubmitting(true);
+      // Show immediate feedback
+      toast.loading(`Approving task: ${task.title}...`);
+      
+      // Approval process
+      await approveTask(task.id);
+      
+      // Mark as approved to disable the button
+      setIsApproved(true);
+      setIsSubmitting(false);
+      
+      // Delay refresh to ensure database has updated
+      setTimeout(() => {
+        refreshData();
+      }, 500);
+    } catch (error) {
+      console.error('Error during approval:', error);
+      setIsSubmitting(false);
+      toast.error('Approval failed. Please try again.');
+    }
   };
   
   const handleOpenRejectDialog = () => {
@@ -60,14 +83,35 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
   };
   
   const handleReject = async () => {
-    setIsSubmitting(true);
-    await rejectTask(task.id, rejectComment);
-    setIsSubmitting(false);
-    handleCloseRejectDialog();
+    if (isSubmitting) return; // Prevent multiple clicks
+    
+    try {
+      setIsSubmitting(true);
+      toast.loading(`Rejecting task: ${task.title}...`);
+      
+      await rejectTask(task.id, rejectComment);
+      
+      setIsSubmitting(false);
+      handleCloseRejectDialog();
+      
+      // Delay refresh to ensure database has updated
+      setTimeout(() => {
+        refreshData();
+      }, 500);
+    } catch (error) {
+      console.error('Error during rejection:', error);
+      setIsSubmitting(false);
+      toast.error('Rejection failed. Please try again.');
+    }
   };
   
   const ratingBadgeColor = getRatingBadgeColor(task.rating);
   const pointsDescription = calculateTaskPointsDescription(task.rating);
+
+  // If task is approved, remove it from the UI completely
+  if (isApproved) {
+    return null;
+  }
 
   return (
     <>
@@ -99,16 +143,26 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
               variant="outline" 
               size="sm" 
               onClick={handleOpenRejectDialog}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isApproved}
             >
-              Reject
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : 'Reject'}
             </Button>
             <Button 
               onClick={handleApprove}
               size="sm"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isApproved}
             >
-              {isSubmitting ? 'Processing...' : 'Approve'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Approving...
+                </>
+              ) : 'Approve'}
             </Button>
           </div>
         </CardFooter>
@@ -139,7 +193,12 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
               onClick={handleReject}
               disabled={isSubmitting || rejectComment.trim() === ''}
             >
-              {isSubmitting ? 'Processing...' : 'Reject Task'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : 'Reject Task'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -4,12 +4,18 @@ import { useApp } from '@/contexts/AppContext';
 import TaskCard from './TaskCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RefreshCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const TaskList = () => {
-  const { tasks, currentUser, isLoading } = useApp();
+  const { tasks, currentUser, isLoading, refreshData } = useApp();
   
   // Filter tasks for the current user
   const userTasks = tasks.filter(task => task.userId === currentUser?.id);
+  
+  const handleRefresh = () => {
+    refreshData();
+  };
   
   if (isLoading) {
     // Show skeleton loading state
@@ -36,8 +42,19 @@ const TaskList = () => {
   if (userTasks.length === 0) {
     return (
       <Card>
-        <CardContent className="p-6 text-center text-gray-500">
-          <p>No tasks yet. Add a task to get started!</p>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-center">
+            <p className="text-center text-gray-500 w-full">No tasks yet. Add a task to get started!</p>
+            <Button 
+              variant="ghost" 
+              onClick={handleRefresh} 
+              size="sm" 
+              className="ml-auto"
+              title="Refresh tasks"
+            >
+              <RefreshCcw className="h-4 w-4" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -45,6 +62,16 @@ const TaskList = () => {
   
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button 
+          variant="ghost" 
+          onClick={handleRefresh} 
+          size="sm"
+          title="Refresh tasks"
+        >
+          <RefreshCcw className="h-4 w-4" />
+        </Button>
+      </div>
       {userTasks.map(task => (
         <TaskCard 
           key={task.id} 
