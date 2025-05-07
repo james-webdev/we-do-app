@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -74,13 +73,17 @@ const Rewards = () => {
 
   const onSubmitProposal = async (data: ProposedRewardFormValues) => {
     try {
-      await proposeReward({
-        ...data,
-        id: '', // Will be set by the server
+      const newReward: Reward = {
+        id: '', // Will be set by the server or context
+        title: data.title,
+        description: data.description,
+        pointsCost: data.pointsCost,
+        imageIcon: data.imageIcon,
         status: 'pending',
-        createdById: '', // Will be set by the server
-      });
-
+        createdById: '' // Will be set by the context
+      };
+      
+      await proposeReward(newReward);
       setShowProposeDialog(false);
       form.reset();
       toast.success("Reward proposal submitted for partner approval");
