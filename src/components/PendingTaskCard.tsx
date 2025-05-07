@@ -9,6 +9,16 @@ import { calculateTaskPointsDescription } from '@/utils/taskUtils';
 import TaskHeader from '@/components/task/TaskHeader';
 import TaskActions from '@/components/task/TaskActions';
 import RejectTaskDialog from '@/components/task/RejectTaskDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { CheckCircle } from 'lucide-react';
 
 interface PendingTaskCardProps {
   task: Task;
@@ -22,6 +32,8 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [isRejected, setIsRejected] = useState(false);
+  // New state for rejection confirmation dialog
+  const [showRejectionConfirmation, setShowRejectionConfirmation] = useState(false);
   
   const handleApprove = async () => {
     if (isSubmitting || isApproved) return; // Prevent multiple clicks
@@ -85,16 +97,13 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
         // Mark as rejected to update UI
         setIsRejected(true);
         
-        // Show success toast WITH the rejection reason so the partner can see what they wrote
-        toast.success(
-          <div>
-            <p className="font-medium">Task rejected with feedback</p>
-            <p className="text-sm mt-1 text-gray-600">"{rejectComment}"</p>
-          </div>,
-          {
-            duration: 5000, // Longer duration to read the feedback
-          }
-        );
+        // Show rejection confirmation dialog instead of a toast
+        setShowRejectionConfirmation(true);
+        
+        // Auto close the dialog after 10 seconds
+        setTimeout(() => {
+          setShowRejectionConfirmation(false);
+        }, 10000);
       } else {
         toast.error('Failed to reject task. Please try again.', {
           duration: 3000,
@@ -116,6 +125,11 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
       });
       handleCloseRejectDialog();
     }
+  };
+
+  // Handle closing the confirmation dialog
+  const handleCloseConfirmation = () => {
+    setShowRejectionConfirmation(false);
   };
   
   const pointsDescription = calculateTaskPointsDescription(task.rating);
@@ -160,6 +174,29 @@ const PendingTaskCard = ({ task, userName }: PendingTaskCardProps) => {
         onClose={handleCloseRejectDialog}
         onReject={handleReject}
       />
+
+      {/* Rejection Confirmation Dialog */}
+      <AlertDialog open={showRejectionConfirmation} onOpenChange={handleCloseConfirmation}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <div className="flex justify-center mb-2">
+              <CheckCircle className="h-12 w-12 text-red-500" />
+            </div>
+            <AlertDialogTitle className="text-center">Task Rejected</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              You've rejected the task "{task.title}" with the following feedback:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="bg-gray-50 border border-gray-200 rounded-md p-4 my-2">
+            <p className="text-gray-800 italic">"{rejectComment}"</p>
+          </div>
+          
+          <AlertDialogFooter className="sm:justify-center">
+            <AlertDialogAction>Okay</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
