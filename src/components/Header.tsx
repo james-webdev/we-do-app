@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Settings } from 'lucide-react';
+import { Loader2, Settings, Heart, BicepsFlexed } from 'lucide-react';
 
 const Header = () => {
   const { currentUser } = useApp();
@@ -13,8 +13,12 @@ const Header = () => {
     <header className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
       <div className="container flex items-center justify-between h-16 px-4 mx-auto">
         <Link to="/" className="flex items-center space-x-2">
+          <div className="flex items-center">
+            <Heart className="w-6 h-6 text-primary" fill="currentColor" />
+            <BicepsFlexed className="w-6 h-6 text-secondary ml-1" />
+          </div>
           <span className="text-2xl font-bold text-primary">
-            Balance<span className="text-secondary">Beam</span>
+            We<span className="text-secondary">Do</span>
           </span>
         </Link>
         
