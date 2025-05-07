@@ -14,7 +14,7 @@ import { Slider } from '@/components/ui/slider';
 
 const AddTask = () => {
   const navigate = useNavigate();
-  const { currentUser, addNewTask } = useApp();
+  const { currentUser, addNewTask, partner } = useApp();
   
   const [title, setTitle] = React.useState('');
   const [type, setType] = React.useState<TaskType>('mental');
@@ -40,6 +40,11 @@ const AddTask = () => {
       return;
     }
     
+    if (!partner) {
+      toast.error('You must connect with a partner to submit tasks');
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
       
@@ -54,6 +59,7 @@ const AddTask = () => {
         timestamp
       });
       
+      toast.success('Task submitted for partner approval');
       navigate('/');
     } catch (error) {
       console.error('Error adding task:', error);

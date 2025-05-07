@@ -175,10 +175,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
             // Filter for pending tasks from partner
             if (profileResult.partner_id) {
+              console.log("Checking for pending tasks from partner:", profileResult.partner_id);
               const pendingPartnerTasks = fetchedTasksData.filter(task => 
                 task.status === 'pending' && 
                 task.user_id === profileResult.partner_id
               );
+              
+              console.log("Found pending partner tasks:", pendingPartnerTasks.length);
               
               const formattedPendingTasks: Task[] = pendingPartnerTasks.map(task => ({
                 id: task.id,
@@ -193,6 +196,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               
               setPendingTasks(formattedPendingTasks);
             } else {
+              console.log("No partner found, no pending tasks to load");
               setPendingTasks([]);
             }
             
@@ -390,6 +394,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       
+      console.log("Submitting new task for approval:", taskData);
+      
       // Insert task with pending status
       const { data, error } = await supabase
         .from('tasks')
@@ -405,10 +411,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         .select()
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error submitting task:", error);
+        throw error;
+      }
       
+      console.log("Task submitted successfully:", data);
       toast.success('Task submitted for partner approval');
-      await fetchData(); // Refresh all data
+      await fetchData(); // Refresh all data to update pendingTasks for the partner
     } catch (error: any) {
       console.error('Error adding task:', error);
       toast.error(error.message || 'Failed to add task');

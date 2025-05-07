@@ -1,12 +1,17 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import PendingTaskCard from './PendingTaskCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 
 const PendingTasksList = () => {
-  const { pendingTasks, partner } = useApp();
+  const { pendingTasks, partner, refreshData } = useApp();
+
+  // Refresh data when component mounts to ensure we have the latest pending tasks
+  useEffect(() => {
+    refreshData();
+  }, [refreshData]);
 
   if (pendingTasks.length === 0) {
     return null;
