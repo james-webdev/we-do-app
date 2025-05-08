@@ -290,9 +290,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             console.error('Error calculating available points:', error);
           }
           
-          // Get rewards
+          // Get rewards - Both approved rewards and pending rewards from partner
           try {
             console.log("Fetching rewards for user:", user.id);
+            // Get all approved rewards - these should be visible to both partners
             const { data: rewardsData, error: rewardsError } = await supabase
               .from('rewards')
               .select('*')
@@ -301,7 +302,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             if (rewardsError) {
               console.error('Error fetching rewards:', rewardsError);
             } else if (rewardsData) {
-              console.log("Rewards loaded:", rewardsData.length);
+              console.log("Approved rewards loaded:", rewardsData.length);
               
               const formattedRewards: Reward[] = rewardsData.map(reward => ({
                 id: reward.id,
@@ -319,13 +320,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             
             // Get pending rewards from partner
             if (profileResult.partner_id) {
+              console.log("Fetching pending rewards from partner:", profileResult.partner_id);
               const { data: pendingRewardsData, error: pendingRewardsError } = await supabase
                 .from('rewards')
                 .select('*')
                 .eq('status', 'pending')
                 .eq('created_by_id', profileResult.partner_id);
                 
-              if (!pendingRewardsError && pendingRewardsData) {
+              if (pendingRewardsError) {
+                console.error('Error fetching pending rewards:', pendingRewardsError);
+              } else if (pendingRewardsData) {
                 console.log("Pending rewards loaded:", pendingRewardsData.length);
                 
                 const formattedPendingRewards: Reward[] = pendingRewardsData.map(reward => ({
@@ -886,9 +890,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Updated approveReward to use Supabase
+  // Updated approveReward to use Supabase - ensures rewards are visible to both partners
   const approveReward = async (rewardId: string): Promise<boolean> => {
     try {
+      console.log(`Approving reward ID: ${rewardId}`);
+      
+      // Update the reward status to 'approved' in the database
       const { error } = await supabase
         .from('rewards')
         .update({ status: 'approved' })
@@ -900,7 +907,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
       
-      toast.success('Reward approved');
+      // After approval, trigger a data refresh to update both users' rewards lists
+      console.log('Reward approved successfully, refreshing data');
       
       // Add a slight delay before refreshing data to allow the database to update
       setTimeout(() => {

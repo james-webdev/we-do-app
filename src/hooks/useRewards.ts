@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Reward, RewardStatus } from '@/types';
@@ -63,17 +64,17 @@ export function useRewards() {
     }
   }, [appRewards, localApprovedRewards, recentlyApprovedIds]);
   
-  // Combine app rewards with mock rewards and locally approved rewards
+  // Combine app rewards with locally approved rewards first
   const allRewards = [...(appRewards || []), ...localApprovedRewards];
   
-  // Add mock rewards if they don't already exist in the app rewards
+  // Then add mock rewards if they don't already exist in the combined rewards
   if (mockRewards) {
     mockRewards.forEach(mockReward => {
-      const existsInAppRewards = allRewards.some(
+      const existsInAllRewards = allRewards.some(
         reward => reward.title === mockReward.title
       );
       
-      if (!existsInAppRewards) {
+      if (!existsInAllRewards) {
         allRewards.push(mockReward);
       }
     });
@@ -112,13 +113,14 @@ export function useRewards() {
 
   // Handle approving a reward - immediately adds it to the rewards list
   const handleApproveReward = async (rewardId: string) => {
+    // First find the reward in the pending rewards
     const reward = localPendingRewards.find(r => r.id === rewardId);
     if (!reward) return;
 
     // Add to recently approved IDs to prevent it from reappearing in pending
     setRecentlyApprovedIds(prev => [...prev, rewardId]);
     
-    // Remove from pending rewards locally
+    // Remove from pending rewards locally immediately
     setLocalPendingRewards(prev => prev.filter(r => r.id !== rewardId));
     
     // Add to local approved rewards immediately with the status changed to 'approved'
@@ -127,6 +129,7 @@ export function useRewards() {
       status: 'approved' as RewardStatus
     };
     
+    // Update the local state first for immediate UI feedback
     setLocalApprovedRewards(prev => [...prev, approvedReward]);
     
     // Update in the backend to make it visible to both partners
@@ -135,7 +138,7 @@ export function useRewards() {
     
     if (success) {
       toast.success('Reward approved successfully');
-      // We keep the reward in localApprovedRewards until the next refresh brings it in from appRewards
+      // The approved reward will be fetched for both partners on the next data refresh
     } else {
       // If backend update fails, revert local changes
       setRecentlyApprovedIds(prev => prev.filter(id => id !== rewardId));
@@ -147,16 +150,19 @@ export function useRewards() {
   
   // Handle rejecting a reward
   const handleRejectReward = async (rewardId: string) => {
-    // Remove from pending rewards locally first
+    // Remove from pending rewards locally first for immediate UI feedback
     const reward = localPendingRewards.find(r => r.id === rewardId);
     if (!reward) return;
     
     // Add to recently approved IDs to prevent it from reappearing in pending
     setRecentlyApprovedIds(prev => [...prev, rewardId]);
     
+    // Update local state immediately
     setLocalPendingRewards(prev => prev.filter(r => r.id !== rewardId));
     
+    // Update in the backend
     const success = await rejectReward(rewardId);
+    
     if (success) {
       toast.success('Reward rejected');
     } else {
