@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,10 +19,16 @@ const Rewards = () => {
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [showProposeDialog, setShowProposeDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<Reward | null>(null);
+  const [localApprovedRewards, setLocalApprovedRewards] = useState<Reward[]>([]);
+  const [localPendingRewards, setLocalPendingRewards] = useState<Reward[]>([]);
   
-  // Combine app rewards with mock rewards for display
-  // This ensures we always have some default rewards available
-  const allRewards = [...(appRewards || [])];
+  // Update local state when app state changes
+  useEffect(() => {
+    setLocalPendingRewards(pendingRewards || []);
+  }, [pendingRewards]);
+  
+  // Combine app rewards with mock rewards and locally approved rewards
+  const allRewards = [...(appRewards || []), ...localApprovedRewards];
   
   // Add mock rewards if they don't already exist in the app rewards
   if (mockRewards) {
@@ -66,17 +72,44 @@ const Rewards = () => {
 
   // Handle approving a reward - immediately adds it to the rewards list
   const handleApproveReward = async (rewardId: string) => {
+    const reward = localPendingRewards.find(r => r.id === rewardId);
+    if (!reward) return;
+
+    // Add to local approved rewards immediately
+    setLocalApprovedRewards(prev => [...prev, reward]);
+    
+    // Remove from pending rewards locally
+    setLocalPendingRewards(prev => prev.filter(r => r.id !== rewardId));
+    
+    // Update in the backend
     const success = await approveReward(rewardId);
     if (success) {
       toast.success('Reward approved successfully');
+    } else {
+      // If backend update fails, revert local changes
+      setLocalApprovedRewards(prev => prev.filter(r => r.id !== rewardId));
+      setLocalPendingRewards(prev => [...prev, reward]);
+      toast.error('Failed to approve reward');
     }
   };
   
   // Handle rejecting a reward
   const handleRejectReward = async (rewardId: string) => {
+    // Remove from pending rewards locally first
+    const reward = localPendingRewards.find(r => r.id === rewardId);
+    if (reward) {
+      setLocalPendingRewards(prev => prev.filter(r => r.id !== rewardId));
+    }
+    
     const success = await rejectReward(rewardId);
     if (success) {
       toast.success('Reward rejected');
+    } else {
+      // Revert local change if backend fails
+      if (reward) {
+        setLocalPendingRewards(prev => [...prev, reward]);
+      }
+      toast.error('Failed to reject reward');
     }
   };
   
@@ -127,11 +160,11 @@ const Rewards = () => {
         </div>
       </div>
       
-      {pendingRewards && pendingRewards.length > 0 && (
+      {localPendingRewards && localPendingRewards.length > 0 && (
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Rewards Pending Your Approval</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pendingRewards.map((reward) => (
+            {localPendingRewards.map((reward) => (
               <PendingRewardCard
                 key={reward.id}
                 reward={reward}
