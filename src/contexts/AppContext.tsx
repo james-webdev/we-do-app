@@ -418,6 +418,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return await redeemReward(rewardId, reward.pointsCost, currentUser.id, fetchData);
   };
 
+  // Wrapper for connectPartner
+  const handleConnectPartner = async (partnerEmail: string) => {
+    return await connectPartner(partnerEmail, currentUser?.id, currentUser?.partnerId, fetchData);
+  };
+
   // Create wrapper functions that use the imported service functions
   const handleAddNewTask = async (taskData: Omit<Task, "id" | "status">) => {
     await addNewTask(taskData, currentUser?.id, currentUser?.partnerId, fetchData);
