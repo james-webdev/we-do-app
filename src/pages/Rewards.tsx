@@ -21,12 +21,11 @@ const Rewards = () => {
   
   const {
     allRewards,
-    localPendingRewards,
+    pendingRewards,
     availablePoints,
     isLoading,
     selectedReward,
     setSelectedReward,
-    isRedeeming,
     showDeleteConfirm,
     setShowDeleteConfirm,
     handleRedeemClick,
@@ -38,33 +37,23 @@ const Rewards = () => {
     proposeReward
   } = useRewards();
 
-  // Force a data refresh when the component mounts to ensure we have the very latest data
+  // Force refresh on mount and periodically
   useEffect(() => {
     console.log("Rewards component mounted, forcing a data refresh");
-    // This will ensure we get the absolute latest data from the database
     refreshData();
     
-    // Set up periodic refresh every 30 seconds to ensure data is current
+    // Set up periodic refresh every 30 seconds
     const intervalId = setInterval(() => {
       console.log("Performing automatic data refresh");
       refreshData();
     }, 30000);
     
-    // Clear the interval when component unmounts
+    // Clean up on unmount
     return () => clearInterval(intervalId);
-    
-    // Don't include refreshData in dependencies to avoid infinite loop
-  }, []); // Empty dependency array ensures this runs only once on mount
-  
-  // Log the rewards that we're passing to AvailableRewards
-  useEffect(() => {
-    console.log("All rewards about to be displayed:", allRewards);
-    console.log("Pending rewards about to be displayed:", localPendingRewards);
-  }, [allRewards, localPendingRewards]);
+  }, []);
   
   const handleManualRefresh = async () => {
     setIsManualRefreshing(true);
-    console.log("Manual refresh requested");
     await refreshData();
     
     // Add a delay before setting isManualRefreshing back to false
@@ -98,11 +87,13 @@ const Rewards = () => {
         </Button>
       </div>
       
-      <PendingRewardsList 
-        pendingRewards={localPendingRewards} 
-        onApprove={handleApproveReward} 
-        onReject={handleRejectReward} 
-      />
+      {pendingRewards && pendingRewards.length > 0 && (
+        <PendingRewardsList 
+          pendingRewards={pendingRewards} 
+          onApprove={handleApproveReward} 
+          onReject={handleRejectReward} 
+        />
+      )}
       
       <AvailableRewards 
         rewards={allRewards} 
@@ -114,7 +105,7 @@ const Rewards = () => {
       {/* Redeem Reward Dialog */}
       <RedeemRewardDialog 
         selectedReward={selectedReward}
-        isRedeeming={isRedeeming}
+        isRedeeming={false}
         onClose={() => setSelectedReward(null)}
         onConfirm={handleRedeemConfirm}
       />
@@ -157,10 +148,7 @@ const Rewards = () => {
       if (success) {
         setShowProposeDialog(false);
         
-        // Force a refresh after submitting a proposal
-        toast.success("Reward proposal submitted!");
-        
-        // Make sure we refresh data after submitting to get the latest state
+        // Make sure we refresh data after submitting
         setTimeout(() => {
           refreshData();
         }, 500);

@@ -265,7 +265,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           
           // Get rewards - Both approved rewards and pending rewards from partner
           try {
-            console.log("Fetching rewards for user:", user.id);
+            console.log("Fetching rewards for user:", user?.id);
             // Get all approved rewards - these should be visible to both partners
             const { data: rewardsData, error: rewardsError } = await supabase
               .from('rewards')
@@ -274,6 +274,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               
             if (rewardsError) {
               console.error('Error fetching rewards:', rewardsError);
+              toast.error('Failed to load rewards');
             } else if (rewardsData) {
               console.log("Approved rewards loaded:", rewardsData.length);
               
@@ -292,7 +293,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             }
             
             // Get pending rewards from partner
-            if (profileResult.partner_id) {
+            if (profileResult?.partner_id) {
               console.log("Fetching pending rewards from partner:", profileResult.partner_id);
               const { data: pendingRewardsData, error: pendingRewardsError } = await supabase
                 .from('rewards')
@@ -375,6 +376,48 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
+  // Wrapper for rewardService.proposeReward
+  const handleProposeReward = async (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => {
+    const { proposeReward } = await import('./rewardService');
+    return await proposeReward(reward, currentUser?.id, fetchData);
+  };
+
+  // Wrapper for rewardService.approveReward
+  const handleApproveReward = async (rewardId: string) => {
+    const { approveReward } = await import('./rewardService');
+    return await approveReward(rewardId, fetchData);
+  };
+
+  // Wrapper for rewardService.rejectReward
+  const handleRejectReward = async (rewardId: string) => {
+    const { rejectReward } = await import('./rewardService');
+    return await rejectReward(rewardId, fetchData);
+  };
+
+  // Wrapper for rewardService.deleteReward
+  const handleDeleteReward = async (rewardId: string) => {
+    const { deleteReward } = await import('./rewardService');
+    return await deleteReward(rewardId, fetchData);
+  };
+
+  // Wrapper for rewardService.redeemReward
+  const handleRedeemReward = async (rewardId: string) => {
+    if (!currentUser) {
+      toast.error('User not authenticated');
+      return false;
+    }
+    
+    // Find the reward to get its cost
+    const reward = rewards.find(r => r.id === rewardId);
+    if (!reward) {
+      toast.error('Reward not found');
+      return false;
+    }
+    
+    const { redeemReward } = await import('./rewardService');
+    return await redeemReward(rewardId, reward.pointsCost, currentUser.id, fetchData);
+  };
+
   // Create wrapper functions that use the imported service functions
   const handleAddNewTask = async (taskData: Omit<Task, "id" | "status">) => {
     await addNewTask(taskData, currentUser?.id, currentUser?.partnerId, fetchData);
@@ -398,30 +441,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const handleDeleteBrowniePoint = async (pointId: string) => {
     await deleteBrowniePoint(pointId, fetchData);
-  };
-
-  const handleRedeemReward = async (rewardId: string) => {
-    return await redeemReward(rewardId, rewards, availablePoints, currentUser?.id, fetchData);
-  };
-
-  const handleDeleteReward = async (rewardId: string) => {
-    return await deleteReward(rewardId, currentUser?.id, fetchData);
-  };
-
-  const handleProposeReward = async (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => {
-    return await proposeReward(reward, currentUser?.id, currentUser?.partnerId, fetchData);
-  };
-
-  const handleApproveReward = async (rewardId: string) => {
-    return await approveReward(rewardId, fetchData);
-  };
-
-  const handleRejectReward = async (rewardId: string) => {
-    return await rejectReward(rewardId, fetchData);
-  };
-
-  const handleConnectPartner = async (partnerEmail: string) => {
-    return await connectPartner(partnerEmail, currentUser?.id, currentUser?.partnerId, fetchData);
   };
 
   return (

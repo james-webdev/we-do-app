@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { RewardCard } from '@/components/reward/RewardCard';
 import { Reward } from '@/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -13,22 +13,13 @@ interface AvailableRewardsProps {
 }
 
 export function AvailableRewards({ rewards, availablePoints, onRedeemClick, onDeleteClick }: AvailableRewardsProps) {
-  // Make sure we're ONLY displaying approved rewards by explicitly filtering
-  const approvedRewards = rewards.filter(reward => {
-    // Log each reward being filtered
-    console.log("Filtering reward:", reward, "Status:", reward.status);
-    
-    // Very strict check for approved status only
-    return reward.status === 'approved';
-  });
+  // Only display approved rewards
+  const approvedRewards = rewards.filter(reward => reward.status === 'approved');
   
-  // Log the filtered rewards to verify what's being displayed
-  useEffect(() => {
-    console.log("Approved rewards after filtering:", approvedRewards);
-  }, [approvedRewards]);
+  console.log("Available rewards after filtering:", approvedRewards);
 
   return (
-    <div>
+    <div className="mb-8">
       <h2 className="text-xl font-semibold mb-4">Available Rewards</h2>
       {approvedRewards.length === 0 ? (
         <div className="bg-gray-50 p-6 rounded-md text-center">
@@ -37,7 +28,7 @@ export function AvailableRewards({ rewards, availablePoints, onRedeemClick, onDe
         </div>
       ) : (
         <>
-          <Alert variant="default" className="mb-4 border-blue-200 bg-blue-50">
+          <Alert variant="outline" className="mb-4 border-blue-200 bg-blue-50">
             <Info className="h-4 w-4 mr-2 text-blue-500" />
             <AlertDescription>
               Deleting a reward will permanently remove it from the database.

@@ -3,24 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { Reward } from '@/types';
 import { toast } from '@/components/ui/sonner';
 
+/**
+ * Creates a new reward proposal in the database
+ */
 export async function proposeReward(
   reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">,
   currentUserId: string | undefined,
-  currentUserPartnerId: string | null | undefined,
   refreshData: () => void
 ): Promise<boolean> {
   try {
     if (!currentUserId) {
-      toast.error('User not authenticated');
-      return false;
-    }
-    
-    if (!currentUserPartnerId) {
-      toast.error('You need to connect with a partner first');
+      toast.error('You must be logged in to propose rewards');
       return false;
     }
 
-    const { data, error } = await supabase
+    console.log('Proposing new reward:', reward);
+    
+    const { error } = await supabase
       .from('rewards')
       .insert({
         title: reward.title,
@@ -29,41 +28,34 @@ export async function proposeReward(
         image_icon: reward.imageIcon,
         status: 'pending',
         created_by_id: currentUserId,
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single();
+      });
       
     if (error) {
       console.error('Error proposing reward:', error);
-      toast.error(error.message || 'Failed to propose reward');
+      toast.error('Failed to propose reward: ' + error.message);
       return false;
     }
     
-    console.log("Reward proposed successfully:", data);
-    toast.success('Reward proposal submitted for partner approval');
-    
-    // Add a slight delay before refreshing data to allow the database to update
-    setTimeout(() => {
-      refreshData();
-    }, 300);
-    
+    toast.success('Reward proposed for approval');
+    refreshData();
     return true;
   } catch (error: any) {
-    console.error('Error proposing reward:', error);
-    toast.error(error.message || 'Failed to propose reward');
+    console.error('Exception while proposing reward:', error);
+    toast.error('Failed to propose reward');
     return false;
   }
 }
 
+/**
+ * Approves a reward by changing its status to 'approved'
+ */
 export async function approveReward(
   rewardId: string,
   refreshData: () => void
 ): Promise<boolean> {
   try {
-    console.log(`Approving reward ID: ${rewardId}`);
+    console.log('Approving reward ID:', rewardId);
     
-    // Update the reward status to 'approved' in the database
     const { error } = await supabase
       .from('rewards')
       .update({ status: 'approved' })
@@ -71,106 +63,73 @@ export async function approveReward(
       
     if (error) {
       console.error('Error approving reward:', error);
-      toast.error(error.message || 'Failed to approve reward');
+      toast.error('Failed to approve reward: ' + error.message);
       return false;
     }
     
-    // After approval, trigger a data refresh to update both users' rewards lists
-    console.log('Reward approved successfully, refreshing data');
-    
-    // Add a slight delay before refreshing data to allow the database to update
-    setTimeout(() => {
-      refreshData();
-    }, 300);
-    
+    toast.success('Reward approved');
+    refreshData();
     return true;
   } catch (error: any) {
-    console.error('Error approving reward:', error);
-    toast.error(error.message || 'Failed to approve reward');
+    console.error('Exception while approving reward:', error);
+    toast.error('Failed to approve reward');
     return false;
   }
 }
 
+/**
+ * Rejects a reward by deleting it from the database
+ */
 export async function rejectReward(
   rewardId: string,
   refreshData: () => void
 ): Promise<boolean> {
   try {
-    console.log(`Rejecting and removing reward ID: ${rewardId}`);
+    console.log('Rejecting reward ID:', rewardId);
     
-    // First, verify the reward exists before attempting to delete
-    const { data: checkReward, error: checkError } = await supabase
-      .from('rewards')
-      .select('id')
-      .eq('id', rewardId)
-      .single();
-      
-    if (checkError || !checkReward) {
-      console.error('Error checking reward existence:', checkError);
-      toast.error('Failed to find the reward to reject');
-      return false;
+    // Only delete from database if it's a real reward (not mock data)
+    if (rewardId.startsWith('mock-')) {
+      console.log('Skipping database delete for mock reward');
+      return true;
     }
     
-    // Force deletion with no filters to ensure removal
     const { error } = await supabase
       .from('rewards')
       .delete()
       .eq('id', rewardId);
       
     if (error) {
-      console.error('Error deleting rejected reward:', error);
-      toast.error(error.message || 'Failed to reject reward');
+      console.error('Error rejecting reward:', error);
+      toast.error('Failed to reject reward: ' + error.message);
       return false;
     }
     
-    toast.success('Reward rejected and permanently removed');
-    console.log(`Successfully deleted reward ID: ${rewardId} from database`);
-    
-    // Add a longer delay before refreshing data to ensure the deletion is processed
-    setTimeout(() => {
-      refreshData();
-    }, 500);
-    
+    toast.success('Reward rejected');
+    refreshData();
     return true;
   } catch (error: any) {
-    console.error('Error rejecting reward:', error);
-    toast.error(error.message || 'Failed to reject reward');
+    console.error('Exception while rejecting reward:', error);
+    toast.error('Failed to reject reward');
     return false;
   }
 }
 
+/**
+ * Deletes a reward from the database
+ */
 export async function deleteReward(
   rewardId: string,
-  currentUserId: string | undefined,
   refreshData: () => void
 ): Promise<boolean> {
   try {
-    if (!currentUserId) {
-      toast.error('User not authenticated');
-      return false;
-    }
-
-    console.log(`Deleting reward ID: ${rewardId}`);
+    console.log('Deleting reward ID:', rewardId);
     
-    // Detect if this is a mock reward (usually start with "reward" prefix)
-    if (rewardId.startsWith('reward')) {
-      console.log("Detected a mock reward, handling locally only");
+    // Only delete from database if it's a real reward (not mock data)
+    if (rewardId.startsWith('mock-')) {
+      console.log('Skipping database delete for mock reward');
       return true;
     }
     
-    // First, verify the reward exists before attempting to delete
-    const { data: checkReward, error: checkError } = await supabase
-      .from('rewards')
-      .select('id')
-      .eq('id', rewardId)
-      .single();
-      
-    if (checkError || !checkReward) {
-      console.error('Error checking reward existence:', checkError);
-      toast.error('Failed to find the reward to delete');
-      return false;
-    }
-
     const { error } = await supabase
       .from('rewards')
       .delete()
@@ -178,96 +137,98 @@ export async function deleteReward(
       
     if (error) {
       console.error('Error deleting reward:', error);
-      toast.error(error.message || 'Failed to delete reward');
+      toast.error('Failed to delete reward: ' + error.message);
       return false;
     }
     
-    toast.success('Reward deleted successfully');
-    console.log(`Successfully deleted reward ID: ${rewardId} from database`);
-    
-    // Add a slight delay before refreshing data to allow the database to update
-    setTimeout(() => {
-      refreshData();
-    }, 300);
-    
+    toast.success('Reward deleted');
+    refreshData();
     return true;
   } catch (error: any) {
-    console.error('Error deleting reward:', error);
-    toast.error(error.message || 'Failed to delete reward');
+    console.error('Exception while deleting reward:', error);
+    toast.error('Failed to delete reward');
     return false;
   }
 }
 
+/**
+ * Redeems a reward and marks points as redeemed
+ */
 export async function redeemReward(
   rewardId: string,
-  rewards: Reward[],
-  availablePoints: number,
+  pointsCost: number,
   currentUserId: string | undefined,
   refreshData: () => void
 ): Promise<boolean> {
   try {
     if (!currentUserId) {
-      toast.error('User not authenticated');
+      toast.error('You must be logged in to redeem rewards');
       return false;
     }
     
-    // Get the reward details
-    const reward = rewards.find(r => r.id === rewardId);
-    if (!reward) {
-      toast.error('Reward not found');
-      return false;
+    // For mock rewards, just show a success message
+    if (rewardId.startsWith('mock-')) {
+      toast.success('Mock reward redeemed');
+      return true;
     }
     
-    // Check if user has enough points
-    if (availablePoints < reward.pointsCost) {
-      toast.error('Not enough points to redeem this reward');
-      return false;
-    }
-    
-    // In a real app, we'd mark specific points as redeemed
-    // For now, we'll mark the oldest unredeemed points as redeemed
-    const { data: pointsToRedeem, error: fetchError } = await supabase
+    // Get unredeemed brownie points
+    const { data: availablePoints, error: pointsError } = await supabase
       .from('brownie_points')
       .select('*')
       .eq('to_user_id', currentUserId)
       .eq('redeemed', false)
       .order('created_at', { ascending: true });
       
-    if (fetchError) throw fetchError;
+    if (pointsError) {
+      console.error('Error fetching available points:', pointsError);
+      toast.error('Failed to fetch available points');
+      return false;
+    }
     
-    if (pointsToRedeem) {
-      let remainingCost = reward.pointsCost;
-      const pointsToUpdate = [];
+    if (!availablePoints || availablePoints.length === 0) {
+      toast.error('No available points to redeem');
+      return false;
+    }
+    
+    // Calculate total available points
+    const totalAvailable = availablePoints.reduce((sum, point) => sum + point.points, 0);
+    
+    if (totalAvailable < pointsCost) {
+      toast.error(`Not enough points to redeem this reward (need ${pointsCost}, have ${totalAvailable})`);
+      return false;
+    }
+    
+    // Mark points as redeemed
+    let remainingCost = pointsCost;
+    const pointsToUpdate = [];
+    
+    for (const point of availablePoints) {
+      if (remainingCost <= 0) break;
       
-      for (const point of pointsToRedeem) {
-        if (remainingCost <= 0) break;
+      pointsToUpdate.push(point.id);
+      remainingCost -= point.points;
+    }
+    
+    if (pointsToUpdate.length > 0) {
+      const { error: updateError } = await supabase
+        .from('brownie_points')
+        .update({ redeemed: true })
+        .in('id', pointsToUpdate);
         
-        pointsToUpdate.push(point.id);
-        remainingCost -= point.points;
-      }
-      
-      // Update points to redeemed
-      if (pointsToUpdate.length > 0) {
-        const { error: updateError } = await supabase
-          .from('brownie_points')
-          .update({ redeemed: true })
-          .in('id', pointsToUpdate);
-          
-        if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error redeeming points:', updateError);
+        toast.error('Failed to redeem points');
+        return false;
       }
     }
     
     toast.success('Reward redeemed successfully!');
-    
-    // Add a slight delay before refreshing data to allow the database to update
-    setTimeout(() => {
-      refreshData();
-    }, 300);
-    
+    refreshData();
     return true;
   } catch (error: any) {
-    console.error('Error redeeming reward:', error);
-    toast.error(error.message || 'Failed to redeem reward');
+    console.error('Exception while redeeming reward:', error);
+    toast.error('Failed to redeem reward');
     return false;
   }
 }
