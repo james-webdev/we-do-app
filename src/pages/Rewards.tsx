@@ -44,6 +44,15 @@ const Rewards = () => {
     // This will ensure we get the absolute latest data from the database
     refreshData();
     
+    // Set up periodic refresh every 30 seconds to ensure data is current
+    const intervalId = setInterval(() => {
+      console.log("Performing automatic data refresh");
+      refreshData();
+    }, 30000);
+    
+    // Clear the interval when component unmounts
+    return () => clearInterval(intervalId);
+    
     // Don't include refreshData in dependencies to avoid infinite loop
   }, []); // Empty dependency array ensures this runs only once on mount
   

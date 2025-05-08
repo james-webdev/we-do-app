@@ -111,7 +111,7 @@ export async function rejectReward(
       return false;
     }
     
-    // Delete the rejected reward from the database completely
+    // Force deletion with no filters to ensure removal
     const { error } = await supabase
       .from('rewards')
       .delete()
@@ -123,13 +123,13 @@ export async function rejectReward(
       return false;
     }
     
-    toast.success('Reward rejected and removed');
+    toast.success('Reward rejected and permanently removed');
     console.log(`Successfully deleted reward ID: ${rewardId} from database`);
     
-    // Add a slight delay before refreshing data to allow the database to update
+    // Add a longer delay before refreshing data to ensure the deletion is processed
     setTimeout(() => {
       refreshData();
-    }, 300);
+    }, 500);
     
     return true;
   } catch (error: any) {

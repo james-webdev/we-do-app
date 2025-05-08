@@ -193,7 +193,7 @@ export function useRewards() {
       // Force a refresh to ensure the database is in sync
       setTimeout(() => {
         refreshData();
-      }, 500);
+      }, 1000); // Increase timeout to ensure deletion completes
     } else {
       // Revert local change if backend fails
       setRecentlyProcessedIds(prev => prev.filter(id => id !== rewardId));
