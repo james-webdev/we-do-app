@@ -10,6 +10,7 @@ import { RedeemRewardDialog } from '@/components/reward/RedeemRewardDialog';
 import { DeleteRewardDialog } from '@/components/reward/DeleteRewardDialog';
 import { useRewards } from '@/hooks/useRewards';
 import { useApp } from '@/contexts/AppContext';
+import { toast } from '@/components/ui/sonner';
 
 const Rewards = () => {
   const [showProposeDialog, setShowProposeDialog] = useState(false);
@@ -34,12 +35,19 @@ const Rewards = () => {
     proposeReward
   } = useRewards();
 
-  // Refresh data only once when component mounts
+  // Force a data refresh when the component mounts to ensure we have the very latest data
   useEffect(() => {
-    console.log("Rewards component mounted, refreshing data");
+    console.log("Rewards component mounted, forcing a data refresh");
+    // This will ensure we get the absolute latest data from the database
     refreshData();
+    
     // Don't include refreshData in dependencies to avoid infinite loop
   }, []); // Empty dependency array ensures this runs only once on mount
+  
+  // Log the rewards that we're passing to AvailableRewards
+  useEffect(() => {
+    console.log("All rewards about to be displayed:", allRewards);
+  }, [allRewards]);
   
   if (isLoading) {
     return <LoadingRewards />;
@@ -110,6 +118,12 @@ const Rewards = () => {
       
       if (success) {
         setShowProposeDialog(false);
+        
+        // Force a refresh after submitting a proposal
+        toast.success("Reward proposal submitted!");
+        setTimeout(() => {
+          refreshData();
+        }, 500);
       }
     } catch (error) {
       console.error(error);

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { RewardCard } from '@/components/reward/RewardCard';
 import { Reward } from '@/types';
 
@@ -11,10 +11,19 @@ interface AvailableRewardsProps {
 }
 
 export function AvailableRewards({ rewards, availablePoints, onRedeemClick, onDeleteClick }: AvailableRewardsProps) {
-  // Make sure we're only displaying approved rewards and filtering out any rejected ones
-  const approvedRewards = rewards.filter(reward => 
-    reward.status === 'approved' || reward.status === undefined
-  );
+  // Make sure we're ONLY displaying approved rewards by explicitly filtering
+  const approvedRewards = rewards.filter(reward => {
+    // Log each reward to see what's actually coming in
+    console.log("Filtering reward:", reward);
+    
+    // Only include rewards that are explicitly approved, filter out any with status=rejected or pending
+    return reward.status === 'approved';
+  });
+  
+  // Log the filtered rewards to verify what's being displayed
+  useEffect(() => {
+    console.log("Approved rewards after filtering:", approvedRewards);
+  }, [approvedRewards]);
 
   return (
     <div>
