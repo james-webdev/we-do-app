@@ -46,7 +46,7 @@ interface AppContextType {
   redeemReward: (rewardId: string) => Promise<boolean>;
   connectPartner: (partnerEmail: string) => Promise<boolean>;
   hasPartner: boolean;
-  proposeReward: (reward: Reward) => Promise<boolean>; // New
+  proposeReward: (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => Promise<boolean>; // New
   approveReward: (rewardId: string) => Promise<boolean>; // New
   rejectReward: (rewardId: string) => Promise<boolean>; // New
 }
@@ -289,34 +289,78 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             console.error('Error calculating available points:', error);
           }
           
-          // Get rewards (mockup data)
-          setRewards([
-            {
-              id: '1',
-              title: 'Dinner Out',
-              description: 'Partner cooks dinner of your choice',
-              pointsCost: 10,
-              imageIcon: '🍽️'
-            },
-            {
-              id: '2',
-              title: 'Movie Night',
-              description: 'Your choice of movie plus snacks',
-              pointsCost: 5,
-              imageIcon: '🎬'
-            },
-            {
-              id: '3',
-              title: 'Sleep In',
-              description: 'Partner takes morning duties',
-              pointsCost: 8,
-              imageIcon: '😴'
+          // Get rewards
+          try {
+            console.log("Fetching rewards for user:", user.id);
+            const { data: rewardsData, error: rewardsError } = await supabase
+              .from('rewards')
+              .select('*')
+              .eq('status', 'approved');
+              
+            if (rewardsError) {
+              console.error('Error fetching rewards:', rewardsError);
+            } else if (rewardsData) {
+              console.log("Rewards loaded:", rewardsData.length);
+              
+              const formattedRewards: Reward[] = rewardsData.map(reward => ({
+                id: reward.id,
+                title: reward.title,
+                description: reward.description,
+                pointsCost: reward.points_cost,
+                imageIcon: reward.image_icon,
+                status: reward.status as RewardStatus,
+                createdById: reward.created_by_id,
+                createdAt: new Date(reward.created_at)
+              }));
+              
+              setRewards(formattedRewards);
             }
-          ]);
+            
+            // Get pending rewards from partner
+            if (profileResult.partner_id) {
+              const { data: pendingRewardsData, error: pendingRewardsError } = await supabase
+                .from('rewards')
+                .select('*')
+                .eq('status', 'pending')
+                .eq('created_by_id', profileResult.partner_id);
+                
+              if (!pendingRewardsError && pendingRewardsData) {
+                console.log("Pending rewards loaded:", pendingRewardsData.length);
+                
+                const formattedPendingRewards: Reward[] = pendingRewardsData.map(reward => ({
+                  id: reward.id,
+                  title: reward.title,
+                  description: reward.description,
+                  pointsCost: reward.points_cost,
+                  imageIcon: reward.image_icon,
+                  status: reward.status as RewardStatus,
+                  createdById: reward.created_by_id,
+                  createdAt: new Date(reward.created_at)
+                }));
+                
+                setPendingRewards(formattedPendingRewards);
+              }
+            }
+          } catch (error) {
+            console.error('Error in rewards fetch:', error);
+          }
           
-          // Update the summary with brownie points
-          if (fetchedTasksData && fetchedTasksData.length > 0 && fetchedBrowniePointsData) {
-            calculateSummaryStats(fetchedTasksData, fetchedBrowniePointsData, oneWeekAgo, user.id, profileResult.partner_id);
+          // Calculate available points
+          try {
+            console.log("Calculating available points for user:", user.id);
+            const { data: availablePointsData, error: availableError } = await supabase
+              .from('brownie_points')
+              .select('points')
+              .eq('to_user_id', user.id)
+              .eq('redeemed', false);
+              
+            if (!availableError && availablePointsData) {
+              const points = availablePointsData.reduce((sum, point) => sum + point.points, 0);
+              console.log("Available points:", points);
+              setAvailablePoints(points);
+            }
+          } catch (error) {
+            console.error('Error calculating available points:', error);
           }
         } catch (error) {
           console.error('Error in brownie points fetch:', error);
@@ -758,8 +802,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Mock function for proposing a reward
-  const proposeReward = async (reward: Reward): Promise<boolean> => {
+  // Updated proposeReward to use Supabase
+  const proposeReward = async (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">): Promise<boolean> => {
     try {
       if (!currentUser) {
         toast.error('User not authenticated');
@@ -771,19 +815,34 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // In a real implementation, this would save to a database table
-      // For now, we'll store it in memory
-      const proposedReward = {
-        ...reward,
-        id: `proposed-${Date.now()}`, // Generate a temporary ID
-        createdById: currentUser.id,
-        status: 'pending' as RewardStatus
-      };
-
-      // Add to pending rewards list
-      setPendingRewards([...pendingRewards, proposedReward]);
+      const { data, error } = await supabase
+        .from('rewards')
+        .insert({
+          title: reward.title,
+          description: reward.description,
+          points_cost: reward.pointsCost,
+          image_icon: reward.imageIcon,
+          status: 'pending',
+          created_by_id: currentUser.id,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+        
+      if (error) {
+        console.error('Error proposing reward:', error);
+        toast.error(error.message || 'Failed to propose reward');
+        return false;
+      }
       
-      toast.success('Reward proposal submitted');
+      console.log("Reward proposed successfully:", data);
+      toast.success('Reward proposal submitted for partner approval');
+      
+      // Add a slight delay before refreshing data to allow the database to update
+      setTimeout(() => {
+        fetchData();
+      }, 300);
+      
       return true;
     } catch (error: any) {
       console.error('Error proposing reward:', error);
@@ -792,20 +851,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Mock function for approving a proposed reward
+  // Updated approveReward to use Supabase
   const approveReward = async (rewardId: string): Promise<boolean> => {
     try {
-      // Find the reward and update its status
-      const updatedPendingRewards = pendingRewards.filter(r => r.id !== rewardId);
-      const approvedReward = pendingRewards.find(r => r.id === rewardId);
-      
-      if (approvedReward) {
-        approvedReward.status = 'approved';
-        setRewards([...rewards, approvedReward]);
+      const { error } = await supabase
+        .from('rewards')
+        .update({ status: 'approved' })
+        .eq('id', rewardId);
+        
+      if (error) {
+        console.error('Error approving reward:', error);
+        toast.error(error.message || 'Failed to approve reward');
+        return false;
       }
       
-      setPendingRewards(updatedPendingRewards);
       toast.success('Reward approved');
+      
+      // Add a slight delay before refreshing data to allow the database to update
+      setTimeout(() => {
+        fetchData();
+      }, 300);
+      
       return true;
     } catch (error: any) {
       console.error('Error approving reward:', error);
@@ -814,13 +880,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Mock function for rejecting a proposed reward
+  // Updated rejectReward to use Supabase
   const rejectReward = async (rewardId: string): Promise<boolean> => {
     try {
-      // Simply remove from pending rewards
-      const updatedPendingRewards = pendingRewards.filter(r => r.id !== rewardId);
-      setPendingRewards(updatedPendingRewards);
+      const { error } = await supabase
+        .from('rewards')
+        .update({ status: 'rejected' })
+        .eq('id', rewardId);
+        
+      if (error) {
+        console.error('Error rejecting reward:', error);
+        toast.error(error.message || 'Failed to reject reward');
+        return false;
+      }
+      
       toast.success('Reward rejected');
+      
+      // Add a slight delay before refreshing data to allow the database to update
+      setTimeout(() => {
+        fetchData();
+      }, 300);
+      
       return true;
     } catch (error: any) {
       console.error('Error rejecting reward:', error);

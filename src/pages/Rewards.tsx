@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Award, Gift, CircleDollarSign, Star, Plus } from 'lucide-react';
+import { Award, Gift, CircleDollarSign, Star, Plus, Trophy, Gem, Medal, Diamond, Wallet, Coins } from 'lucide-react';
 import { Reward } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,14 +13,25 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/sonner';
 
-// Form schema for proposed rewards
+// Form schema for proposed rewards with expanded icon options
 const proposedRewardSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(5, "Description must be at least 5 characters"),
   pointsCost: z.coerce.number().min(1, "Points must be at least 1").max(100, "Points cannot exceed 100"),
-  imageIcon: z.enum(['gift', 'award', 'star', 'circle-dollar-sign'])
+  imageIcon: z.enum([
+    'gift', 
+    'award', 
+    'star', 
+    'circle-dollar-sign', 
+    'trophy',
+    'gem',
+    'medal',
+    'diamond',
+    'wallet',
+    'coins'
+  ])
 });
 
 type ProposedRewardFormValues = z.infer<typeof proposedRewardSchema>;
@@ -66,6 +78,18 @@ const Rewards = () => {
         return <Star className="w-10 h-10 text-blue-500" />;
       case 'circle-dollar-sign':
         return <CircleDollarSign className="w-10 h-10 text-green-500" />;
+      case 'trophy':
+        return <Trophy className="w-10 h-10 text-amber-500" />;
+      case 'gem':
+        return <Gem className="w-10 h-10 text-pink-500" />;
+      case 'medal':
+        return <Medal className="w-10 h-10 text-red-500" />;
+      case 'diamond':
+        return <Diamond className="w-10 h-10 text-cyan-500" />;
+      case 'wallet':
+        return <Wallet className="w-10 h-10 text-indigo-500" />;
+      case 'coins':
+        return <Coins className="w-10 h-10 text-orange-500" />;
       default:
         return <Gift className="w-10 h-10 text-purple-500" />;
     }
@@ -73,57 +97,18 @@ const Rewards = () => {
 
   const onSubmitProposal = async (data: ProposedRewardFormValues) => {
     try {
-      const newReward: Reward = {
-        id: '', // Will be set by the server or context
+      await proposeReward({
         title: data.title,
         description: data.description,
         pointsCost: data.pointsCost,
-        imageIcon: data.imageIcon,
-        status: 'pending',
-        createdById: '' // Will be set by the context
-      };
-      
-      await proposeReward(newReward);
+        imageIcon: data.imageIcon
+      });
       setShowProposeDialog(false);
       form.reset();
-      toast.success("Reward proposal submitted for partner approval");
     } catch (error) {
-      toast.error("Failed to propose reward");
       console.error(error);
     }
   };
-  
-  // Updated rewards with higher point costs
-  const updatedRewards = [
-    {
-      id: '1',
-      title: 'Dinner Out',
-      description: 'Partner cooks dinner of your choice',
-      pointsCost: 20,
-      imageIcon: 'gift'
-    },
-    {
-      id: '2',
-      title: 'Movie Night',
-      description: 'Your choice of movie plus snacks',
-      pointsCost: 10,
-      imageIcon: 'star'
-    },
-    {
-      id: '3',
-      title: 'Sleep In',
-      description: 'Partner takes morning duties',
-      pointsCost: 15,
-      imageIcon: 'circle-dollar-sign'
-    },
-    {
-      id: '4',
-      title: 'Day Off',
-      description: 'Partner handles all tasks for a full day',
-      pointsCost: 30,
-      imageIcon: 'award'
-    }
-  ];
   
   if (isLoading) {
     return (
@@ -199,7 +184,7 @@ const Rewards = () => {
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {updatedRewards.map((reward) => (
+        {rewards.map((reward) => (
           <Card key={reward.id} className="overflow-hidden hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center gap-4 mb-4">
@@ -326,6 +311,12 @@ const Rewards = () => {
                         <option value="award">Award</option>
                         <option value="star">Star</option>
                         <option value="circle-dollar-sign">Money</option>
+                        <option value="trophy">Trophy</option>
+                        <option value="gem">Gem</option>
+                        <option value="medal">Medal</option>
+                        <option value="diamond">Diamond</option>
+                        <option value="wallet">Wallet</option>
+                        <option value="coins">Coins</option>
                       </select>
                     </FormControl>
                     <FormMessage />

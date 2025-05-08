@@ -66,6 +66,39 @@ export type Database = {
         }
         Relationships: []
       }
+      rewards: {
+        Row: {
+          created_at: string
+          created_by_id: string
+          description: string
+          id: string
+          image_icon: string
+          points_cost: number
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_id: string
+          description: string
+          id?: string
+          image_icon: string
+          points_cost: number
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by_id?: string
+          description?: string
+          id?: string
+          image_icon?: string
+          points_cost?: number
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           comment: string | null

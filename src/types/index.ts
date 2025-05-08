@@ -41,6 +41,7 @@ export interface Reward {
   description: string;
   pointsCost: number;
   imageIcon: string;
-  status?: RewardStatus;
-  createdById?: string;
+  status: RewardStatus;
+  createdById: string;
+  createdAt?: Date;
 }
