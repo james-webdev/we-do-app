@@ -5,53 +5,36 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Award, Gift, CircleDollarSign, Star, Plus, Trophy, Gem, Medal, Diamond, Wallet, Coins, Trash2 } from 'lucide-react';
+import { Award, Plus } from 'lucide-react';
 import { Reward } from '@/types';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 import { toast } from '@/components/ui/sonner';
-
-// Form schema for proposed rewards with expanded icon options
-const proposedRewardSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(5, "Description must be at least 5 characters"),
-  pointsCost: z.coerce.number().min(1, "Points must be at least 1").max(100, "Points cannot exceed 100"),
-  imageIcon: z.enum([
-    'gift', 
-    'award', 
-    'star', 
-    'circle-dollar-sign', 
-    'trophy',
-    'gem',
-    'medal',
-    'diamond',
-    'wallet',
-    'coins'
-  ])
-});
-
-type ProposedRewardFormValues = z.infer<typeof proposedRewardSchema>;
+import { RewardCard } from '@/components/reward/RewardCard';
+import { PendingRewardCard } from '@/components/reward/PendingRewardCard';
+import { ProposeRewardForm, ProposedRewardFormValues } from '@/components/reward/ProposeRewardForm';
+import { mockRewards } from '@/lib/mock-data';
 
 const Rewards = () => {
-  const { rewards, availablePoints, isLoading, redeemReward, proposeReward, pendingRewards, approveReward, rejectReward, deleteReward } = useApp();
+  const { rewards: appRewards, availablePoints, isLoading, redeemReward, proposeReward, pendingRewards, approveReward, rejectReward, deleteReward } = useApp();
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [showProposeDialog, setShowProposeDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<Reward | null>(null);
   
-  const form = useForm<ProposedRewardFormValues>({
-    resolver: zodResolver(proposedRewardSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      pointsCost: 10,
-      imageIcon: 'gift'
-    }
-  });
+  // Combine app rewards with mock rewards for display
+  // This ensures we always have some default rewards available
+  const allRewards = [...(appRewards || [])];
+  
+  // Add mock rewards if they don't already exist in the app rewards
+  if (appRewards && mockRewards) {
+    mockRewards.forEach(mockReward => {
+      if (!appRewards.some(appReward => appReward.title === mockReward.title)) {
+        allRewards.push(mockReward);
+      }
+    });
+  } else if (mockRewards) {
+    // If no app rewards, just use mock rewards
+    allRewards.push(...mockRewards);
+  }
 
   const handleRedeemClick = (reward: Reward) => {
     setSelectedReward(reward);
@@ -84,33 +67,6 @@ const Rewards = () => {
     }
   };
   
-  const getRewardIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'gift':
-        return <Gift className="w-10 h-10 text-purple-500" />;
-      case 'award':
-        return <Award className="w-10 h-10 text-yellow-500" />;
-      case 'star':
-        return <Star className="w-10 h-10 text-blue-500" />;
-      case 'circle-dollar-sign':
-        return <CircleDollarSign className="w-10 h-10 text-green-500" />;
-      case 'trophy':
-        return <Trophy className="w-10 h-10 text-amber-500" />;
-      case 'gem':
-        return <Gem className="w-10 h-10 text-pink-500" />;
-      case 'medal':
-        return <Medal className="w-10 h-10 text-red-500" />;
-      case 'diamond':
-        return <Diamond className="w-10 h-10 text-cyan-500" />;
-      case 'wallet':
-        return <Wallet className="w-10 h-10 text-indigo-500" />;
-      case 'coins':
-        return <Coins className="w-10 h-10 text-orange-500" />;
-      default:
-        return <Gift className="w-10 h-10 text-purple-500" />;
-    }
-  };
-
   const onSubmitProposal = async (data: ProposedRewardFormValues) => {
     try {
       await proposeReward({
@@ -120,7 +76,6 @@ const Rewards = () => {
         imageIcon: data.imageIcon
       });
       setShowProposeDialog(false);
-      form.reset();
     } catch (error) {
       console.error(error);
     }
@@ -164,76 +119,26 @@ const Rewards = () => {
           <h2 className="text-xl font-semibold mb-4">Rewards Pending Your Approval</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pendingRewards.map((reward) => (
-              <Card key={reward.id} className="overflow-hidden hover:shadow-md transition-shadow border-amber-200 bg-amber-50">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    {getRewardIcon(reward.imageIcon)}
-                    <div>
-                      <h2 className="text-xl font-semibold">{reward.title}</h2>
-                      <div className="flex items-center text-amber-600 font-medium">
-                        <Award size={16} className="mr-1" />
-                        {reward.pointsCost} {reward.pointsCost === 1 ? 'point' : 'points'}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 mb-6">{reward.description}</p>
-                  <div className="flex gap-2">
-                    <Button 
-                      className="w-1/2" 
-                      variant="outline"
-                      onClick={() => rejectReward(reward.id)}
-                    >
-                      Reject
-                    </Button>
-                    <Button 
-                      className="w-1/2" 
-                      onClick={() => approveReward(reward.id)}
-                    >
-                      Approve
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <PendingRewardCard
+                key={reward.id}
+                reward={reward}
+                onApprove={approveReward}
+                onReject={rejectReward}
+              />
             ))}
           </div>
         </div>
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rewards.map((reward) => (
-          <Card key={reward.id} className="overflow-hidden hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-4">
-                  {getRewardIcon(reward.imageIcon)}
-                  <div>
-                    <h2 className="text-xl font-semibold">{reward.title}</h2>
-                    <div className="flex items-center text-amber-600 font-medium">
-                      <Award size={16} className="mr-1" />
-                      {reward.pointsCost} {reward.pointsCost === 1 ? 'point' : 'points'}
-                    </div>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => handleDeleteClick(reward)}
-                >
-                  <Trash2 className="h-5 w-5 text-gray-500 hover:text-red-500" />
-                </Button>
-              </div>
-              <p className="text-gray-600 mb-6">{reward.description}</p>
-              <Button 
-                className="w-full" 
-                onClick={() => handleRedeemClick(reward)}
-                disabled={availablePoints < reward.pointsCost}
-              >
-                {availablePoints < reward.pointsCost 
-                  ? `Need ${reward.pointsCost - availablePoints} more points` 
-                  : 'Redeem Reward'}
-              </Button>
-            </CardContent>
-          </Card>
+        {allRewards.map((reward) => (
+          <RewardCard
+            key={reward.id}
+            reward={reward}
+            availablePoints={availablePoints}
+            onRedeemClick={handleRedeemClick}
+            onDeleteClick={handleDeleteClick}
+          />
         ))}
       </div>
       
@@ -303,93 +208,10 @@ const Rewards = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmitProposal)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Movie Night" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Your choice of movie plus snacks" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="pointsCost"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Point Cost</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="imageIcon"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Icon</FormLabel>
-                    <FormControl>
-                      <select
-                        className="w-full border rounded p-2"
-                        {...field}
-                      >
-                        <option value="gift">Gift</option>
-                        <option value="award">Award</option>
-                        <option value="star">Star</option>
-                        <option value="circle-dollar-sign">Money</option>
-                        <option value="trophy">Trophy</option>
-                        <option value="gem">Gem</option>
-                        <option value="medal">Medal</option>
-                        <option value="diamond">Diamond</option>
-                        <option value="wallet">Wallet</option>
-                        <option value="coins">Coins</option>
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowProposeDialog(false);
-                    form.reset();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Propose Reward</Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          <ProposeRewardForm 
+            onSubmit={onSubmitProposal}
+            onCancel={() => setShowProposeDialog(false)}
+          />
         </DialogContent>
       </Dialog>
     </div>
