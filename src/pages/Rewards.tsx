@@ -62,6 +62,30 @@ const Rewards = () => {
       toast.success("Rewards refreshed");
     }, 800);
   };
+
+  const onSubmitProposal = async (data: ProposedRewardFormValues) => {
+    try {
+      console.log("Submitting reward proposal:", data);
+      const success = await proposeReward({
+        title: data.title,
+        description: data.description,
+        pointsCost: data.pointsCost,
+        imageIcon: data.imageIcon
+      });
+      
+      if (success) {
+        setShowProposeDialog(false);
+        
+        // Make sure we refresh data after submitting
+        setTimeout(() => {
+          refreshData();
+        }, 500);
+      }
+    } catch (error) {
+      console.error("Error submitting proposal:", error);
+      toast.error("Failed to propose reward. Please try again.");
+    }
+  };
   
   if (isLoading) {
     return <LoadingRewards />;
@@ -135,28 +159,6 @@ const Rewards = () => {
       </Dialog>
     </div>
   );
-
-  async function onSubmitProposal(data: ProposedRewardFormValues) {
-    try {
-      const success = await proposeReward({
-        title: data.title,
-        description: data.description,
-        pointsCost: data.pointsCost,
-        imageIcon: data.imageIcon
-      });
-      
-      if (success) {
-        setShowProposeDialog(false);
-        
-        // Make sure we refresh data after submitting
-        setTimeout(() => {
-          refreshData();
-        }, 500);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
 };
 
 export default Rewards;

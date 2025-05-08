@@ -47,8 +47,12 @@ export const ProposeRewardForm = ({ onSubmit, onCancel }: ProposeRewardFormProps
   });
 
   const handleSubmit = async (data: ProposedRewardFormValues) => {
-    await onSubmit(data);
-    form.reset();
+    try {
+      await onSubmit(data);
+      form.reset();
+    } catch (error) {
+      console.error("Error in form submission:", error);
+    }
   };
 
   return (
