@@ -23,13 +23,13 @@ export function useRewards() {
   const [localApprovedRewards, setLocalApprovedRewards] = useState<Reward[]>([]);
   const [localPendingRewards, setLocalPendingRewards] = useState<Reward[]>([]);
   
-  // Keep track of recently approved/rejected reward IDs to prevent them from reappearing in pending
+  // Keep track of recently processed reward IDs to prevent them from reappearing
   const [recentlyProcessedIds, setRecentlyProcessedIds] = useState<string[]>([]);
   
   // Update local pending rewards when app state changes
   useEffect(() => {
-    // Filter out any recently processed rewards from the pending rewards
     if (pendingRewards) {
+      // Filter out recently processed rewards from the pending rewards
       const filteredPendingRewards = pendingRewards.filter(
         reward => !recentlyProcessedIds.includes(reward.id)
       );
@@ -50,7 +50,7 @@ export function useRewards() {
       
       setLocalApprovedRewards(filteredLocal);
       
-      // If any recently processed rewards appear in appRewards, remove them from tracking
+      // Remove any processed IDs that are now in appRewards
       if (recentlyProcessedIds.length > 0) {
         const stillRecentlyProcessed = recentlyProcessedIds.filter(id => 
           !appRewards.some(appReward => appReward.id === id)
@@ -63,21 +63,12 @@ export function useRewards() {
     }
   }, [appRewards, localApprovedRewards, recentlyProcessedIds]);
   
-  // Combine app rewards with locally approved rewards first
+  // Combine app rewards with locally approved rewards
   const allRewards = [...(appRewards || []), ...localApprovedRewards];
   
-  // Then add mock rewards if they don't already exist in the combined rewards
-  if (mockRewards) {
-    mockRewards.forEach(mockReward => {
-      const existsInAllRewards = allRewards.some(
-        reward => reward.title === mockReward.title
-      );
-      
-      if (!existsInAllRewards) {
-        allRewards.push(mockReward);
-      }
-    });
-  }
+  // Only add mock rewards if there are no other rewards available
+  // This prevents mock rewards from appearing after real rewards are created
+  const finalRewards = allRewards.length > 0 ? allRewards : mockRewards || [];
 
   const handleRedeemClick = (reward: Reward) => {
     setSelectedReward(reward);
@@ -137,7 +128,6 @@ export function useRewards() {
     
     if (success) {
       toast.success('Reward approved successfully');
-      // The approved reward will be fetched for both partners on the next data refresh
     } else {
       // If backend update fails, revert local changes
       setRecentlyProcessedIds(prev => prev.filter(id => id !== rewardId));
@@ -174,7 +164,7 @@ export function useRewards() {
   };
 
   return {
-    allRewards,
+    allRewards: finalRewards,
     localPendingRewards,
     availablePoints,
     isLoading,

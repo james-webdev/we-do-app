@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ProposeRewardForm, ProposedRewardFormValues } from '@/components/reward/ProposeRewardForm';
 import { LoadingRewards } from '@/components/reward/LoadingRewards';
@@ -9,9 +9,11 @@ import { AvailableRewards } from '@/components/reward/AvailableRewards';
 import { RedeemRewardDialog } from '@/components/reward/RedeemRewardDialog';
 import { DeleteRewardDialog } from '@/components/reward/DeleteRewardDialog';
 import { useRewards } from '@/hooks/useRewards';
+import { useApp } from '@/contexts/AppContext';
 
 const Rewards = () => {
   const [showProposeDialog, setShowProposeDialog] = useState(false);
+  const { refreshData } = useApp();
   
   const {
     allRewards,
@@ -32,15 +34,23 @@ const Rewards = () => {
     proposeReward
   } = useRewards();
 
+  // Refresh data when component mounts to ensure we have the latest rewards
+  useEffect(() => {
+    refreshData();
+  }, [refreshData]);
+
   const onSubmitProposal = async (data: ProposedRewardFormValues) => {
     try {
-      await proposeReward({
+      const success = await proposeReward({
         title: data.title,
         description: data.description,
         pointsCost: data.pointsCost,
         imageIcon: data.imageIcon
       });
-      setShowProposeDialog(false);
+      
+      if (success) {
+        setShowProposeDialog(false);
+      }
     } catch (error) {
       console.error(error);
     }

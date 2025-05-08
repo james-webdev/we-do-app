@@ -11,14 +11,19 @@ interface AvailableRewardsProps {
 }
 
 export function AvailableRewards({ rewards, availablePoints, onRedeemClick, onDeleteClick }: AvailableRewardsProps) {
+  // Filter out any rewards that might be pending (should only display approved rewards)
+  const approvedRewards = rewards.filter(reward => 
+    reward.status === 'approved' || reward.status === undefined
+  );
+
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Available Rewards</h2>
-      {rewards.length === 0 ? (
+      {approvedRewards.length === 0 ? (
         <p className="text-gray-500 italic">No rewards available. Propose a new reward!</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rewards.map((reward) => (
+          {approvedRewards.map((reward) => (
             <RewardCard
               key={reward.id}
               reward={reward}
