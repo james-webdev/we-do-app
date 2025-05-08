@@ -49,6 +49,7 @@ interface AppContextType {
   proposeReward: (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => Promise<boolean>; // New
   approveReward: (rewardId: string) => Promise<boolean>; // New
   rejectReward: (rewardId: string) => Promise<boolean>; // New
+  deleteReward: (rewardId: string) => Promise<boolean>; // New
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -705,6 +706,40 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Add the deleteReward function
+  const handleDeleteReward = async (rewardId: string) => {
+    try {
+      if (!currentUser) {
+        toast.error('User not authenticated');
+        return false;
+      }
+
+      const { error } = await supabase
+        .from('rewards')
+        .delete()
+        .eq('id', rewardId);
+        
+      if (error) {
+        console.error('Error deleting reward:', error);
+        toast.error(error.message || 'Failed to delete reward');
+        return false;
+      }
+      
+      toast.success('Reward deleted successfully');
+      
+      // Add a slight delay before refreshing data to allow the database to update
+      setTimeout(() => {
+        fetchData();
+      }, 300);
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting reward:', error);
+      toast.error(error.message || 'Failed to delete reward');
+      return false;
+    }
+  };
+
   // Updated connect partner function to use security definer function
   const connectPartner = async (partnerEmail: string) => {
     try {
@@ -953,7 +988,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         hasPartner,
         proposeReward,
         approveReward,
-        rejectReward
+        rejectReward,
+        deleteReward: handleDeleteReward
       }}
     >
       {children}

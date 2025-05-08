@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Award, Gift, CircleDollarSign, Star, Plus, Trophy, Gem, Medal, Diamond, Wallet, Coins } from 'lucide-react';
+import { Award, Gift, CircleDollarSign, Star, Plus, Trophy, Gem, Medal, Diamond, Wallet, Coins, Trash2 } from 'lucide-react';
 import { Reward } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,10 +37,11 @@ const proposedRewardSchema = z.object({
 type ProposedRewardFormValues = z.infer<typeof proposedRewardSchema>;
 
 const Rewards = () => {
-  const { rewards, availablePoints, isLoading, redeemReward, proposeReward, pendingRewards, approveReward, rejectReward } = useApp();
+  const { rewards, availablePoints, isLoading, redeemReward, proposeReward, pendingRewards, approveReward, rejectReward, deleteReward } = useApp();
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [showProposeDialog, setShowProposeDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<Reward | null>(null);
   
   const form = useForm<ProposedRewardFormValues>({
     resolver: zodResolver(proposedRewardSchema),
@@ -65,6 +66,21 @@ const Rewards = () => {
     
     if (success) {
       setSelectedReward(null);
+    }
+  };
+
+  const handleDeleteClick = (reward: Reward) => {
+    setShowDeleteConfirm(reward);
+  };
+  
+  const handleDeleteConfirm = async () => {
+    if (!showDeleteConfirm) return;
+    
+    const success = await deleteReward(showDeleteConfirm.id);
+    
+    if (success) {
+      setShowDeleteConfirm(null);
+      toast.success('Reward deleted successfully');
     }
   };
   
@@ -187,15 +203,24 @@ const Rewards = () => {
         {rewards.map((reward) => (
           <Card key={reward.id} className="overflow-hidden hover:shadow-md transition-shadow">
             <CardContent className="p-6">
-              <div className="flex items-center gap-4 mb-4">
-                {getRewardIcon(reward.imageIcon)}
-                <div>
-                  <h2 className="text-xl font-semibold">{reward.title}</h2>
-                  <div className="flex items-center text-amber-600 font-medium">
-                    <Award size={16} className="mr-1" />
-                    {reward.pointsCost} {reward.pointsCost === 1 ? 'point' : 'points'}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  {getRewardIcon(reward.imageIcon)}
+                  <div>
+                    <h2 className="text-xl font-semibold">{reward.title}</h2>
+                    <div className="flex items-center text-amber-600 font-medium">
+                      <Award size={16} className="mr-1" />
+                      {reward.pointsCost} {reward.pointsCost === 1 ? 'point' : 'points'}
+                    </div>
                   </div>
                 </div>
+                <Button
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => handleDeleteClick(reward)}
+                >
+                  <Trash2 className="h-5 w-5 text-gray-500 hover:text-red-500" />
+                </Button>
               </div>
               <p className="text-gray-600 mb-6">{reward.description}</p>
               <Button 
@@ -237,6 +262,32 @@ const Rewards = () => {
               disabled={isRedeeming}
             >
               {isRedeeming ? 'Redeeming...' : 'Confirm Redemption'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!showDeleteConfirm} onOpenChange={(open) => !open && setShowDeleteConfirm(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Reward</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the "{showDeleteConfirm?.title}" reward? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+            >
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
