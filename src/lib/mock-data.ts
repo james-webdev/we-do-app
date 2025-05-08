@@ -105,28 +105,40 @@ export const mockRewards: Reward[] = [
     title: "Back Rub",
     description: "Enjoy a relaxing 15-minute back massage",
     pointsCost: 3,
-    imageIcon: "gift"
+    imageIcon: "gift",
+    status: "approved",
+    createdById: "user1",
+    createdAt: new Date()
   },
   {
     id: "reward2",
     title: "Nighttime Routine",
     description: "Partner handles the entire bedtime routine tonight",
     pointsCost: 4,
-    imageIcon: "star"
+    imageIcon: "star",
+    status: "approved",
+    createdById: "user2",
+    createdAt: new Date()
   },
   {
     id: "reward3",
     title: "Weekend Time Off",
     description: "Get 2 hours to yourself on the weekend",
     pointsCost: 5,
-    imageIcon: "circle-dollar-sign"
+    imageIcon: "circle-dollar-sign",
+    status: "approved",
+    createdById: "user1",
+    createdAt: new Date()
   },
   {
     id: "reward4",
     title: "Breakfast in Bed",
     description: "Enjoy a peaceful morning with breakfast served in bed",
     pointsCost: 2,
-    imageIcon: "award"
+    imageIcon: "award",
+    status: "approved",
+    createdById: "user2",
+    createdAt: new Date()
   }
 ];
 
