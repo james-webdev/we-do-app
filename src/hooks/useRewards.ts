@@ -56,7 +56,7 @@ export function useRewards() {
       }
       
       // For real rewards - use the function from AppContext directly
-      const success = await appContextProposeReward(selectedReward.id);
+      const success = await useApp().redeemReward(selectedReward.id);
       
       if (success) {
         setSelectedReward(null);
