@@ -17,6 +17,7 @@ import { RefreshCw } from 'lucide-react';
 const Rewards = () => {
   const [showProposeDialog, setShowProposeDialog] = useState(false);
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { refreshData } = useApp();
   
   const {
@@ -50,7 +51,7 @@ const Rewards = () => {
     
     // Clean up on unmount
     return () => clearInterval(intervalId);
-  }, []);
+  }, [refreshData]);
   
   const handleManualRefresh = async () => {
     setIsManualRefreshing(true);
@@ -65,7 +66,9 @@ const Rewards = () => {
 
   const onSubmitProposal = async (data: ProposedRewardFormValues) => {
     try {
+      setIsSubmitting(true);
       console.log("Submitting reward proposal:", data);
+      
       const success = await proposeReward({
         title: data.title,
         description: data.description,
@@ -75,15 +78,16 @@ const Rewards = () => {
       
       if (success) {
         setShowProposeDialog(false);
+        toast.success("Reward proposal submitted successfully!");
         
         // Make sure we refresh data after submitting
-        setTimeout(() => {
-          refreshData();
-        }, 500);
+        await refreshData();
       }
     } catch (error) {
       console.error("Error submitting proposal:", error);
       toast.error("Failed to propose reward. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
   

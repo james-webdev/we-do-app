@@ -13,13 +13,14 @@ export async function proposeReward(
 ): Promise<boolean> {
   try {
     if (!currentUserId) {
+      console.error('Cannot propose reward: No user ID provided');
       toast.error('You must be logged in to propose rewards');
       return false;
     }
 
-    console.log('Proposing new reward:', reward);
+    console.log('Proposing new reward with user ID:', currentUserId, 'Reward data:', reward);
     
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('rewards')
       .insert({
         title: reward.title,
@@ -28,20 +29,22 @@ export async function proposeReward(
         image_icon: reward.imageIcon,
         status: 'pending',
         created_by_id: currentUserId,
-      });
+      })
+      .select();
       
     if (error) {
-      console.error('Error proposing reward:', error);
+      console.error('Database error while proposing reward:', error);
       toast.error('Failed to propose reward: ' + error.message);
       return false;
     }
     
+    console.log('Reward proposed successfully:', data);
     toast.success('Reward proposed for approval');
     refreshData();
     return true;
   } catch (error: any) {
     console.error('Exception while proposing reward:', error);
-    toast.error('Failed to propose reward');
+    toast.error('Failed to propose reward: ' + (error.message || 'Unknown error'));
     return false;
   }
 }

@@ -11,7 +11,8 @@ export function useRewards() {
     availablePoints, 
     isLoading, 
     pendingRewards,
-    refreshData
+    refreshData,
+    currentUser
   } = useApp();
   
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
@@ -54,13 +55,7 @@ export function useRewards() {
       }
       
       // For real rewards
-      const { redeemReward } = await import('@/contexts/rewardService');
-      const success = await redeemReward(
-        selectedReward.id,
-        selectedReward.pointsCost,
-        useApp().currentUser?.id,
-        refreshData
-      );
+      const success = await useApp().redeemReward(selectedReward.id);
       
       if (success) {
         setSelectedReward(null);
@@ -89,11 +84,7 @@ export function useRewards() {
       }
       
       // For real rewards
-      const { deleteReward } = await import('@/contexts/rewardService');
-      const success = await deleteReward(
-        showDeleteConfirm.id,
-        refreshData
-      );
+      const success = await useApp().deleteReward(showDeleteConfirm.id);
       
       if (success) {
         setShowDeleteConfirm(null);
@@ -107,8 +98,7 @@ export function useRewards() {
   // Handle reward approval
   const handleApproveReward = async (rewardId: string) => {
     try {
-      const { approveReward } = await import('@/contexts/rewardService');
-      await approveReward(rewardId, refreshData);
+      await useApp().approveReward(rewardId);
     } catch (error) {
       console.error('Error approving reward:', error);
       toast.error('Failed to approve reward');
@@ -118,8 +108,7 @@ export function useRewards() {
   // Handle reward rejection
   const handleRejectReward = async (rewardId: string) => {
     try {
-      const { rejectReward } = await import('@/contexts/rewardService'); 
-      await rejectReward(rewardId, refreshData);
+      await useApp().rejectReward(rewardId);
     } catch (error) {
       console.error('Error rejecting reward:', error);
       toast.error('Failed to reject reward');
@@ -129,12 +118,13 @@ export function useRewards() {
   // Handle reward proposal
   const proposeReward = async (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => {
     try {
-      const { proposeReward: proposeRewardFn } = await import('@/contexts/rewardService');
-      return await proposeRewardFn(
-        reward,
-        useApp().currentUser?.id,
-        refreshData
-      );
+      console.log('Proposing reward with current user:', currentUser?.id);
+      if (!currentUser) {
+        toast.error('You must be logged in to propose rewards');
+        return false;
+      }
+      
+      return await useApp().proposeReward(reward);
     } catch (error) {
       console.error('Error proposing reward:', error);
       toast.error('Failed to propose reward');
