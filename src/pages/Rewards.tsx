@@ -25,15 +25,12 @@ const Rewards = () => {
   const allRewards = [...(appRewards || [])];
   
   // Add mock rewards if they don't already exist in the app rewards
-  if (appRewards && mockRewards) {
+  if (mockRewards) {
     mockRewards.forEach(mockReward => {
-      if (!appRewards.some(appReward => appReward.title === mockReward.title)) {
+      if (!appRewards || !appRewards.some(appReward => appReward.title === mockReward.title)) {
         allRewards.push(mockReward);
       }
     });
-  } else if (mockRewards) {
-    // If no app rewards, just use mock rewards
-    allRewards.push(...mockRewards);
   }
 
   const handleRedeemClick = (reward: Reward) => {
@@ -64,6 +61,22 @@ const Rewards = () => {
     if (success) {
       setShowDeleteConfirm(null);
       toast.success('Reward deleted successfully');
+    }
+  };
+
+  // Handle approving a reward - immediately adds it to the rewards list
+  const handleApproveReward = async (rewardId: string) => {
+    const success = await approveReward(rewardId);
+    if (success) {
+      toast.success('Reward approved successfully');
+    }
+  };
+  
+  // Handle rejecting a reward
+  const handleRejectReward = async (rewardId: string) => {
+    const success = await rejectReward(rewardId);
+    if (success) {
+      toast.success('Reward rejected');
     }
   };
   
@@ -122,14 +135,15 @@ const Rewards = () => {
               <PendingRewardCard
                 key={reward.id}
                 reward={reward}
-                onApprove={approveReward}
-                onReject={rejectReward}
+                onApprove={handleApproveReward}
+                onReject={handleRejectReward}
               />
             ))}
           </div>
         </div>
       )}
       
+      <h2 className="text-xl font-semibold mb-4">Available Rewards</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {allRewards.map((reward) => (
           <RewardCard
