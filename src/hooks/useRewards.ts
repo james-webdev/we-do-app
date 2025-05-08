@@ -41,28 +41,27 @@ export function useRewards() {
   
   // Update local approved rewards when app rewards change
   useEffect(() => {
-    // Keep previously locally approved rewards that aren't yet in appRewards
-    // This prevents them from disappearing during refresh cycles
-    const newLocalApproved = [...localApprovedRewards];
-    
-    // Remove any rewards that now exist in appRewards to prevent duplicates
-    const filteredLocal = newLocalApproved.filter(localReward => 
-      !appRewards || !appRewards.some(appReward => appReward.id === localReward.id)
-    );
-    
-    setLocalApprovedRewards(filteredLocal);
-    
-    // If any recently approved rewards appear in appRewards, remove them from tracking
-    if (appRewards && recentlyApprovedIds.length > 0) {
-      const stillRecentlyApproved = recentlyApprovedIds.filter(id => 
-        !appRewards.some(appReward => appReward.id === id)
+    if (appRewards) {
+      // If appRewards has been updated with our locally approved rewards,
+      // we don't need to keep them in localApprovedRewards anymore
+      const filteredLocal = localApprovedRewards.filter(localReward => 
+        !appRewards.some(appReward => appReward.id === localReward.id)
       );
       
-      if (stillRecentlyApproved.length !== recentlyApprovedIds.length) {
-        setRecentlyApprovedIds(stillRecentlyApproved);
+      setLocalApprovedRewards(filteredLocal);
+      
+      // If any recently approved rewards appear in appRewards, remove them from tracking
+      if (recentlyApprovedIds.length > 0) {
+        const stillRecentlyApproved = recentlyApprovedIds.filter(id => 
+          !appRewards.some(appReward => appReward.id === id)
+        );
+        
+        if (stillRecentlyApproved.length !== recentlyApprovedIds.length) {
+          setRecentlyApprovedIds(stillRecentlyApproved);
+        }
       }
     }
-  }, [appRewards]);
+  }, [appRewards, localApprovedRewards, recentlyApprovedIds]);
   
   // Combine app rewards with mock rewards and locally approved rewards
   const allRewards = [...(appRewards || []), ...localApprovedRewards];
@@ -70,15 +69,11 @@ export function useRewards() {
   // Add mock rewards if they don't already exist in the app rewards
   if (mockRewards) {
     mockRewards.forEach(mockReward => {
-      const existsInAppRewards = appRewards && appRewards.some(
-        appReward => appReward.title === mockReward.title
+      const existsInAppRewards = allRewards.some(
+        reward => reward.title === mockReward.title
       );
       
-      const existsInLocalApproved = localApprovedRewards.some(
-        localReward => localReward.title === mockReward.title
-      );
-      
-      if (!existsInAppRewards && !existsInLocalApproved) {
+      if (!existsInAppRewards) {
         allRewards.push(mockReward);
       }
     });
@@ -134,7 +129,8 @@ export function useRewards() {
     
     setLocalApprovedRewards(prev => [...prev, approvedReward]);
     
-    // Update in the backend
+    // Update in the backend to make it visible to both partners
+    console.log("Approving reward in backend:", rewardId);
     const success = await approveReward(rewardId);
     
     if (success) {
