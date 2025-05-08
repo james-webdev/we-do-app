@@ -12,7 +12,8 @@ export function useRewards() {
     isLoading, 
     pendingRewards,
     refreshData,
-    currentUser
+    currentUser,
+    proposeReward: appContextProposeReward
   } = useApp();
   
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
@@ -54,8 +55,8 @@ export function useRewards() {
         return;
       }
       
-      // For real rewards
-      const success = await useApp().redeemReward(selectedReward.id);
+      // For real rewards - use the function from AppContext directly
+      const success = await appContextProposeReward(selectedReward.id);
       
       if (success) {
         setSelectedReward(null);
@@ -95,27 +96,7 @@ export function useRewards() {
     }
   };
   
-  // Handle reward approval
-  const handleApproveReward = async (rewardId: string) => {
-    try {
-      await useApp().approveReward(rewardId);
-    } catch (error) {
-      console.error('Error approving reward:', error);
-      toast.error('Failed to approve reward');
-    }
-  };
-  
-  // Handle reward rejection
-  const handleRejectReward = async (rewardId: string) => {
-    try {
-      await useApp().rejectReward(rewardId);
-    } catch (error) {
-      console.error('Error rejecting reward:', error);
-      toast.error('Failed to reject reward');
-    }
-  };
-  
-  // Handle reward proposal with improved error handling
+  // Handle reward proposal with correct hook usage
   const proposeReward = async (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => {
     try {
       console.log('Starting reward proposal process');
@@ -129,9 +110,8 @@ export function useRewards() {
       console.log('Proposing reward with data:', reward);
       console.log('Current user ID:', currentUser.id);
       
-      // Call the AppContext method with better error handling
-      const { proposeReward } = useApp();
-      const success = await proposeReward(reward);
+      // Use the appContextProposeReward function that we got from useApp() at the top level
+      const success = await appContextProposeReward(reward);
       
       console.log('Propose reward result:', success);
       
@@ -162,8 +142,6 @@ export function useRewards() {
     handleRedeemConfirm,
     handleDeleteClick,
     handleDeleteConfirm,
-    handleApproveReward,
-    handleRejectReward,
     proposeReward,
     refreshData
   };

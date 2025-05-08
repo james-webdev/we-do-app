@@ -33,8 +33,6 @@ const Rewards = () => {
     handleRedeemConfirm,
     handleDeleteClick,
     handleDeleteConfirm,
-    handleApproveReward,
-    handleRejectReward,
     proposeReward
   } = useRewards();
 
@@ -69,6 +67,7 @@ const Rewards = () => {
       setIsSubmitting(true);
       console.log("Submit button clicked - Submitting reward proposal:", data);
       
+      // Call the proposeReward function from the useRewards hook
       const success = await proposeReward({
         title: data.title,
         description: data.description,
@@ -85,7 +84,7 @@ const Rewards = () => {
         // Make sure we refresh data after submitting
         await refreshData();
       } else {
-        console.error("Proposal submission was not successful");
+        toast.error("Failed to propose reward. Please try again.");
       }
     } catch (error) {
       console.error("Error in onSubmitProposal:", error);
@@ -122,8 +121,8 @@ const Rewards = () => {
       {pendingRewards && pendingRewards.length > 0 && (
         <PendingRewardsList 
           pendingRewards={pendingRewards} 
-          onApprove={handleApproveReward} 
-          onReject={handleRejectReward} 
+          onApprove={useApp().approveReward} 
+          onReject={useApp().rejectReward} 
         />
       )}
       

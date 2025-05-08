@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Form schema for proposed rewards with expanded icon options
 const proposedRewardSchema = z.object({
@@ -52,7 +53,7 @@ export const ProposeRewardForm = ({ onSubmit, onCancel, isSubmitting = false }: 
     console.log("Form submitted with data:", data);
     try {
       await onSubmit(data);
-      form.reset();
+      // Don't reset form here, let the parent component handle success
     } catch (error) {
       console.error("Error in form submission:", error);
     }
@@ -110,21 +111,26 @@ export const ProposeRewardForm = ({ onSubmit, onCancel, isSubmitting = false }: 
             <FormItem>
               <FormLabel>Icon</FormLabel>
               <FormControl>
-                <select
-                  className="w-full border rounded p-2"
-                  {...field}
+                <Select 
+                  value={field.value} 
+                  onValueChange={field.onChange}
                 >
-                  <option value="gift">Gift</option>
-                  <option value="award">Award</option>
-                  <option value="star">Star</option>
-                  <option value="circle-dollar-sign">Money</option>
-                  <option value="trophy">Trophy</option>
-                  <option value="gem">Gem</option>
-                  <option value="medal">Medal</option>
-                  <option value="diamond">Diamond</option>
-                  <option value="wallet">Wallet</option>
-                  <option value="coins">Coins</option>
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select an icon" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gift">Gift</SelectItem>
+                    <SelectItem value="award">Award</SelectItem>
+                    <SelectItem value="star">Star</SelectItem>
+                    <SelectItem value="circle-dollar-sign">Money</SelectItem>
+                    <SelectItem value="trophy">Trophy</SelectItem>
+                    <SelectItem value="gem">Gem</SelectItem>
+                    <SelectItem value="medal">Medal</SelectItem>
+                    <SelectItem value="diamond">Diamond</SelectItem>
+                    <SelectItem value="wallet">Wallet</SelectItem>
+                    <SelectItem value="coins">Coins</SelectItem>
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
