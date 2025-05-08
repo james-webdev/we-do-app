@@ -11,9 +11,12 @@ import { DeleteRewardDialog } from '@/components/reward/DeleteRewardDialog';
 import { useRewards } from '@/hooks/useRewards';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from '@/components/ui/sonner';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 const Rewards = () => {
   const [showProposeDialog, setShowProposeDialog] = useState(false);
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const { refreshData } = useApp();
   
   const {
@@ -47,7 +50,20 @@ const Rewards = () => {
   // Log the rewards that we're passing to AvailableRewards
   useEffect(() => {
     console.log("All rewards about to be displayed:", allRewards);
-  }, [allRewards]);
+    console.log("Pending rewards about to be displayed:", localPendingRewards);
+  }, [allRewards, localPendingRewards]);
+  
+  const handleManualRefresh = async () => {
+    setIsManualRefreshing(true);
+    console.log("Manual refresh requested");
+    await refreshData();
+    
+    // Add a delay before setting isManualRefreshing back to false
+    setTimeout(() => {
+      setIsManualRefreshing(false);
+      toast.success("Rewards refreshed");
+    }, 800);
+  };
   
   if (isLoading) {
     return <LoadingRewards />;
@@ -55,10 +71,23 @@ const Rewards = () => {
   
   return (
     <div className="container py-8">
-      <RewardsHeader 
-        availablePoints={availablePoints} 
-        onProposeReward={() => setShowProposeDialog(true)} 
-      />
+      <div className="flex justify-between items-center mb-6">
+        <RewardsHeader 
+          availablePoints={availablePoints} 
+          onProposeReward={() => setShowProposeDialog(true)} 
+        />
+        
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2"
+          onClick={handleManualRefresh}
+          disabled={isManualRefreshing}
+        >
+          <RefreshCw className={`h-4 w-4 ${isManualRefreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </div>
       
       <PendingRewardsList 
         pendingRewards={localPendingRewards} 
@@ -121,6 +150,8 @@ const Rewards = () => {
         
         // Force a refresh after submitting a proposal
         toast.success("Reward proposal submitted!");
+        
+        // Make sure we refresh data after submitting to get the latest state
         setTimeout(() => {
           refreshData();
         }, 500);

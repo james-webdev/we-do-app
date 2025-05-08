@@ -13,10 +13,10 @@ interface AvailableRewardsProps {
 export function AvailableRewards({ rewards, availablePoints, onRedeemClick, onDeleteClick }: AvailableRewardsProps) {
   // Make sure we're ONLY displaying approved rewards by explicitly filtering
   const approvedRewards = rewards.filter(reward => {
-    // Log each reward to see what's actually coming in
-    console.log("Filtering reward:", reward);
+    // Log each reward being filtered
+    console.log("Filtering reward:", reward, "Status:", reward.status);
     
-    // Only include rewards that are explicitly approved, filter out any with status=rejected or pending
+    // Very strict check for approved status only
     return reward.status === 'approved';
   });
   

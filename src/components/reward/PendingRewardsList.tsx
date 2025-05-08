@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PendingRewardCard } from '@/components/reward/PendingRewardCard';
 import { Reward } from '@/types';
 
@@ -10,6 +10,11 @@ interface PendingRewardsListProps {
 }
 
 export function PendingRewardsList({ pendingRewards, onApprove, onReject }: PendingRewardsListProps) {
+  // Log the pending rewards to console for debugging
+  useEffect(() => {
+    console.log('PendingRewardsList rendering with:', pendingRewards);
+  }, [pendingRewards]);
+  
   if (!pendingRewards || pendingRewards.length === 0) {
     return null;
   }

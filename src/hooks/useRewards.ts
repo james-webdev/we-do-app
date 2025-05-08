@@ -15,7 +15,8 @@ export function useRewards() {
     pendingRewards, 
     approveReward, 
     rejectReward, 
-    deleteReward 
+    deleteReward,
+    refreshData 
   } = useApp();
   
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
@@ -26,6 +27,13 @@ export function useRewards() {
   
   // Keep track of recently processed reward IDs to prevent them from reappearing
   const [recentlyProcessedIds, setRecentlyProcessedIds] = useState<string[]>([]);
+  
+  // Force data refresh when component mounts
+  useEffect(() => {
+    console.log("useRewards hook mounted, triggering data refresh");
+    refreshData();
+    // Don't include refreshData in deps to avoid infinite loop
+  }, []);
   
   // Update local pending rewards when app state changes
   useEffect(() => {
@@ -96,6 +104,7 @@ export function useRewards() {
   const handleDeleteConfirm = async () => {
     if (!showDeleteConfirm) return;
     
+    console.log(`Confirming deletion of reward: ${showDeleteConfirm.id}`);
     const success = await deleteReward(showDeleteConfirm.id);
     
     if (success) {
@@ -109,6 +118,11 @@ export function useRewards() {
       setRecentlyProcessedIds(prev => [...prev, showDeleteConfirm.id]);
       
       toast.success('Reward deleted successfully');
+      
+      // Force a refresh to ensure the database is in sync
+      setTimeout(() => {
+        refreshData();
+      }, 500);
     }
   };
 
@@ -141,6 +155,11 @@ export function useRewards() {
     
     if (success) {
       toast.success('Reward approved successfully');
+      
+      // Force a refresh to ensure the database is in sync
+      setTimeout(() => {
+        refreshData();
+      }, 500);
     } else {
       // If backend update fails, revert local changes
       setRecentlyProcessedIds(prev => prev.filter(id => id !== rewardId));
@@ -170,6 +189,11 @@ export function useRewards() {
     
     if (success) {
       toast.success('Reward rejected and removed');
+      
+      // Force a refresh to ensure the database is in sync
+      setTimeout(() => {
+        refreshData();
+      }, 500);
     } else {
       // Revert local change if backend fails
       setRecentlyProcessedIds(prev => prev.filter(id => id !== rewardId));
@@ -194,6 +218,7 @@ export function useRewards() {
     handleDeleteConfirm,
     handleApproveReward,
     handleRejectReward,
-    proposeReward
+    proposeReward,
+    refreshData
   };
 }

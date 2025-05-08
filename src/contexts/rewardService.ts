@@ -98,6 +98,19 @@ export async function rejectReward(
   try {
     console.log(`Rejecting and removing reward ID: ${rewardId}`);
     
+    // First, verify the reward exists before attempting to delete
+    const { data: checkReward, error: checkError } = await supabase
+      .from('rewards')
+      .select('id')
+      .eq('id', rewardId)
+      .single();
+      
+    if (checkError || !checkReward) {
+      console.error('Error checking reward existence:', checkError);
+      toast.error('Failed to find the reward to reject');
+      return false;
+    }
+    
     // Delete the rejected reward from the database completely
     const { error } = await supabase
       .from('rewards')
@@ -111,6 +124,7 @@ export async function rejectReward(
     }
     
     toast.success('Reward rejected and removed');
+    console.log(`Successfully deleted reward ID: ${rewardId} from database`);
     
     // Add a slight delay before refreshing data to allow the database to update
     setTimeout(() => {
@@ -136,6 +150,21 @@ export async function deleteReward(
       return false;
     }
 
+    console.log(`Deleting reward ID: ${rewardId}`);
+    
+    // First, verify the reward exists before attempting to delete
+    const { data: checkReward, error: checkError } = await supabase
+      .from('rewards')
+      .select('id')
+      .eq('id', rewardId)
+      .single();
+      
+    if (checkError || !checkReward) {
+      console.error('Error checking reward existence:', checkError);
+      toast.error('Failed to find the reward to delete');
+      return false;
+    }
+
     const { error } = await supabase
       .from('rewards')
       .delete()
@@ -148,6 +177,7 @@ export async function deleteReward(
     }
     
     toast.success('Reward deleted successfully');
+    console.log(`Successfully deleted reward ID: ${rewardId} from database`);
     
     // Add a slight delay before refreshing data to allow the database to update
     setTimeout(() => {
@@ -222,7 +252,12 @@ export async function redeemReward(
     }
     
     toast.success('Reward redeemed successfully!');
-    await refreshData(); // Refresh data
+    
+    // Add a slight delay before refreshing data to allow the database to update
+    setTimeout(() => {
+      refreshData();
+    }, 300);
+    
     return true;
   } catch (error: any) {
     console.error('Error redeeming reward:', error);
