@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Reward, RewardStatus } from '@/types';
@@ -24,21 +23,21 @@ export function useRewards() {
   const [localApprovedRewards, setLocalApprovedRewards] = useState<Reward[]>([]);
   const [localPendingRewards, setLocalPendingRewards] = useState<Reward[]>([]);
   
-  // Keep track of recently approved reward IDs to prevent them from reappearing in pending
-  const [recentlyApprovedIds, setRecentlyApprovedIds] = useState<string[]>([]);
+  // Keep track of recently approved/rejected reward IDs to prevent them from reappearing in pending
+  const [recentlyProcessedIds, setRecentlyProcessedIds] = useState<string[]>([]);
   
   // Update local pending rewards when app state changes
   useEffect(() => {
-    // Filter out any recently approved rewards from the pending rewards
+    // Filter out any recently processed rewards from the pending rewards
     if (pendingRewards) {
       const filteredPendingRewards = pendingRewards.filter(
-        reward => !recentlyApprovedIds.includes(reward.id)
+        reward => !recentlyProcessedIds.includes(reward.id)
       );
       setLocalPendingRewards(filteredPendingRewards);
     } else {
       setLocalPendingRewards([]);
     }
-  }, [pendingRewards, recentlyApprovedIds]);
+  }, [pendingRewards, recentlyProcessedIds]);
   
   // Update local approved rewards when app rewards change
   useEffect(() => {
@@ -51,18 +50,18 @@ export function useRewards() {
       
       setLocalApprovedRewards(filteredLocal);
       
-      // If any recently approved rewards appear in appRewards, remove them from tracking
-      if (recentlyApprovedIds.length > 0) {
-        const stillRecentlyApproved = recentlyApprovedIds.filter(id => 
+      // If any recently processed rewards appear in appRewards, remove them from tracking
+      if (recentlyProcessedIds.length > 0) {
+        const stillRecentlyProcessed = recentlyProcessedIds.filter(id => 
           !appRewards.some(appReward => appReward.id === id)
         );
         
-        if (stillRecentlyApproved.length !== recentlyApprovedIds.length) {
-          setRecentlyApprovedIds(stillRecentlyApproved);
+        if (stillRecentlyProcessed.length !== recentlyProcessedIds.length) {
+          setRecentlyProcessedIds(stillRecentlyProcessed);
         }
       }
     }
-  }, [appRewards, localApprovedRewards, recentlyApprovedIds]);
+  }, [appRewards, localApprovedRewards, recentlyProcessedIds]);
   
   // Combine app rewards with locally approved rewards first
   const allRewards = [...(appRewards || []), ...localApprovedRewards];
@@ -117,8 +116,8 @@ export function useRewards() {
     const reward = localPendingRewards.find(r => r.id === rewardId);
     if (!reward) return;
 
-    // Add to recently approved IDs to prevent it from reappearing in pending
-    setRecentlyApprovedIds(prev => [...prev, rewardId]);
+    // Add to recently processed IDs to prevent it from reappearing in pending
+    setRecentlyProcessedIds(prev => [...prev, rewardId]);
     
     // Remove from pending rewards locally immediately
     setLocalPendingRewards(prev => prev.filter(r => r.id !== rewardId));
@@ -141,33 +140,34 @@ export function useRewards() {
       // The approved reward will be fetched for both partners on the next data refresh
     } else {
       // If backend update fails, revert local changes
-      setRecentlyApprovedIds(prev => prev.filter(id => id !== rewardId));
+      setRecentlyProcessedIds(prev => prev.filter(id => id !== rewardId));
       setLocalPendingRewards(prev => [...prev, reward]);
       setLocalApprovedRewards(prev => prev.filter(r => r.id !== rewardId));
       toast.error('Failed to approve reward');
     }
   };
   
-  // Handle rejecting a reward
+  // Handle rejecting a reward - completely removes it from the database
   const handleRejectReward = async (rewardId: string) => {
-    // Remove from pending rewards locally first for immediate UI feedback
+    // Find the reward in the pending rewards
     const reward = localPendingRewards.find(r => r.id === rewardId);
     if (!reward) return;
     
-    // Add to recently approved IDs to prevent it from reappearing in pending
-    setRecentlyApprovedIds(prev => [...prev, rewardId]);
+    // Add to recently processed IDs to prevent it from reappearing in pending
+    setRecentlyProcessedIds(prev => [...prev, rewardId]);
     
-    // Update local state immediately
+    // Update local state immediately for UI feedback
     setLocalPendingRewards(prev => prev.filter(r => r.id !== rewardId));
     
-    // Update in the backend
+    // Delete the reward from the database completely
+    console.log("Deleting rejected reward from database:", rewardId);
     const success = await rejectReward(rewardId);
     
     if (success) {
-      toast.success('Reward rejected');
+      toast.success('Reward rejected and removed');
     } else {
       // Revert local change if backend fails
-      setRecentlyApprovedIds(prev => prev.filter(id => id !== rewardId));
+      setRecentlyProcessedIds(prev => prev.filter(id => id !== rewardId));
       setLocalPendingRewards(prev => [...prev, reward]);
       toast.error('Failed to reject reward');
     }

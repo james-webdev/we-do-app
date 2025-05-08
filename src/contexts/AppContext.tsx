@@ -926,18 +926,21 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   // Updated rejectReward to use Supabase
   const rejectReward = async (rewardId: string): Promise<boolean> => {
     try {
+      console.log(`Rejecting and removing reward ID: ${rewardId}`);
+      
+      // Delete the rejected reward from the database completely
       const { error } = await supabase
         .from('rewards')
-        .update({ status: 'rejected' })
+        .delete()
         .eq('id', rewardId);
         
       if (error) {
-        console.error('Error rejecting reward:', error);
+        console.error('Error deleting rejected reward:', error);
         toast.error(error.message || 'Failed to reject reward');
         return false;
       }
       
-      toast.success('Reward rejected');
+      toast.success('Reward rejected and removed');
       
       // Add a slight delay before refreshing data to allow the database to update
       setTimeout(() => {
