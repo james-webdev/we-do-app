@@ -152,6 +152,12 @@ export async function deleteReward(
 
     console.log(`Deleting reward ID: ${rewardId}`);
     
+    // Detect if this is a mock reward (usually start with "reward" prefix)
+    if (rewardId.startsWith('reward')) {
+      console.log("Detected a mock reward, handling locally only");
+      return true;
+    }
+    
     // First, verify the reward exists before attempting to delete
     const { data: checkReward, error: checkError } = await supabase
       .from('rewards')

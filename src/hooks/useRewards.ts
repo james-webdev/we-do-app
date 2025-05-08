@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Reward, RewardStatus } from '@/types';
@@ -24,9 +23,18 @@ export function useRewards() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<Reward | null>(null);
   const [localApprovedRewards, setLocalApprovedRewards] = useState<Reward[]>([]);
   const [localPendingRewards, setLocalPendingRewards] = useState<Reward[]>([]);
+  const [useMockRewards, setUseMockRewards] = useState<boolean>(true);
   
   // Keep track of recently processed reward IDs to prevent them from reappearing
   const [recentlyProcessedIds, setRecentlyProcessedIds] = useState<string[]>([]);
+  
+  // Check if we have real rewards from the database and should stop using mock data
+  useEffect(() => {
+    // If we have any real rewards from the database, stop using mock rewards
+    if (appRewards && appRewards.length > 0) {
+      setUseMockRewards(false);
+    }
+  }, [appRewards]);
   
   // Force data refresh when component mounts
   useEffect(() => {
@@ -77,9 +85,9 @@ export function useRewards() {
   // Combine app rewards with locally approved rewards
   const allRewards = [...(appRewards || []), ...localApprovedRewards];
   
-  // Only add mock rewards if there are no other rewards available
-  // This prevents mock rewards from appearing after real rewards are created
-  const finalRewards = allRewards.length > 0 ? allRewards : mockRewards || [];
+  // Only add mock rewards if explicitly using mock rewards and there are no other rewards available
+  // This ensures we keep showing mock rewards until user explicitly deletes them
+  const finalRewards = useMockRewards ? [...allRewards, ...mockRewards] : allRewards;
 
   const handleRedeemClick = (reward: Reward) => {
     setSelectedReward(reward);
@@ -105,24 +113,40 @@ export function useRewards() {
     if (!showDeleteConfirm) return;
     
     console.log(`Confirming deletion of reward: ${showDeleteConfirm.id}`);
-    const success = await deleteReward(showDeleteConfirm.id);
     
-    if (success) {
+    // Check if it's a mock reward (their IDs typically start with "reward")
+    const isMockReward = showDeleteConfirm.id.startsWith('reward');
+    
+    if (isMockReward) {
+      console.log("Deleting a mock reward locally");
+      // For mock rewards, just update the local state to stop showing it
+      setUseMockRewards(false);
+      toast.success('Mock reward removed');
       setShowDeleteConfirm(null);
+    } else {
+      // For real database rewards, delete from the database
+      const success = await deleteReward(showDeleteConfirm.id);
       
-      // Remove the reward locally immediately
-      const updatedRewards = allRewards.filter(r => r.id !== showDeleteConfirm.id);
-      setLocalApprovedRewards(prev => prev.filter(r => r.id !== showDeleteConfirm.id));
-      
-      // Add to recently processed IDs
-      setRecentlyProcessedIds(prev => [...prev, showDeleteConfirm.id]);
-      
-      toast.success('Reward deleted successfully');
-      
-      // Force a refresh to ensure the database is in sync
-      setTimeout(() => {
-        refreshData();
-      }, 500);
+      if (success) {
+        console.log(`Successfully deleted reward ${showDeleteConfirm.id} from database`);
+        setShowDeleteConfirm(null);
+        
+        // Remove the reward locally immediately
+        setLocalApprovedRewards(prev => prev.filter(r => r.id !== showDeleteConfirm.id));
+        
+        // Add to recently processed IDs
+        setRecentlyProcessedIds(prev => [...prev, showDeleteConfirm.id]);
+        
+        toast.success('Reward deleted successfully');
+        
+        // Force a refresh to ensure the database is in sync
+        setTimeout(() => {
+          refreshData();
+        }, 500);
+      } else {
+        console.error(`Failed to delete reward ${showDeleteConfirm.id}`);
+        toast.error('Failed to delete reward');
+      }
     }
   };
 
