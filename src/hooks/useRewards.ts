@@ -115,19 +115,36 @@ export function useRewards() {
     }
   };
   
-  // Handle reward proposal
+  // Handle reward proposal with improved error handling
   const proposeReward = async (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => {
     try {
-      console.log('Proposing reward with current user:', currentUser?.id);
+      console.log('Starting reward proposal process');
+      
       if (!currentUser) {
+        console.error('No user found when proposing reward');
         toast.error('You must be logged in to propose rewards');
         return false;
       }
       
-      return await useApp().proposeReward(reward);
-    } catch (error) {
-      console.error('Error proposing reward:', error);
-      toast.error('Failed to propose reward');
+      console.log('Proposing reward with data:', reward);
+      console.log('Current user ID:', currentUser.id);
+      
+      // Call the AppContext method with better error handling
+      const { proposeReward } = useApp();
+      const success = await proposeReward(reward);
+      
+      console.log('Propose reward result:', success);
+      
+      if (success) {
+        toast.success('Reward proposed successfully!');
+        return true;
+      } else {
+        toast.error('Failed to propose reward - unsuccessful response');
+        return false;
+      }
+    } catch (error: any) {
+      console.error('Exception in proposeReward hook function:', error);
+      toast.error(`Failed to propose reward: ${error?.message || 'Unknown error'}`);
       return false;
     }
   };

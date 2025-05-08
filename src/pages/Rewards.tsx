@@ -67,7 +67,7 @@ const Rewards = () => {
   const onSubmitProposal = async (data: ProposedRewardFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("Submitting reward proposal:", data);
+      console.log("Submit button clicked - Submitting reward proposal:", data);
       
       const success = await proposeReward({
         title: data.title,
@@ -76,15 +76,19 @@ const Rewards = () => {
         imageIcon: data.imageIcon
       });
       
+      console.log("Proposal submission result:", success);
+      
       if (success) {
         setShowProposeDialog(false);
         toast.success("Reward proposal submitted successfully!");
         
         // Make sure we refresh data after submitting
         await refreshData();
+      } else {
+        console.error("Proposal submission was not successful");
       }
     } catch (error) {
-      console.error("Error submitting proposal:", error);
+      console.error("Error in onSubmitProposal:", error);
       toast.error("Failed to propose reward. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -158,6 +162,7 @@ const Rewards = () => {
           <ProposeRewardForm 
             onSubmit={onSubmitProposal}
             onCancel={() => setShowProposeDialog(false)}
+            isSubmitting={isSubmitting}
           />
         </DialogContent>
       </Dialog>

@@ -18,8 +18,10 @@ export async function proposeReward(
       return false;
     }
 
-    console.log('Proposing new reward with user ID:', currentUserId, 'Reward data:', reward);
+    console.log('Proposing new reward with user ID:', currentUserId);
+    console.log('Reward data:', reward);
     
+    // Map the JavaScript camelCase fields to the database snake_case fields
     const { data, error } = await supabase
       .from('rewards')
       .insert({
@@ -38,8 +40,10 @@ export async function proposeReward(
       return false;
     }
     
-    console.log('Reward proposed successfully:', data);
+    console.log('Reward proposal successful, database response:', data);
     toast.success('Reward proposed for approval');
+    
+    // Refresh data to show the newly created reward
     refreshData();
     return true;
   } catch (error: any) {

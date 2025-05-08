@@ -8,6 +8,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { Loader2 } from 'lucide-react';
 
 // Form schema for proposed rewards with expanded icon options
 const proposedRewardSchema = z.object({
@@ -33,9 +34,10 @@ export type ProposedRewardFormValues = z.infer<typeof proposedRewardSchema>;
 interface ProposeRewardFormProps {
   onSubmit: (data: ProposedRewardFormValues) => Promise<void>;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
-export const ProposeRewardForm = ({ onSubmit, onCancel }: ProposeRewardFormProps) => {
+export const ProposeRewardForm = ({ onSubmit, onCancel, isSubmitting = false }: ProposeRewardFormProps) => {
   const form = useForm<ProposedRewardFormValues>({
     resolver: zodResolver(proposedRewardSchema),
     defaultValues: {
@@ -47,6 +49,7 @@ export const ProposeRewardForm = ({ onSubmit, onCancel }: ProposeRewardFormProps
   });
 
   const handleSubmit = async (data: ProposedRewardFormValues) => {
+    console.log("Form submitted with data:", data);
     try {
       await onSubmit(data);
       form.reset();
@@ -133,10 +136,23 @@ export const ProposeRewardForm = ({ onSubmit, onCancel }: ProposeRewardFormProps
             type="button"
             variant="outline"
             onClick={onCancel}
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
-          <Button type="submit">Propose Reward</Button>
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              'Propose Reward'
+            )}
+          </Button>
         </DialogFooter>
       </form>
     </Form>
