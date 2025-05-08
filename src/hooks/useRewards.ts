@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
-import { Reward } from '@/types';
+import { Reward, RewardStatus } from '@/types';
 import { toast } from '@/components/ui/sonner';
 import { mockRewards } from '@/lib/mock-data';
 
@@ -102,7 +103,11 @@ export function useRewards() {
     setLocalPendingRewards(prev => prev.filter(r => r.id !== rewardId));
     
     // Add to local approved rewards immediately with the status changed to 'approved'
-    const approvedReward = {...reward, status: 'approved'};
+    const approvedReward: Reward = {
+      ...reward,
+      status: 'approved' as RewardStatus
+    };
+    
     setLocalApprovedRewards(prev => [...prev, approvedReward]);
     
     // Update in the backend
