@@ -25,8 +25,8 @@ export function PendingRewardsList({ pendingRewards, onApprove, onReject }: Pend
     <div className="mb-8">
       <h2 className="text-xl font-semibold mb-4">Rewards Pending Your Approval</h2>
       {pendingRewards.length > 0 && (
-        <Alert variant="warning" className="mb-4">
-          <AlertCircle className="h-4 w-4 mr-2" />
+        <Alert variant="destructive" className="mb-4 bg-amber-50 border-amber-200">
+          <AlertCircle className="h-4 w-4 mr-2 text-amber-500" />
           <AlertDescription>
             Rejecting a reward will permanently delete it from the database.
           </AlertDescription>
