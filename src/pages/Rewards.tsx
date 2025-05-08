@@ -34,27 +34,12 @@ const Rewards = () => {
     proposeReward
   } = useRewards();
 
-  // Refresh data when component mounts to ensure we have the latest rewards
+  // Refresh data only once when component mounts
   useEffect(() => {
+    console.log("Rewards component mounted, refreshing data");
     refreshData();
-  }, [refreshData]);
-
-  const onSubmitProposal = async (data: ProposedRewardFormValues) => {
-    try {
-      const success = await proposeReward({
-        title: data.title,
-        description: data.description,
-        pointsCost: data.pointsCost,
-        imageIcon: data.imageIcon
-      });
-      
-      if (success) {
-        setShowProposeDialog(false);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    // Don't include refreshData in dependencies to avoid infinite loop
+  }, []); // Empty dependency array ensures this runs only once on mount
   
   if (isLoading) {
     return <LoadingRewards />;
@@ -113,6 +98,23 @@ const Rewards = () => {
       </Dialog>
     </div>
   );
+
+  async function onSubmitProposal(data: ProposedRewardFormValues) {
+    try {
+      const success = await proposeReward({
+        title: data.title,
+        description: data.description,
+        pointsCost: data.pointsCost,
+        imageIcon: data.imageIcon
+      });
+      
+      if (success) {
+        setShowProposeDialog(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
 };
 
 export default Rewards;

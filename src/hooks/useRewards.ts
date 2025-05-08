@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Reward, RewardStatus } from '@/types';
@@ -29,6 +30,7 @@ export function useRewards() {
   // Update local pending rewards when app state changes
   useEffect(() => {
     if (pendingRewards) {
+      console.log("Updating local pending rewards:", pendingRewards);
       // Filter out recently processed rewards from the pending rewards
       const filteredPendingRewards = pendingRewards.filter(
         reward => !recentlyProcessedIds.includes(reward.id)
@@ -42,6 +44,7 @@ export function useRewards() {
   // Update local approved rewards when app rewards change
   useEffect(() => {
     if (appRewards) {
+      console.log("App rewards updated:", appRewards);
       // If appRewards has been updated with our locally approved rewards,
       // we don't need to keep them in localApprovedRewards anymore
       const filteredLocal = localApprovedRewards.filter(localReward => 
@@ -97,6 +100,14 @@ export function useRewards() {
     
     if (success) {
       setShowDeleteConfirm(null);
+      
+      // Remove the reward locally immediately
+      const updatedRewards = allRewards.filter(r => r.id !== showDeleteConfirm.id);
+      setLocalApprovedRewards(prev => prev.filter(r => r.id !== showDeleteConfirm.id));
+      
+      // Add to recently processed IDs
+      setRecentlyProcessedIds(prev => [...prev, showDeleteConfirm.id]);
+      
       toast.success('Reward deleted successfully');
     }
   };
@@ -107,6 +118,8 @@ export function useRewards() {
     const reward = localPendingRewards.find(r => r.id === rewardId);
     if (!reward) return;
 
+    console.log("Approving reward:", rewardId);
+    
     // Add to recently processed IDs to prevent it from reappearing in pending
     setRecentlyProcessedIds(prev => [...prev, rewardId]);
     
@@ -142,6 +155,8 @@ export function useRewards() {
     // Find the reward in the pending rewards
     const reward = localPendingRewards.find(r => r.id === rewardId);
     if (!reward) return;
+    
+    console.log("Rejecting reward:", rewardId);
     
     // Add to recently processed IDs to prevent it from reappearing in pending
     setRecentlyProcessedIds(prev => [...prev, rewardId]);

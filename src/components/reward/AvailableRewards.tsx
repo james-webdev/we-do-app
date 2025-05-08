@@ -11,7 +11,7 @@ interface AvailableRewardsProps {
 }
 
 export function AvailableRewards({ rewards, availablePoints, onRedeemClick, onDeleteClick }: AvailableRewardsProps) {
-  // Filter out any rewards that might be pending (should only display approved rewards)
+  // Make sure we're only displaying approved rewards and filtering out any rejected ones
   const approvedRewards = rewards.filter(reward => 
     reward.status === 'approved' || reward.status === undefined
   );
