@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { User, Task, BrowniePoint, TaskStatus, TaskRating, TaskType, BrowniePointType } from '@/types';
+import { User, Task, BrowniePoint, TaskStatus, TaskRating, TaskType, BrowniePointType, Reward, RewardStatus } from '@/types';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
@@ -15,6 +15,11 @@ import {
   addNewBrowniePoint, 
   deleteBrowniePoint 
 } from './browniePointService';
+import {
+  proposeReward,
+  deleteReward,
+  redeemReward
+} from './rewardService';
 import { connectPartner } from './partnerService';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -26,6 +31,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [browniePoints, setBrowniePoints] = useState<BrowniePoint[]>([]);
+  const [rewards, setRewards] = useState<Reward[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [availablePoints, setAvailablePoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -243,8 +249,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               .from('brownie_points')
               .select('points')
               .eq('to_user_id', user.id)
-              .eq('redeemed', false);
-              
+              .eq('redeemed', false as boolean);
+            
             if (!availableError && availablePointsData) {
               const points = availablePointsData.reduce((sum, point) => sum + point.points, 0);
               console.log("Available points:", points);
@@ -252,6 +258,37 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             }
           } catch (error) {
             console.error('Error calculating available points:', error);
+          }
+          
+          // Get rewards
+          try {
+            console.log("Fetching rewards for user:", user?.id);
+            // Get all rewards
+            const { data: rewardsData, error: rewardsError } = await supabase
+              .from('rewards')
+              .select('*');
+            
+            if (rewardsError) {
+              console.error('Error fetching rewards:', rewardsError);
+              toast.error('Failed to load rewards');
+            } else if (rewardsData) {
+              console.log("Rewards loaded:", rewardsData.length);
+            
+              const formattedRewards: Reward[] = rewardsData.map(reward => ({
+                id: reward.id,
+                title: reward.title,
+                description: reward.description,
+                pointsCost: reward.points_cost,
+                imageIcon: reward.image_icon,
+                status: reward.status as RewardStatus,
+                createdById: reward.created_by_id,
+                createdAt: new Date(reward.created_at)
+              }));
+            
+              setRewards(formattedRewards);
+            }
+          } catch (error) {
+            console.error('Error in rewards fetch:', error);
           }
         } catch (error) {
           console.error('Error in brownie points fetch:', error);
@@ -282,6 +319,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setTasks([]);
       setPendingTasks([]);
       setBrowniePoints([]);
+      setRewards([]);
       setSummary(null);
       setAvailablePoints(0);
       setIsLoading(false);
@@ -291,6 +329,33 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   // Wrapper for connectPartner
   const handleConnectPartner = async (partnerEmail: string) => {
     return await connectPartner(partnerEmail, currentUser?.id, currentUser?.partnerId, fetchData);
+  };
+
+  // Wrapper for rewardService.proposeReward
+  const handleProposeReward = async (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => {
+    return await proposeReward(reward, currentUser?.id, fetchData);
+  };
+
+  // Wrapper for rewardService.deleteReward
+  const handleDeleteReward = async (rewardId: string) => {
+    return await deleteReward(rewardId, fetchData);
+  };
+
+  // Wrapper for rewardService.redeemReward
+  const handleRedeemReward = async (rewardId: string) => {
+    if (!currentUser) {
+      toast.error('User not authenticated');
+      return false;
+    }
+    
+    // Find the reward to get its cost
+    const reward = rewards.find(r => r.id === rewardId);
+    if (!reward) {
+      toast.error('Reward not found');
+      return false;
+    }
+    
+    return await redeemReward(rewardId, reward.pointsCost, currentUser.id, fetchData);
   };
 
   // Create wrapper functions that use the imported service functions
@@ -326,6 +391,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         tasks,
         pendingTasks,
         browniePoints,
+        rewards,
         summary,
         availablePoints,
         isLoading,
@@ -337,7 +403,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         deleteTask: handleDeleteTask,
         deleteBrowniePoint: handleDeleteBrowniePoint,
         connectPartner: handleConnectPartner,
-        hasPartner
+        hasPartner,
+        proposeReward: handleProposeReward,
+        deleteReward: handleDeleteReward,
+        redeemReward: handleRedeemReward
       }}
     >
       {children}
