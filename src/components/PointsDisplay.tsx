@@ -21,7 +21,7 @@ const PointsDisplay = () => {
           <div className="text-3xl font-bold text-center mb-4">
             {availablePoints}
           </div>
-          <AvailablePointsChart />
+         {/* <AvailablePointsChart /> */}
         </CardContent>
       </Card>
     </div>
