@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
 import TaskDistributionChart from './charts/TaskDistributionChart';
 import TaskCompletionChart from './charts/TaskCompletionChart';
-import PointsComparisonChart from './charts/PointsComparisonChart';
+import PointsTimeComparisonChart from './charts/PointsTimeComparisonChart';
 import { format } from 'date-fns';
 
 const DashboardCharts = () => {
@@ -18,11 +18,11 @@ const DashboardCharts = () => {
     <div className="mt-8">
       <h2 className="text-2xl font-semibold mb-4">Dashboard Analytics</h2>
       <p className="text-sm text-muted-foreground mb-6">
-        Data from the last 7 days as of {today}
+        Data as of {today}
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Action Distribution Chart (Now a Pie Chart) */}
+        {/* Action Distribution Chart */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Action Distribution by Weight</CardTitle>
@@ -47,13 +47,13 @@ const DashboardCharts = () => {
           </CardContent>
         </Card>
         
-        {/* Points Comparison Pie Chart */}
+        {/* Points Competition Pie Chart with Tabs */}
         <Card className="md:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Points Competition</CardTitle>
           </CardHeader>
           <CardContent>
-            <PointsComparisonChart />
+            <PointsTimeComparisonChart />
           </CardContent>
         </Card>
       </div>

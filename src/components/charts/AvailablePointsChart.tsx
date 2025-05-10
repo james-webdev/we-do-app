@@ -1,0 +1,78 @@
+
+import React from 'react';
+import { useApp } from '@/contexts/AppContext';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+
+const AvailablePointsChart = () => {
+  const { availablePoints, browniePoints, currentUser } = useApp();
+  
+  // Calculate used points (redeemed)
+  const usedPoints = browniePoints.filter(point => 
+    point.toUserId === currentUser?.id && point.redeemed
+  ).reduce((total, point) => total + point.points, 0);
+  
+  const data = [
+    {
+      name: 'Available',
+      value: availablePoints,
+      color: '#0ea5e9' // sky blue
+    },
+    {
+      name: 'Used',
+      value: usedPoints,
+      color: '#f43f5e' // pink
+    }
+  ];
+  
+  // Filter out zero values to avoid empty segments
+  const filteredData = data.filter(item => item.value > 0);
+  
+  // If no data, show a message
+  if (filteredData.length === 0) {
+    return (
+      <div className="h-[200px] flex items-center justify-center text-gray-500">
+        No points data available
+      </div>
+    );
+  }
+  
+  // Custom tooltip formatter
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
+          <p className="font-medium">{payload[0].name} Points</p>
+          <p>{payload[0].value} points</p>
+        </div>
+      );
+    }
+    return null;
+  };
+  
+  return (
+    <div className="h-[200px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={filteredData}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            outerRadius={70}
+            fill="#8884d8"
+            dataKey="value"
+            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+          >
+            {filteredData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+export default AvailablePointsChart;

@@ -4,6 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Trophy } from 'lucide-react';
+import AvailablePointsChart from './charts/AvailablePointsChart';
 
 const PointsDisplay = () => {
   const { availablePoints, browniePoints, currentUser } = useApp();
@@ -26,10 +27,11 @@ const PointsDisplay = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-center my-4">
+          <div className="text-3xl font-bold text-center mb-2">
             {availablePoints}
           </div>
-          <p className="text-sm text-gray-500 text-center">
+          <AvailablePointsChart />
+          <p className="text-sm text-gray-500 text-center mt-2">
             You can use these points to redeem rewards
           </p>
         </CardContent>
