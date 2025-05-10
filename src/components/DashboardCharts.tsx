@@ -3,13 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
 import TaskDistributionChart from './charts/TaskDistributionChart';
-import LoadDistributionChart from './charts/LoadDistributionChart';
-import BrowniePointTypeChart from './charts/BrowniePointTypeChart';
-import WeeklyPointsChart from './charts/WeeklyPointsChart';
+import TaskCompletionChart from './charts/TaskCompletionChart';
 import { format } from 'date-fns';
 
 const DashboardCharts = () => {
-  const { summary, currentUser, browniePoints } = useApp();
+  const { summary, currentUser, tasks } = useApp();
   
   if (!summary || !currentUser) return null;
   
@@ -23,10 +21,10 @@ const DashboardCharts = () => {
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Task Distribution Chart */}
+        {/* Task Distribution Chart (Now a Pie Chart) */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Task Distribution</CardTitle>
+            <CardTitle className="text-lg">Action Distribution by Weight</CardTitle>
           </CardHeader>
           <CardContent>
             <TaskDistributionChart 
@@ -38,41 +36,13 @@ const DashboardCharts = () => {
           </CardContent>
         </Card>
         
-        {/* Load Distribution Chart */}
+        {/* Weekly Tasks Completed Chart */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Mental vs Physical Load</CardTitle>
+            <CardTitle className="text-lg">Weekly Actions Completed</CardTitle>
           </CardHeader>
           <CardContent>
-            <LoadDistributionChart 
-              mentalTasks={summary.mentalTasks} 
-              physicalTasks={summary.physicalTasks} 
-            />
-          </CardContent>
-        </Card>
-        
-        {/* Brownie Points by Type Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Brownie Points by Type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BrowniePointTypeChart 
-              browniePoints={browniePoints}
-            />
-          </CardContent>
-        </Card>
-        
-        {/* Weekly Points Received Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Weekly Points Received</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <WeeklyPointsChart 
-              browniePoints={browniePoints}
-              userId={currentUser.id}
-            />
+            <TaskCompletionChart tasks={tasks} />
           </CardContent>
         </Card>
       </div>

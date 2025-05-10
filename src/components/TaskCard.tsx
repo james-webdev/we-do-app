@@ -80,9 +80,9 @@ const TaskCard = ({ task, userName }: TaskCardProps) => {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete Task</AlertDialogTitle>
+                <AlertDialogTitle>Delete Action</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete this task? This action cannot be undone.
+                  Are you sure you want to delete this action? This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { User, Task, BrowniePoint, TaskStatus, TaskRating, TaskType, BrowniePointType, Reward, RewardStatus } from '@/types';
+import { User, Task, BrowniePoint, TaskStatus, TaskRating, TaskType, BrowniePointType } from '@/types';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
@@ -15,11 +15,6 @@ import {
   addNewBrowniePoint, 
   deleteBrowniePoint 
 } from './browniePointService';
-import {
-  proposeReward,
-  deleteReward,
-  redeemReward
-} from './rewardService';
 import { connectPartner } from './partnerService';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -31,7 +26,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [browniePoints, setBrowniePoints] = useState<BrowniePoint[]>([]);
-  const [rewards, setRewards] = useState<Reward[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [availablePoints, setAvailablePoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -319,7 +313,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setTasks([]);
       setPendingTasks([]);
       setBrowniePoints([]);
-      setRewards([]);
       setSummary(null);
       setAvailablePoints(0);
       setIsLoading(false);
@@ -391,7 +384,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         tasks,
         pendingTasks,
         browniePoints,
-        rewards,
         summary,
         availablePoints,
         isLoading,
@@ -403,10 +395,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         deleteTask: handleDeleteTask,
         deleteBrowniePoint: handleDeleteBrowniePoint,
         connectPartner: handleConnectPartner,
-        hasPartner,
-        proposeReward: handleProposeReward,
-        deleteReward: handleDeleteReward,
-        redeemReward: handleRedeemReward
+        hasPartner
       }}
     >
       {children}

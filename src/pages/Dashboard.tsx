@@ -55,7 +55,7 @@ const Dashboard = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
-          <h2 className="text-xl font-semibold mb-4">Your Tasks</h2>
+          <h2 className="text-xl font-semibold mb-4">Your Actions</h2>
           <TaskList />
         </div>
         

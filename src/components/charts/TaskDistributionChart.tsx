@@ -1,11 +1,6 @@
 
 import React from 'react';
-import { 
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent
-} from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useApp } from '@/contexts/AppContext';
 
 interface TaskDistributionChartProps {
@@ -15,6 +10,8 @@ interface TaskDistributionChartProps {
   partnerPoints: number;
 }
 
+const COLORS = ['#8b5cf6', '#c4b5fd'];
+
 const TaskDistributionChart = ({ 
   userTaskCount, 
   partnerTaskCount,
@@ -23,56 +20,57 @@ const TaskDistributionChart = ({
 }: TaskDistributionChartProps) => {
   const { currentUser, partner } = useApp();
 
+  // Calculate weighted tasks based on rating points
   const data = [
     {
       name: currentUser?.name || 'You',
-      tasks: userTaskCount,
-      points: userPoints,
-      color: '#8b5cf6'
+      value: userPoints,
+      color: COLORS[0]
     },
     {
       name: partner?.name || 'Partner',
-      tasks: partnerTaskCount,
-      points: partnerPoints,
-      color: '#c4b5fd'
+      value: partnerPoints,
+      color: COLORS[1]
     }
   ];
 
-  const chartConfig = {
-    tasks: {
-      label: 'Tasks',
-      color: '#8b5cf6'
-    },
-    points: {
-      label: 'Points',
-      color: '#c4b5fd'
+  // Custom tooltip formatter
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
+          <p className="font-medium">{payload[0].name}</p>
+          <p>Point Total: {payload[0].value}</p>
+          <p className="text-gray-500">Based on action ratings</p>
+        </div>
+      );
     }
+    return null;
   };
 
   return (
-    <ChartContainer config={chartConfig} className="h-[200px] w-full">
+    <div className="h-[200px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={data}
-          margin={{
-            top: 20,
-            right: 15,
-            left: 15,
-            bottom: 20,
-          }}
-          barGap={8}
-        >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="name" />
-          <YAxis allowDecimals={false} />
-          <ChartTooltip>
-            <ChartTooltipContent />
-          </ChartTooltip>
-          <Bar dataKey="tasks" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="points" fill="#c4b5fd" radius={[4, 4, 0, 0]} />
-        </BarChart>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+          <Legend />
+        </PieChart>
       </ResponsiveContainer>
-    </ChartContainer>
+    </div>
   );
 };
 

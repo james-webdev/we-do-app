@@ -57,7 +57,7 @@ const TaskList = () => {
             variant="ghost" 
             onClick={handleRefresh} 
             size="sm"
-            title="Refresh tasks"
+            title="Refresh actions"
             disabled={localRefreshing}
           >
             <RefreshCcw className={`h-4 w-4 ${localRefreshing ? 'animate-spin' : ''}`} />
@@ -68,7 +68,7 @@ const TaskList = () => {
           <Card>
             <CardContent className="p-6">
               <div className="flex justify-between items-center">
-                <p className="text-center text-gray-500 w-full">No tasks yet. Add a task to get started!</p>
+                <p className="text-center text-gray-500 w-full">No actions yet. Add an action to get started!</p>
               </div>
             </CardContent>
           </Card>
