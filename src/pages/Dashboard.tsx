@@ -5,6 +5,7 @@ import ConnectPartner from '@/components/ConnectPartner';
 import TaskList from '@/components/TaskList';
 import PointsDisplay from '@/components/PointsDisplay';
 import PendingTasksList from '@/components/PendingTasksList';
+import DashboardCharts from '@/components/DashboardCharts';
 import { Button } from '@/components/ui/button';
 import { RefreshCcw } from 'lucide-react';
 
@@ -52,7 +53,7 @@ const Dashboard = () => {
       {/* Show pending tasks first */}
       <PendingTasksList />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div>
           <h2 className="text-xl font-semibold mb-4">Your Tasks</h2>
           <TaskList />
@@ -63,6 +64,9 @@ const Dashboard = () => {
           <PointsDisplay />
         </div>
       </div>
+      
+      {/* Add dashboard charts */}
+      <DashboardCharts />
     </div>
   );
 };

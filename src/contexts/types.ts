@@ -1,5 +1,5 @@
 
-import { User, Task, BrowniePoint, TaskStatus, TaskRating, TaskType, BrowniePointType, Reward } from '@/types';
+import { User, Task, BrowniePoint, TaskStatus, TaskRating, TaskType, BrowniePointType } from '@/types';
 
 export interface AppContextType {
   currentUser: User | null;
@@ -7,7 +7,6 @@ export interface AppContextType {
   tasks: Task[];
   pendingTasks: Task[];
   browniePoints: BrowniePoint[];
-  rewards: Reward[];
   summary: any;
   availablePoints: number;
   isLoading: boolean;
@@ -20,10 +19,6 @@ export interface AppContextType {
   deleteBrowniePoint: (pointId: string) => Promise<void>;
   connectPartner: (partnerEmail: string) => Promise<boolean>;
   hasPartner: boolean;
-  // New reward-related functions
-  proposeReward: (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => Promise<boolean>;
-  deleteReward: (rewardId: string) => Promise<boolean>;
-  redeemReward: (rewardId: string) => Promise<boolean>;
 }
 
 // Define types for the RPC function results to fix TypeScript errors

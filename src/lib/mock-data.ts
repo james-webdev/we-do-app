@@ -1,145 +1,132 @@
 
-import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, Reward, TaskStatus, TaskRating } from "../types";
+import { User, Task, TaskType, BrowniePoint, TaskStatus, BrowniePointType, TaskRating } from "../types";
 
-// Mock User Data
+// Mock data for development
+// Users
 export const users: User[] = [
   {
-    id: "user1",
-    name: "Alex Johnson",
+    id: "1",
+    name: "Alex",
     email: "alex@example.com",
-    partnerId: "user2"
+    partnerId: "2"
   },
   {
-    id: "user2",
-    name: "Sam Taylor",
+    id: "2",
+    name: "Sam",
     email: "sam@example.com",
-    partnerId: "user1"
+    partnerId: "1"
   }
 ];
 
-// Mock Task Data
-const generateMockTasks = (): Task[] => {
-  const tasks: Task[] = [];
-  const types: TaskType[] = ["mental", "physical", "both"];
-  const statuses: TaskStatus[] = ["approved", "approved", "approved", "pending"]; // Most tasks approved, some pending
-  const ratings: TaskRating[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  const taskNames = [
-    "School pickup", "Doctor appointment", "Grocery shopping", 
-    "Meal planning", "Bath time", "Bedtime routine",
-    "Homework help", "Making dinner", "Cleaning toys",
-    "Washing clothes", "Paying bills", "Scheduling playdates"
-  ];
+export const mockCurrentUser: User = users[0];
 
-  // Generate tasks for the past week
-  for (let i = 0; i < 20; i++) {
-    const userId = i % 2 === 0 ? "user1" : "user2";
-    const daysAgo = Math.floor(Math.random() * 7);
-    const hoursAgo = Math.floor(Math.random() * 24);
-    const timestamp = new Date();
-    timestamp.setDate(timestamp.getDate() - daysAgo);
-    timestamp.setHours(timestamp.getHours() - hoursAgo);
-
-    tasks.push({
-      id: `task${i}`,
-      title: taskNames[Math.floor(Math.random() * taskNames.length)],
-      type: types[Math.floor(Math.random() * types.length)],
-      rating: ratings[Math.floor(Math.random() * ratings.length)], // Using rating instead of level
-      userId,
-      timestamp,
-      status: statuses[Math.floor(Math.random() * statuses.length)]
-    });
-  }
-
-  return tasks;
-};
-
-export const tasks: Task[] = generateMockTasks();
-
-// Mock Brownie Points Data
-const generateMockBrowniePoints = (): BrowniePoint[] => {
-  const browniePoints: BrowniePoint[] = []; // Renamed from 'points' to 'browniePoints'
-  const types: BrowniePointType[] = ["time", "effort", "fun"];
-  const messages = [
-    "Thanks for taking care of the kids yesterday!",
-    "I appreciate you handling the doctor's appointment.",
-    "Thanks for the night off!",
-    "You're amazing for dealing with that tantrum.",
-    "Thank you for picking up my slack this week."
-  ];
-  
-  // Generate brownie points for the past week
-  for (let i = 0; i < 5; i++) {
-    const fromUserId = i % 2 === 0 ? "user1" : "user2";
-    const toUserId = fromUserId === "user1" ? "user2" : "user1";
-    const daysAgo = Math.floor(Math.random() * 7);
-    const createdAt = new Date();
-    createdAt.setDate(createdAt.getDate() - daysAgo);
-    const type = types[Math.floor(Math.random() * types.length)];
-    
-    // Determine points based on type
-    let pointsValue = 1;
-    if (type === 'time') pointsValue = 2;
-    if (type === 'effort') pointsValue = 3;
-
-    browniePoints.push({
-      id: `point${i}`,
-      fromUserId,
-      toUserId,
-      type,
-      message: messages[Math.floor(Math.random() * messages.length)],
-      redeemed: Math.random() > 0.7,
-      createdAt,
-      points: pointsValue
-    });
-  }
-
-  return browniePoints;
-};
-
-export const browniePoints: BrowniePoint[] = generateMockBrowniePoints();
-
-// Mock Rewards
-export const mockRewards: Reward[] = [
+// Tasks
+export const tasks: Task[] = [
   {
-    id: "reward1",
-    title: "Back Rub",
-    description: "Enjoy a relaxing 15-minute back massage",
-    pointsCost: 3,
-    imageIcon: "gift",
-    status: "approved",
-    createdById: "user1",
-    createdAt: new Date()
+    id: "t1",
+    title: "Take out the trash",
+    type: "physical",
+    rating: 3,
+    userId: "1",
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
+    status: "approved"
   },
   {
-    id: "reward2",
-    title: "Nighttime Routine",
-    description: "Partner handles the entire bedtime routine tonight",
-    pointsCost: 4,
-    imageIcon: "star",
-    status: "approved",
-    createdById: "user2",
-    createdAt: new Date()
+    id: "t2",
+    title: "Cook dinner",
+    type: "physical",
+    rating: 5,
+    userId: "2",
+    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    status: "approved"
   },
   {
-    id: "reward3",
-    title: "Weekend Time Off",
-    description: "Get 2 hours to yourself on the weekend",
-    pointsCost: 5,
-    imageIcon: "circle-dollar-sign",
-    status: "approved",
-    createdById: "user1",
-    createdAt: new Date()
+    id: "t3",
+    title: "Plan vacation",
+    type: "mental",
+    rating: 5,
+    userId: "1",
+    timestamp: new Date(),
+    status: "pending"
   },
   {
-    id: "reward4",
-    title: "Breakfast in Bed",
-    description: "Enjoy a peaceful morning with breakfast served in bed",
-    pointsCost: 2,
-    imageIcon: "award",
-    status: "approved",
-    createdById: "user2",
-    createdAt: new Date()
+    id: "t4",
+    title: "Pay bills",
+    type: "mental",
+    rating: 4,
+    userId: "2",
+    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+    status: "approved"
+  },
+  {
+    id: "t5",
+    title: "Clean bathroom",
+    type: "physical",
+    rating: 6,
+    userId: "1", 
+    timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
+    status: "approved"
+  },
+  {
+    id: "t6",
+    title: "Schedule appointments",
+    type: "mental",
+    rating: 3,
+    userId: "2",
+    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+    status: "pending"
+  },
+  {
+    id: "t7",
+    title: "Grocery shopping",
+    type: "both",
+    rating: 5,
+    userId: "1",
+    timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+    status: "approved"
   }
 ];
 
-export const mockCurrentUser = users[0];
+// Brownie Points
+export const browniePoints: BrowniePoint[] = [
+  {
+    id: "bp1",
+    fromUserId: "1",
+    toUserId: "2",
+    type: "effort",
+    message: "Thanks for making dinner last night!",
+    redeemed: false,
+    points: 3,
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) // 1 day ago
+  },
+  {
+    id: "bp2",
+    fromUserId: "2",
+    toUserId: "1",
+    type: "time",
+    message: "Thanks for cleaning the bathroom, it looks great!",
+    redeemed: false,
+    points: 2,
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
+  },
+  {
+    id: "bp3",
+    fromUserId: "1",
+    toUserId: "2",
+    type: "fun",
+    message: "Thanks for the surprise movie night!",
+    redeemed: true,
+    points: 1,
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) // 5 days ago
+  },
+  {
+    id: "bp4",
+    fromUserId: "2",
+    toUserId: "1",
+    type: "effort",
+    message: "Thanks for doing the grocery shopping!",
+    redeemed: false,
+    points: 3,
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000) // 4 days ago
+  }
+];

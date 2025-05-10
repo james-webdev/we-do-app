@@ -1,12 +1,12 @@
-import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, Reward, TaskStatus, TaskRating } from "../types";
-import { users, tasks as mockTasks, browniePoints as mockBrowniePoints, mockCurrentUser, mockRewards } from "./mock-data";
+
+import { User, Task, BrowniePoint, TaskType, TaskLoad, BrowniePointType, TaskStatus, TaskRating } from "../types";
+import { users, tasks as mockTasks, browniePoints as mockBrowniePoints, mockCurrentUser } from "./mock-data";
 
 // In a real application, these would be API calls to a backend server
 // For now, we'll simulate with local storage and mock data
 
 let localTasks = [...mockTasks];
 let localBrowniePoints = [...mockBrowniePoints];
-let localRewards = [...mockRewards];
 
 // User management
 export const getCurrentUser = (): User => {
@@ -130,46 +130,6 @@ const getPointsValueByType = (type: BrowniePointType): number => {
     default:
       return 1;
   }
-};
-
-// Rewards management
-export const getRewards = (): Reward[] => {
-  return localRewards;
-};
-
-export const getReward = (rewardId: string): Reward | undefined => {
-  return localRewards.find(reward => reward.id === rewardId);
-};
-
-export const redeemReward = (userId: string, rewardId: string): boolean => {
-  // Check if the reward exists
-  const reward = getReward(rewardId);
-  if (!reward) return false;
-  
-  // Get unredeemed brownie points received by the user
-  const availablePoints = localBrowniePoints
-    .filter(point => point.toUserId === userId && !point.redeemed)
-    .reduce((sum, point) => sum + point.points, 0);
-  
-  // Check if user has enough points
-  if (availablePoints < reward.pointsCost) {
-    return false;
-  }
-  
-  // Redeem points until the cost is covered
-  let remainingCost = reward.pointsCost;
-  const pointsToRedeem = localBrowniePoints
-    .filter(point => point.toUserId === userId && !point.redeemed)
-    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()); // Oldest first
-  
-  for (const point of pointsToRedeem) {
-    if (remainingCost <= 0) break;
-    
-    redeemBrowniePoint(point.id);
-    remainingCost -= point.points;
-  }
-  
-  return true;
 };
 
 // Analytics

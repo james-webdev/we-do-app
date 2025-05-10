@@ -33,16 +33,3 @@ export interface BrowniePoint {
   createdAt: Date;
   points: number;
 }
-
-export type RewardStatus = 'approved' | 'pending';
-
-export interface Reward {
-  id: string;
-  title: string;
-  description: string;
-  pointsCost: number;
-  imageIcon: string;
-  status: RewardStatus;
-  createdById: string;
-  createdAt: Date;
-}
