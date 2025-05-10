@@ -65,7 +65,7 @@ export async function approveReward(
     
     const { error } = await supabase
       .from('rewards')
-      .update({ status: 'approved' })
+      .update({ status: 'approved' as const })
       .eq('id', rewardId);
       
     if (error) {
@@ -149,7 +149,7 @@ export async function deleteReward(
     }
     
     toast.success('Reward deleted');
-    refreshData();
+    await refreshData();
     return true;
   } catch (error: any) {
     console.error('Exception while deleting reward:', error);
@@ -184,7 +184,7 @@ export async function redeemReward(
       .from('brownie_points')
       .select('*')
       .eq('to_user_id', currentUserId)
-      .eq('redeemed', false)
+      .eq('redeemed', false as boolean)
       .order('created_at', { ascending: true });
       
     if (pointsError) {
@@ -220,7 +220,7 @@ export async function redeemReward(
     if (pointsToUpdate.length > 0) {
       const { error: updateError } = await supabase
         .from('brownie_points')
-        .update({ redeemed: true })
+        .update({ redeemed: true as boolean })
         .in('id', pointsToUpdate);
         
       if (updateError) {

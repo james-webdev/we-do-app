@@ -77,6 +77,38 @@ export interface Database {
           points?: number
         }
       }
+      rewards: {
+        Row: {
+          id: string
+          title: string
+          description: string
+          points_cost: number
+          image_icon: string
+          status: string
+          created_by_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description: string
+          points_cost: number
+          image_icon: string
+          status: string
+          created_by_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string
+          points_cost?: number
+          image_icon?: string
+          status?: string
+          created_by_id?: string
+          created_at?: string
+        }
+      }
       profiles: {
         Row: {
           id: string
