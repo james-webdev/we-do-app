@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { User, Task, BrowniePoint, Reward, TaskStatus, TaskRating, TaskType, BrowniePointType, RewardStatus } from '@/types';
+import { User, Task, BrowniePoint, TaskStatus, TaskRating, TaskType, BrowniePointType } from '@/types';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
@@ -15,13 +15,6 @@ import {
   addNewBrowniePoint, 
   deleteBrowniePoint 
 } from './browniePointService';
-import {
-  proposeReward,
-  approveReward,
-  rejectReward,
-  deleteReward,
-  redeemReward
-} from './rewardService';
 import { connectPartner } from './partnerService';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -33,8 +26,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [browniePoints, setBrowniePoints] = useState<BrowniePoint[]>([]);
-  const [rewards, setRewards] = useState<Reward[]>([]);
-  const [pendingRewards, setPendingRewards] = useState<Reward[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [availablePoints, setAvailablePoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -262,85 +253,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           } catch (error) {
             console.error('Error calculating available points:', error);
           }
-          
-          // Get rewards - Both approved rewards and pending rewards from partner
-          try {
-            console.log("Fetching rewards for user:", user?.id);
-            // Get all approved rewards - these should be visible to both partners
-            const { data: rewardsData, error: rewardsError } = await supabase
-              .from('rewards')
-              .select('*')
-              .eq('status', 'approved');
-              
-            if (rewardsError) {
-              console.error('Error fetching rewards:', rewardsError);
-              toast.error('Failed to load rewards');
-            } else if (rewardsData) {
-              console.log("Approved rewards loaded:", rewardsData.length);
-              
-              const formattedRewards: Reward[] = rewardsData.map(reward => ({
-                id: reward.id,
-                title: reward.title,
-                description: reward.description,
-                pointsCost: reward.points_cost,
-                imageIcon: reward.image_icon,
-                status: reward.status as RewardStatus,
-                createdById: reward.created_by_id,
-                createdAt: new Date(reward.created_at)
-              }));
-              
-              setRewards(formattedRewards);
-            }
-            
-            // Get pending rewards from partner
-            if (profileResult?.partner_id) {
-              console.log("Fetching pending rewards from partner:", profileResult.partner_id);
-              const { data: pendingRewardsData, error: pendingRewardsError } = await supabase
-                .from('rewards')
-                .select('*')
-                .eq('status', 'pending')
-                .eq('created_by_id', profileResult.partner_id);
-                
-              if (pendingRewardsError) {
-                console.error('Error fetching pending rewards:', pendingRewardsError);
-              } else if (pendingRewardsData) {
-                console.log("Pending rewards loaded:", pendingRewardsData.length);
-                
-                const formattedPendingRewards: Reward[] = pendingRewardsData.map(reward => ({
-                  id: reward.id,
-                  title: reward.title,
-                  description: reward.description,
-                  pointsCost: reward.points_cost,
-                  imageIcon: reward.image_icon,
-                  status: reward.status as RewardStatus,
-                  createdById: reward.created_by_id,
-                  createdAt: new Date(reward.created_at)
-                }));
-                
-                setPendingRewards(formattedPendingRewards);
-              }
-            }
-          } catch (error) {
-            console.error('Error in rewards fetch:', error);
-          }
-          
-          // Calculate available points
-          try {
-            console.log("Calculating available points for user:", user.id);
-            const { data: availablePointsData, error: availableError } = await supabase
-              .from('brownie_points')
-              .select('points')
-              .eq('to_user_id', user.id)
-              .eq('redeemed', false);
-              
-            if (!availableError && availablePointsData) {
-              const points = availablePointsData.reduce((sum, point) => sum + point.points, 0);
-              console.log("Available points:", points);
-              setAvailablePoints(points);
-            }
-          } catch (error) {
-            console.error('Error calculating available points:', error);
-          }
         } catch (error) {
           console.error('Error in brownie points fetch:', error);
         }
@@ -375,48 +287,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     }
   }, [user]);
-
-  // Wrapper for rewardService.proposeReward
-  const handleProposeReward = async (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => {
-    const { proposeReward } = await import('./rewardService');
-    return await proposeReward(reward, currentUser?.id, fetchData);
-  };
-
-  // Wrapper for rewardService.approveReward
-  const handleApproveReward = async (rewardId: string) => {
-    const { approveReward } = await import('./rewardService');
-    return await approveReward(rewardId, fetchData);
-  };
-
-  // Wrapper for rewardService.rejectReward
-  const handleRejectReward = async (rewardId: string) => {
-    const { rejectReward } = await import('./rewardService');
-    return await rejectReward(rewardId, fetchData);
-  };
-
-  // Wrapper for rewardService.deleteReward
-  const handleDeleteReward = async (rewardId: string) => {
-    const { deleteReward } = await import('./rewardService');
-    return await deleteReward(rewardId, fetchData);
-  };
-
-  // Wrapper for rewardService.redeemReward
-  const handleRedeemReward = async (rewardId: string) => {
-    if (!currentUser) {
-      toast.error('User not authenticated');
-      return false;
-    }
-    
-    // Find the reward to get its cost
-    const reward = rewards.find(r => r.id === rewardId);
-    if (!reward) {
-      toast.error('Reward not found');
-      return false;
-    }
-    
-    const { redeemReward } = await import('./rewardService');
-    return await redeemReward(rewardId, reward.pointsCost, currentUser.id, fetchData);
-  };
 
   // Wrapper for connectPartner
   const handleConnectPartner = async (partnerEmail: string) => {
@@ -456,8 +326,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         tasks,
         pendingTasks,
         browniePoints,
-        rewards,
-        pendingRewards,
         summary,
         availablePoints,
         isLoading,
@@ -468,13 +336,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         addNewBrowniePoint: handleAddNewBrowniePoint,
         deleteTask: handleDeleteTask,
         deleteBrowniePoint: handleDeleteBrowniePoint,
-        redeemReward: handleRedeemReward,
         connectPartner: handleConnectPartner,
-        hasPartner,
-        proposeReward: handleProposeReward,
-        approveReward: handleApproveReward,
-        rejectReward: handleRejectReward,
-        deleteReward: handleDeleteReward
+        hasPartner
       }}
     >
       {children}

@@ -144,6 +144,10 @@ export type Database = {
         Args: { user_id: string; user_name: string; user_email: string }
         Returns: undefined
       }
+      direct_update_reward_status: {
+        Args: { reward_id: string; new_status: string }
+        Returns: boolean
+      }
       get_profile_by_email: {
         Args: { email_param: string }
         Returns: {
