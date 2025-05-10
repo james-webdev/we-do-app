@@ -37,7 +37,7 @@ const TaskFeedbackList = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />
-            <CardTitle>Tasks Feedback</CardTitle>
+            <CardTitle>Actions Feedback</CardTitle>
           </div>
           <Button
             size="sm"
@@ -50,7 +50,7 @@ const TaskFeedbackList = () => {
           </Button>
         </div>
         <CardDescription>
-          Review feedback on your rejected tasks
+          Review feedback on your rejected actions
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -39,7 +39,7 @@ const PendingTasksList = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-amber-500" />
-            <CardTitle>Tasks Pending Your Approval</CardTitle>
+            <CardTitle>Actions Pending Your Approval</CardTitle>
           </div>
           <Button
             size="sm"
@@ -52,7 +52,7 @@ const PendingTasksList = () => {
           </Button>
         </div>
         <CardDescription>
-          Review and approve tasks submitted by your partner
+          Review and approve actions submitted by your partner
         </CardDescription>
       </CardHeader>
       <CardContent>

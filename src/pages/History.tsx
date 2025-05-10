@@ -91,16 +91,16 @@ const History = () => {
       
       <Tabs defaultValue="tasks" className="w-full" value={mainTab} onValueChange={setMainTab}>
         <TabsList className="mb-6">
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="tasks">Actions</TabsTrigger>
           <TabsTrigger value="browniePoints">Brownie Points</TabsTrigger>
         </TabsList>
         
         <TabsContent value="tasks" className="space-y-6">
           <Tabs value={taskFilterTab} onValueChange={setTaskFilterTab} className="w-full">
             <TabsList className="justify-start">
-              <TabsTrigger value="all">All Tasks</TabsTrigger>
-              <TabsTrigger value="my-tasks">My Tasks</TabsTrigger>
-              <TabsTrigger value="partner-tasks">Partner's Tasks</TabsTrigger>
+              <TabsTrigger value="all">All Actions</TabsTrigger>
+              <TabsTrigger value="my-tasks">My Actions</TabsTrigger>
+              <TabsTrigger value="partner-tasks">Partner's Actions</TabsTrigger>
             </TabsList>
           </Tabs>
           
@@ -125,10 +125,10 @@ const History = () => {
             <div className="text-center py-8">
               <p className="text-gray-500">
                 {taskFilterTab === "all" 
-                  ? "No tasks found yet. Try adding some tasks!" 
+                  ? "No actions found yet. Try adding some actions!" 
                   : taskFilterTab === "my-tasks"
-                    ? "You haven't completed any tasks yet."
-                    : "Your partner hasn't completed any tasks yet."}
+                    ? "You haven't completed any actions yet."
+                    : "Your partner hasn't completed any actions yet."}
               </p>
             </div>
           )}

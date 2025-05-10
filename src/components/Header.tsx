@@ -27,7 +27,7 @@ const Header = () => {
             Dashboard
           </Link>
           <Link to="/add-task" className="text-gray-700 hover:text-primary transition-colors">
-            Add Task
+            Add Action
           </Link>
           <Link to="/give-brownie-point" className="text-gray-700 hover:text-primary transition-colors">
             Give Brownie Point
@@ -77,7 +77,7 @@ const Header = () => {
           </Link>
           <Link to="/add-task" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
             <span className="material-icons text-lg">add_task</span>
-            <span>Add Task</span>
+            <span>Add Action</span>
           </Link>
           <Link to="/give-brownie-point" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
             <span className="material-icons text-lg">card_giftcard</span>
