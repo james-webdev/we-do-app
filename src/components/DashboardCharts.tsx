@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
 import TaskDistributionChart from './charts/TaskDistributionChart';
 import TaskCompletionChart from './charts/TaskCompletionChart';
-import WeeklyPointsBarChart from './charts/WeeklyPointsBarChart';
+import PointsComparisonChart from './charts/PointsComparisonChart';
 import { format } from 'date-fns';
 
 const DashboardCharts = () => {
@@ -47,13 +47,13 @@ const DashboardCharts = () => {
           </CardContent>
         </Card>
         
-        {/* Weekly Points Bar Chart - New Addition */}
+        {/* Points Comparison Pie Chart */}
         <Card className="md:col-span-2">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Weekly Points Earned</CardTitle>
+            <CardTitle className="text-lg">Points Competition</CardTitle>
           </CardHeader>
           <CardContent>
-            <WeeklyPointsBarChart />
+            <PointsComparisonChart />
           </CardContent>
         </Card>
       </div>
