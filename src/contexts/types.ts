@@ -1,5 +1,5 @@
 
-import { User, Task, BrowniePoint, TaskStatus, TaskRating, TaskType, BrowniePointType } from '@/types';
+import { User, Task, BrowniePoint, TaskStatus, TaskRating, TaskType, BrowniePointType, Reward, RewardStatus } from '@/types';
 
 export interface AppContextType {
   currentUser: User | null;
@@ -7,6 +7,7 @@ export interface AppContextType {
   tasks: Task[];
   pendingTasks: Task[];
   browniePoints: BrowniePoint[];
+  rewards: Reward[];
   summary: any;
   availablePoints: number;
   isLoading: boolean;
@@ -18,6 +19,9 @@ export interface AppContextType {
   deleteTask: (taskId: string) => Promise<void>;
   deleteBrowniePoint: (pointId: string) => Promise<void>;
   connectPartner: (partnerEmail: string) => Promise<boolean>;
+  proposeReward: (reward: Omit<Reward, "id" | "status" | "createdById" | "createdAt">) => Promise<boolean>;
+  deleteReward: (rewardId: string) => Promise<boolean>;
+  redeemReward: (rewardId: string) => Promise<boolean>;
   hasPartner: boolean;
 }
 

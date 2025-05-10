@@ -4,6 +4,7 @@ export type TaskLoad = 'light' | 'medium' | 'heavy';
 export type BrowniePointType = 'time' | 'effort' | 'fun';
 export type TaskStatus = 'pending' | 'approved' | 'rejected';
 export type TaskRating = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+export type RewardStatus = 'approved' | 'pending' | 'rejected';
 
 export interface User {
   id: string;
@@ -32,4 +33,15 @@ export interface BrowniePoint {
   redeemed: boolean;
   createdAt: Date;
   points: number;
+}
+
+export interface Reward {
+  id: string;
+  title: string;
+  description: string;
+  pointsCost: number;
+  imageIcon: string;
+  status: RewardStatus;
+  createdById: string;
+  createdAt: Date;
 }

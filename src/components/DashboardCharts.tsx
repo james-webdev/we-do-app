@@ -21,7 +21,7 @@ const DashboardCharts = () => {
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Task Distribution Chart (Now a Pie Chart) */}
+        {/* Action Distribution Chart (Now a Pie Chart) */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Action Distribution by Weight</CardTitle>
@@ -36,7 +36,7 @@ const DashboardCharts = () => {
           </CardContent>
         </Card>
         
-        {/* Weekly Tasks Completed Chart */}
+        {/* Weekly Actions Completed Chart */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Weekly Actions Completed</CardTitle>
