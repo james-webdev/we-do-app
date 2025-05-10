@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
 
 type TimeFrame = 'week' | 'month' | 'year';
 
@@ -48,7 +47,7 @@ const PointsTimeComparisonChart = () => {
     {
       name: currentUser?.name || 'You',
       value: pointsData.userPoints,
-      color: '#8b5cf6' // purple
+      color: '#9b87f5' // primary purple
     },
     {
       name: partner?.name || 'Partner',

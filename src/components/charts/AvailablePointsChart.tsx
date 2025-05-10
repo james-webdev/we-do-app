@@ -4,22 +4,22 @@ import { useApp } from '@/contexts/AppContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const AvailablePointsChart = () => {
-  const { availablePoints, browniePoints, currentUser } = useApp();
+  const { availablePoints, partner, currentUser } = useApp();
   
-  // Calculate used points (redeemed)
-  const usedPoints = browniePoints.filter(point => 
-    point.toUserId === currentUser?.id && point.redeemed
-  ).reduce((total, point) => total + point.points, 0);
+  // Calculate partner's available points
+  // This is a simple approximation since we don't have direct access to partner's availablePoints
+  // In a real app, this would come from the API/database
+  const partnerAvailablePoints = partner?.availablePoints || 0;
   
   const data = [
     {
-      name: 'Available',
+      name: currentUser?.name || 'You',
       value: availablePoints,
       color: '#0ea5e9' // sky blue
     },
     {
-      name: 'Used',
-      value: usedPoints,
+      name: partner?.name || 'Partner',
+      value: partnerAvailablePoints,
       color: '#f43f5e' // pink
     }
   ];
@@ -41,8 +41,8 @@ const AvailablePointsChart = () => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">
-          <p className="font-medium">{payload[0].name} Points</p>
-          <p>{payload[0].value} points</p>
+          <p className="font-medium">{payload[0].name}</p>
+          <p>Available Points: {payload[0].value}</p>
         </div>
       );
     }
@@ -71,6 +71,9 @@ const AvailablePointsChart = () => {
           <Legend />
         </PieChart>
       </ResponsiveContainer>
+      <div className="text-center text-sm text-gray-500 mt-2">
+        Available points comparison
+      </div>
     </div>
   );
 };
