@@ -71,19 +71,19 @@ const Header = () => {
       {/* Mobile navigation */}
       <div className="md:hidden border-t border-gray-200 py-3">
         <div className="flex flex-col items-center w-full px-2 gap-2">
-          <Link to="/" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-primary hover:text-white transition-colors">
+          <Link to="/" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             <span>Dashboard</span>
           </Link>
-          <Link to="/add-task" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-primary hover:text-white transition-colors">
+          <Link to="/add-task" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             <span>Add Action</span>
           </Link>
-          <Link to="/give-brownie-point" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-primary hover:text-white transition-colors">
+          <Link to="/give-brownie-point" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             <span>Give Brownie Point</span>
           </Link>
-          <Link to="/history" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-primary hover:text-white transition-colors">
+          <Link to="/history" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             <span>History</span>
           </Link>
-          <Link to="/rewards" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-primary hover:text-white transition-colors">
+          <Link to="/rewards" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             <span>Rewards</span>
           </Link>
         </div>
