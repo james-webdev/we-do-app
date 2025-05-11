@@ -69,22 +69,22 @@ const Header = () => {
       </div>
       
       {/* Mobile navigation */}
-      <div className="md:hidden border-t border-gray-200">
-        <div className="flex flex-col w-full">
-          <Link to="/" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
+      <div className="md:hidden border-t border-gray-200 py-3">
+        <div className="flex flex-col items-center w-full px-2 gap-2">
+          <Link to="/" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-primary hover:text-white transition-colors">
             <span>Dashboard</span>
           </Link>
-          <Link to="/add-task" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
+          <Link to="/add-task" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-primary hover:text-white transition-colors">
             <span>Add Action</span>
           </Link>
-          <Link to="/give-brownie-point" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
-            <span>Points</span>
+          <Link to="/give-brownie-point" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-primary hover:text-white transition-colors">
+            <span>Give Brownie Point</span>
           </Link>
-          <Link to="/history" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
+          <Link to="/history" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-primary hover:text-white transition-colors">
             <span>History</span>
           </Link>
-          <Link to="/settings" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
-            <span>Settings</span>
+          <Link to="/rewards" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-primary hover:text-white transition-colors">
+            <span>Rewards</span>
           </Link>
         </div>
       </div>
