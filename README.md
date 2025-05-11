@@ -10,7 +10,7 @@ WeDo is a collaborative parenting app designed to help partners track and reward
 - Track action history and brownie point statistics
 - Create and manage custom rewards
 
-The app features a fun reward redemption system with confetti animations to celebrate achievements.
+The app features a fun reward redemption system with confetti animations to celebrate achievements..
 
 ## Features
 
