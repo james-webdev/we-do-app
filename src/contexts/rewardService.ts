@@ -161,6 +161,7 @@ export async function redeemReward(
       }
     }
     
+    
     toast.success('Reward redeemed successfully!');
     refreshData();
     return true;

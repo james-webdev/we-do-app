@@ -97,7 +97,7 @@ const History = () => {
         
         <TabsContent value="tasks" className="space-y-6">
           <Tabs value={taskFilterTab} onValueChange={setTaskFilterTab} className="w-full">
-            <TabsList className="justify-start">
+            <TabsList className="justify-start mb-4">
               <TabsTrigger value="all">All Actions</TabsTrigger>
               <TabsTrigger value="my-tasks">My Actions</TabsTrigger>
               <TabsTrigger value="partner-tasks">Partner's Actions</TabsTrigger>

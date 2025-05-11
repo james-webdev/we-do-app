@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import confetti from 'canvas-confetti';
 import { RewardCard } from '@/components/reward/RewardCard';
 import { Reward } from '@/types';
 import { useApp } from '@/contexts/AppContext';
@@ -54,6 +55,32 @@ export function RewardsList() {
       
       if (success) {
         setShowRedeemConfirm(null);
+        
+        // Trigger confetti explosion
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        
+        // Fire another burst for more effect
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0.1, y: 0.6 }
+          });
+        }, 250);
+        
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            angle: 120,
+            spread: 55,
+            origin: { x: 0.9, y: 0.6 }
+          });
+        }, 400);
       }
     } catch (error) {
       console.error('Error redeeming reward:', error);
