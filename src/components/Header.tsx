@@ -1,13 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Settings, Heart, Handshake } from 'lucide-react';
+import { Loader2, Settings, Heart, Handshake, Menu, X } from 'lucide-react';
 
 const Header = () => {
   const { currentUser } = useApp();
   const { loading, signOut } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
 
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
@@ -48,7 +53,7 @@ const Header = () => {
             </div>
           ) : (
             <div className="flex items-center space-x-3">
-              <div className="text-sm font-medium text-gray-700">
+              <div className="text-sm font-medium text-gray-700 md:block">
                 {currentUser?.name || 'Guest'}
               </div>
               <Link 
@@ -59,9 +64,22 @@ const Header = () => {
               </Link>
               <button 
                 onClick={() => signOut()} 
-                className="text-sm text-gray-500 hover:text-primary transition-colors"
+                className="text-sm text-gray-500 hover:text-primary transition-colors md:block"
               >
                 Sign Out
+              </button>
+              {/* Mobile menu button - only visible on mobile */}
+              <button
+                onClick={toggleMobileMenu}
+                className="md:hidden flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 transition-colors"
+                aria-expanded="false"
+              >
+                <span className="sr-only">Open main menu</span>
+                {mobileMenuOpen ? (
+                  <X className="block h-6 w-6" aria-hidden="true" />
+                ) : (
+                  <Menu className="block h-6 w-6" aria-hidden="true" />
+                )}
               </button>
             </div>
           )}
@@ -69,7 +87,7 @@ const Header = () => {
       </div>
       
       {/* Mobile navigation */}
-      <div className="md:hidden border-t border-gray-200 py-3">
+      <div className={`md:hidden border-t border-gray-200 py-3 ${mobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="flex flex-col items-center w-full px-2 gap-2">
           <Link to="/" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             <span>Dashboard</span>
