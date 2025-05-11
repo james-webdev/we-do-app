@@ -1,7 +1,7 @@
 
 export type TaskType = 'mental' | 'physical' | 'both';
 export type TaskLoad = 'light' | 'medium' | 'heavy';
-export type BrowniePointType = 'time' | 'effort' | 'fun';
+export type BrowniePointType = 'time' | 'effort' | 'fun' | 'custom';
 export type TaskStatus = 'pending' | 'approved' | 'rejected';
 export type TaskRating = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 export type RewardStatus = 'approved' | 'pending' | 'rejected';

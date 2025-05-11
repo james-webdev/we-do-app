@@ -70,25 +70,20 @@ const Header = () => {
       
       {/* Mobile navigation */}
       <div className="md:hidden border-t border-gray-200">
-        <div className="grid grid-cols-5 w-full">
+        <div className="flex flex-col w-full">
           <Link to="/" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
-            <span className="material-icons text-lg">dashboard</span>
             <span>Dashboard</span>
           </Link>
           <Link to="/add-task" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
-            <span className="material-icons text-lg">add_task</span>
             <span>Add Action</span>
           </Link>
           <Link to="/give-brownie-point" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
-            <span className="material-icons text-lg">card_giftcard</span>
             <span>Points</span>
           </Link>
           <Link to="/history" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
-            <span className="material-icons text-lg">history</span>
             <span>History</span>
           </Link>
           <Link to="/settings" className="flex flex-col items-center py-2 text-xs text-gray-500 hover:text-primary">
-            <span className="material-icons text-lg">settings</span>
             <span>Settings</span>
           </Link>
         </div>

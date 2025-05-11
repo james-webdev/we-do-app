@@ -20,7 +20,7 @@ export const calculateSummaryStats = (
     userPoints: 0,
     partnerPoints: 0,
     sentBrowniePoints: 0,
-    browniePointsRemaining: 3
+    browniePointsRemaining: Infinity // No limit on brownie points
   };
 
   if (tasksData.length === 0 && !partnerId) {
@@ -60,7 +60,7 @@ export const calculateSummaryStats = (
       userPoints,
       partnerPoints,
       sentBrowniePoints,
-      browniePointsRemaining: 3 - sentBrowniePoints
+      browniePointsRemaining: Infinity // No limit on brownie points
     };
   } else {
     // No tasks but user exists

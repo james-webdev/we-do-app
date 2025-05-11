@@ -4,25 +4,18 @@ import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/sonner';
-import { BrowniePointType } from '@/types';
-import { Award } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { CakeIcon } from 'lucide-react';
 
 const GiveBrowniePoint = () => {
   const navigate = useNavigate();
-  const { currentUser, partner, summary, addNewBrowniePoint } = useApp();
+  const { currentUser, partner, addNewBrowniePoint } = useApp();
   
-  const [type, setType] = React.useState<BrowniePointType>('effort');
+  const [points, setPoints] = React.useState<number>(1);
   const [message, setMessage] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  
-  const pointValues = {
-    time: 2,
-    effort: 3,
-    fun: 1
-  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,16 +25,17 @@ const GiveBrowniePoint = () => {
       return;
     }
     
+    if (!points || points < 1) {
+      toast.error('Please enter at least 1 point');
+      return;
+    }
+    
     if (!currentUser || !partner) {
       toast.error('Cannot find user information');
       return;
     }
     
-    // Check if user has exceeded the weekly limit
-    if (summary.browniePointsRemaining <= 0) {
-      toast.error('You have used all of your Brownie Points for this week');
-      return;
-    }
+    // No limit on brownie points
     
     try {
       setIsSubmitting(true);
@@ -49,9 +43,9 @@ const GiveBrowniePoint = () => {
       await addNewBrowniePoint({
         fromUserId: currentUser.id,
         toUserId: partner.id,
-        type,
+        type: 'custom', // Using 'custom' as the type for all points now
         message,
-        points: pointValues[type] // Add the points value based on type
+        points: points // Use the points from the input
       });
       
       navigate('/');
@@ -71,52 +65,40 @@ const GiveBrowniePoint = () => {
       
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Send Appreciation</CardTitle>
-          <CardDescription>
-            Send a Brownie Point to your partner (
-            {summary?.browniePointsRemaining || 0} remaining this week)
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Send Appreciation</CardTitle>
+              <CardDescription>
+                Send a Brownie Point to your partner
+              </CardDescription>
+            </div>
+            <div className="w-64 h-64 flex items-center justify-center">
+              <img 
+                src="/brownie-icon.png" 
+                alt="Delicious Brownie" 
+                className="w-full h-full object-contain" 
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label>Brownie Point Type</Label>
-              <RadioGroup
-                value={type}
-                onValueChange={(value) => setType(value as BrowniePointType)}
-                className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-              >
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-gray-50 cursor-pointer">
-                  <RadioGroupItem value="time" id="time" />
-                  <div>
-                    <Label htmlFor="time" className="cursor-pointer font-medium">Time</Label>
-                    <div className="flex items-center text-xs text-amber-600 mt-1">
-                      <Award size={14} className="mr-1" />
-                      {pointValues.time} points
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-gray-50 cursor-pointer">
-                  <RadioGroupItem value="effort" id="effort" />
-                  <div>
-                    <Label htmlFor="effort" className="cursor-pointer font-medium">Effort</Label>
-                    <div className="flex items-center text-xs text-amber-600 mt-1">
-                      <Award size={14} className="mr-1" />
-                      {pointValues.effort} points
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:bg-gray-50 cursor-pointer">
-                  <RadioGroupItem value="fun" id="fun" />
-                  <div>
-                    <Label htmlFor="fun" className="cursor-pointer font-medium">Fun</Label>
-                    <div className="flex items-center text-xs text-amber-600 mt-1">
-                      <Award size={14} className="mr-1" />
-                      {pointValues.fun} points
-                    </div>
-                  </div>
-                </div>
-              </RadioGroup>
+              <Label htmlFor="points">Brownie Points</Label>
+              <div className="flex items-center">
+                <Input
+                  id="points"
+                  type="number"
+                  min="1"
+                  value={points}
+                  onChange={(e) => setPoints(parseInt(e.target.value) || 0)}
+                  className="w-full"
+                  required
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                How many points would you like to give?
+              </p>
             </div>
             
             <div className="space-y-2">
@@ -132,7 +114,7 @@ const GiveBrowniePoint = () => {
               />
             </div>
             
-            <div className="flex justify-end space-x-4 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end sm:space-x-4 space-y-2 sm:space-y-0 pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -143,7 +125,7 @@ const GiveBrowniePoint = () => {
               </Button>
               <Button 
                 type="submit" 
-                disabled={isSubmitting || summary?.browniePointsRemaining <= 0}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? 'Sending...' : 'Send Brownie Point'}
               </Button>

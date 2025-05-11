@@ -76,20 +76,31 @@ const AddTask = () => {
   return (
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Add New Task</h1>
+        <h1 className="text-3xl font-bold">Add New Action</h1>
       </div>
       
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Task Details</CardTitle>
-          <CardDescription>
-            Record a parenting task you've completed (will be sent to your partner for approval)
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Action Details</CardTitle>
+              <CardDescription>
+                Record a parenting action you've completed (will be sent to your partner for approval)
+              </CardDescription>
+            </div>
+            <div className="w-64 h-64 flex items-center justify-center">
+              <img 
+                src="/action-icon.png" 
+                alt="Action Icon" 
+                className="w-full h-full object-contain" 
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title">Task Title</Label>
+              <Label htmlFor="title">Action Title</Label>
               <Input
                 id="title"
                 placeholder="e.g., School pickup, Doctor appointment"
@@ -100,7 +111,7 @@ const AddTask = () => {
             </div>
             
             <div className="space-y-2">
-              <Label>Task Type</Label>
+              <Label>Action Type</Label>
               <RadioGroup
                 value={type}
                 onValueChange={(value) => setType(value as TaskType)}
@@ -123,7 +134,7 @@ const AddTask = () => {
             
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="rating">Task Difficulty Rating: {rating}</Label>
+                <Label htmlFor="rating">Action Difficulty Rating: {rating}</Label>
                 <Slider
                   id="rating"
                   min={1}
@@ -140,7 +151,7 @@ const AddTask = () => {
                 </div>
               </div>
               <p className="text-xs text-gray-500">
-                Rate the difficulty of this task from 1 (very easy) to 10 (extremely difficult)
+                Rate the difficulty of this action from 1 (very easy) to 10 (extremely difficult)
               </p>
             </div>
             
@@ -166,7 +177,7 @@ const AddTask = () => {
               </div>
             </div>
             
-            <div className="flex justify-end space-x-4 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end sm:space-x-4 space-y-2 sm:space-y-0 pt-4">
               <Button
                 type="button"
                 variant="outline"
