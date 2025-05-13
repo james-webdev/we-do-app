@@ -142,6 +142,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             fetchedTasksData = tasksResult as TaskResult[];
             console.log("Tasks loaded successfully:", fetchedTasksData.length);
             
+            // IMPORTANT FIX: Only include tasks that belong to the current user or their partner
+            fetchedTasksData = fetchedTasksData.filter(task => 
+              task.user_id === user.id || 
+              (profileResult.partner_id && task.user_id === profileResult.partner_id)
+            );
+            console.log("Filtered tasks to only include user and partner:", fetchedTasksData.length);
+            
             // Filter for approved tasks within the last week
             const approvedRecentTasks = fetchedTasksData
               .filter(task => 

@@ -41,8 +41,12 @@ export const calculateSummaryStats = (
     const mentalTasks = tasksData.filter((t: any) => t.type === 'mental' || t.type === 'both').length;
     const physicalTasks = tasksData.filter((t: any) => t.type === 'physical' || t.type === 'both').length;
     
-    const userPoints = userTasks.reduce((sum: number, task: any) => sum + task.rating, 0);
-    const partnerPoints = partnerTasks.reduce((sum: number, task: any) => sum + task.rating, 0);
+    // Only count approved tasks for points calculation
+    const approvedUserTasks = userTasks.filter((t: any) => t.status === 'approved');
+    const approvedPartnerTasks = partnerTasks.filter((t: any) => t.status === 'approved');
+    
+    const userPoints = approvedUserTasks.reduce((sum: number, task: any) => sum + task.rating, 0);
+    const partnerPoints = approvedPartnerTasks.reduce((sum: number, task: any) => sum + task.rating, 0);
     
     // Count brownie points sent this week
     const sentBrowniePoints = browniePointsData ? browniePointsData.filter(
