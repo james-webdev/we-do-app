@@ -12,8 +12,11 @@ const TaskList = () => {
   const { tasks, currentUser, isLoading, refreshData } = useApp();
   const [localRefreshing, setLocalRefreshing] = useState(false);
   
-  // Filter tasks for the current user
-  const userTasks = tasks.filter(task => task.userId === currentUser?.id && task.status === 'approved');
+  // Filter tasks for the current user, sort by timestamp (newest first), and limit to 8
+  const userTasks = tasks
+    .filter(task => task.userId === currentUser?.id && task.status === 'approved')
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 8);
   
   const handleRefresh = async () => {
     setLocalRefreshing(true);
