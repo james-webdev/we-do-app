@@ -6,6 +6,7 @@ import TaskList from '@/components/TaskList';
 import PointsDisplay from '@/components/PointsDisplay';
 import PendingTasksList from '@/components/PendingTasksList';
 import DashboardCharts from '@/components/DashboardCharts';
+import BrowniePointsList from '@/components/BrowniePointsList';
 import { Button } from '@/components/ui/button';
 import { RefreshCcw } from 'lucide-react';
 
@@ -53,15 +54,40 @@ const Dashboard = () => {
       {/* Show pending tasks first */}
       <PendingTasksList />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Your Actions</h2>
-          <TaskList />
+      {/* Points Display centered at the top */}
+      <div className="mb-8 max-w-md mx-auto">
+        <h2 className="text-xl font-semibold mb-4 text-center">Points</h2>
+        <PointsDisplay />
+      </div>
+      
+      {/* Actions and Brownie Points in two columns on desktop, stacked on mobile */}
+      <div className="flex flex-col md:flex-row gap-6 mb-8">
+        <div className="w-full md:w-1/2">
+          <div className="flex items-center gap-2 mb-4">
+            <img 
+              src="/action-icon.png" 
+              alt="Action Icon" 
+              width={24} 
+              height={24} 
+              className="object-contain"
+            />
+            <h2 className="text-xl font-semibold">Your Actions</h2>
+          </div>
+          <TaskList limit={4} />
         </div>
         
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Points</h2>
-          <PointsDisplay />
+        <div className="w-full md:w-1/2">
+          <div className="flex items-center gap-2 mb-4">
+            <img 
+              src="/brownie-icon.png" 
+              alt="Brownie Icon" 
+              width={24} 
+              height={24} 
+              className="object-contain"
+            />
+            <h2 className="text-xl font-semibold">Brownie Points from {partner?.name || 'Partner'}</h2>
+          </div>
+          <BrowniePointsList limit={4} />
         </div>
       </div>
       

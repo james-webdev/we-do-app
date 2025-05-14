@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { FC } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import TaskCard from './TaskCard';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,15 +9,19 @@ import { RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TaskFeedbackList from './TaskFeedbackList';
 
-const TaskList = () => {
+interface TaskListProps {
+  limit?: number;
+}
+
+const TaskList: FC<TaskListProps> = ({ limit = 8 }) => {
   const { tasks, currentUser, isLoading, refreshData } = useApp();
   const [localRefreshing, setLocalRefreshing] = useState(false);
   
-  // Filter tasks for the current user, sort by timestamp (newest first), and limit to 8
+  // Filter tasks for the current user, sort by timestamp (newest first), and limit to specified number
   const userTasks = tasks
     .filter(task => task.userId === currentUser?.id && task.status === 'approved')
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-    .slice(0, 8);
+    .slice(0, limit);
   
   const handleRefresh = async () => {
     setLocalRefreshing(true);
