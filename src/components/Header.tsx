@@ -27,20 +27,20 @@ const Header = () => {
           </span>
         </Link>
         
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link to="/" className="text-gray-700 hover:text-primary transition-colors">
+        <nav className="hidden md:flex items-center space-x-3">
+          <Link to="/" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             Dashboard
           </Link>
-          <Link to="/add-task" className="text-gray-700 hover:text-primary transition-colors">
+          <Link to="/add-task" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             Add Action
           </Link>
-          <Link to="/give-brownie-point" className="text-gray-700 hover:text-primary transition-colors">
+          <Link to="/give-brownie-point" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             Give Brownie Point
           </Link>
-          <Link to="/history" className="text-gray-700 hover:text-primary transition-colors">
+          <Link to="/history" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             History
           </Link>
-          <Link to="/rewards" className="text-gray-700 hover:text-primary transition-colors">
+          <Link to="/rewards" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             Rewards
           </Link>
         </nav>
