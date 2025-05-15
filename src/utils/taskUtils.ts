@@ -20,8 +20,5 @@ export const getRatingBadgeColor = (rating: number): string => {
  * @returns Description of points to be earned
  */
 export const calculateTaskPointsDescription = (rating: number): string => {
-  if (rating <= 3) return "Will earn 1 brownie point";
-  if (rating <= 6) return "Will earn 2 brownie points";
-  if (rating <= 8) return "Will earn 3 brownie points";
-  return "Will earn 4 brownie points";
+  return `Will earn ${rating} brownie point${rating !== 1 ? 's' : ''}`;
 };

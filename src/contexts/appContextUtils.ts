@@ -74,16 +74,9 @@ export const calculateSummaryStats = (
 
 // Helper function to calculate task brownie points based on rating
 export const calculateTaskBrowniePoints = (taskRating: number): number => {
-  // Higher rated tasks earn more points
-  // This formula creates a progressive reward system
-  // Tasks rated 1-3: 1 point
-  // Tasks rated 4-6: 2 points
-  // Tasks rated 7-8: 3 points
-  // Tasks rated 9-10: 4 points
-  if (taskRating <= 3) return 1;
-  if (taskRating <= 6) return 2;
-  if (taskRating <= 8) return 3;
-  return 4; // For ratings 9-10
+  // Return the exact rating as brownie points (1-10)
+  // This creates a direct 1:1 mapping between task difficulty and points awarded
+  return taskRating;
 };
 
 // Helper function to determine points value based on type
