@@ -21,24 +21,10 @@ const DashboardCharts = () => {
         Data as of {today}
       </p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Action Distribution Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Action Distribution by Weight</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TaskDistributionChart 
-              userTaskCount={summary.userTaskCount} 
-              partnerTaskCount={summary.partnerTaskCount}
-              userPoints={summary.userPoints}
-              partnerPoints={summary.partnerPoints} 
-            />
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         
         {/* Weekly Actions Completed Chart */}
-        <Card>
+        <Card className='flex flex-col justify-center'>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Weekly Actions Completed</CardTitle>
           </CardHeader>
@@ -48,7 +34,7 @@ const DashboardCharts = () => {
         </Card>
         
         {/* Points Competition Pie Chart with Tabs */}
-        <Card className="md:col-span-2">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Points Competition</CardTitle>
           </CardHeader>
