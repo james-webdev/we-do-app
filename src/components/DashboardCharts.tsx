@@ -36,7 +36,7 @@ const DashboardCharts = () => {
         {/* Points Competition Pie Chart with Tabs */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Points Competition</CardTitle>
+            <CardTitle className="text-lg">Contribution Tracker</CardTitle>
           </CardHeader>
           <CardContent>
             <PointsTimeComparisonChart />
