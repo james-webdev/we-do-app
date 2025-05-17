@@ -90,7 +90,7 @@ export async function deleteReward(
 }
 
 /**
- * Redeems a reward and marks points as redeemed
+ * Redeems a reward and deletes used points, creating individual 1-point records for any remainder
  */
 export async function redeemReward(
   rewardId: string,
@@ -137,30 +137,70 @@ export async function redeemReward(
       return false;
     }
     
-    // Mark points as redeemed
+    // Track which points to delete and what new points to create
     let remainingCost = pointsCost;
-    const pointsToUpdate = [];
+    const pointsToDelete = [];
+    const newPointsToCreate = [];
     
     for (const point of availablePoints) {
       if (remainingCost <= 0) break;
       
-      pointsToUpdate.push(point.id);
-      remainingCost -= point.points;
+      if (point.points <= remainingCost) {
+        // Use this entire point record - mark for deletion
+        pointsToDelete.push(point.id);
+        remainingCost -= point.points;
+      } else {
+        // Need to split this point record
+        // 1. Mark original for deletion
+        pointsToDelete.push(point.id);
+        
+        // 2. Create individual 1-point records for the remaining points
+        const remainingPoints = point.points - remainingCost;
+        for (let i = 0; i < remainingPoints; i++) {
+          newPointsToCreate.push({
+            from_user_id: point.from_user_id,
+            to_user_id: point.to_user_id,
+            type: point.type,
+            message: point.message,
+            points: 1, // Each record has exactly 1 point
+            redeemed: false,
+            created_at: point.created_at // Keep the original timestamp
+          });
+        }
+        
+        remainingCost = 0;
+      }
     }
     
-    if (pointsToUpdate.length > 0) {
-      const { error: updateError } = await supabase
+    // Process all updates
+    const success = true;
+    
+    // 1. Delete used points
+    if (pointsToDelete.length > 0) {
+      const { error: deleteError } = await supabase
         .from('brownie_points')
-        .update({ redeemed: true as boolean })
-        .in('id', pointsToUpdate);
+        .delete()
+        .in('id', pointsToDelete);
         
-      if (updateError) {
-        console.error('Error redeeming points:', updateError);
-        toast.error('Failed to redeem points');
+      if (deleteError) {
+        console.error('Error deleting used points:', deleteError);
+        toast.error('Failed to delete used points');
         return false;
       }
     }
     
+    // 2. Create new points for any remainder
+    if (newPointsToCreate.length > 0) {
+      const { error: insertError } = await supabase
+        .from('brownie_points')
+        .insert(newPointsToCreate);
+        
+      if (insertError) {
+        console.error('Error creating new point records:', insertError);
+        toast.error('Failed to create new point records');
+        return false;
+      }
+    }
     
     toast.success('Reward redeemed successfully!');
     refreshData();

@@ -8,17 +8,25 @@ export async function addNewBrowniePoint(
   refreshData: () => void
 ): Promise<void> {
   try {
-    const { error } = await supabase
-      .from('brownie_points')
-      .insert({
+    // Create individual records for each point
+    const pointsToAdd = [];
+    const timestamp = new Date().toISOString();
+    
+    for (let i = 0; i < pointData.points; i++) {
+      pointsToAdd.push({
         from_user_id: pointData.fromUserId,
         to_user_id: pointData.toUserId,
         type: pointData.type,
         message: pointData.message,
         redeemed: false,
-        created_at: new Date().toISOString(),
-        points: pointData.points
+        created_at: timestamp,
+        points: 1 // Each record has exactly 1 point
       });
+    }
+    
+    const { error } = await supabase
+      .from('brownie_points')
+      .insert(pointsToAdd);
       
     if (error) throw error;
     
