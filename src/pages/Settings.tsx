@@ -145,9 +145,18 @@ const Settings = () => {
   
   return (
     <div className="container py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Settings</h1>
-        <p className="text-gray-500">Manage your profile and application settings</p>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Settings</h1>
+          <p className="text-gray-500">Manage your profile and application settings</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => signOut()} 
+          className="border-gray-300 hover:bg-gray-100"
+        >
+          Sign Out
+        </Button>
       </div>
       
       <Tabs defaultValue="profile" className="w-full">
@@ -267,17 +276,6 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">Sign Out</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Sign out of your account on this device
-                  </p>
-                  <Button variant="outline" onClick={() => signOut()}>
-                    Sign Out
-                  </Button>
-                </div>
-                
-                <Separator className="my-6" />
                 
                 <div>
                   <h4 className="font-medium mb-2 text-destructive">Danger Zone</h4>

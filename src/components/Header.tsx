@@ -58,16 +58,10 @@ const Header = () => {
               </div>
               <Link 
                 to="/settings" 
-                className="text-gray-700 hover:text-primary transition-colors"
+                className="text-gray-700 hover:text-primary transition-colors hidden md:block"
               >
                 <Settings className="w-5 h-5" />
               </Link>
-              <button 
-                onClick={() => signOut()} 
-                className="text-sm text-gray-500 hover:text-primary transition-colors md:block"
-              >
-                Sign Out
-              </button>
               {/* Mobile menu button - only visible on mobile */}
               <button
                 onClick={toggleMobileMenu}
@@ -103,6 +97,9 @@ const Header = () => {
           </Link>
           <Link to="/rewards" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             <span>Rewards</span>
+          </Link>
+          <Link to="/settings" className="w-full max-w-xs flex justify-center px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
+            <Settings className="w-5 h-5" />
           </Link>
         </div>
       </div>
