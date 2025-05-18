@@ -190,7 +190,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
                 comment: task.comment
               }));
               
-              setPendingTasks(formattedPendingTasks);
+              // Sort pending tasks by timestamp in descending order (most recent first)
+              const sortedPendingTasks = [...formattedPendingTasks].sort((a, b) => 
+                b.timestamp.getTime() - a.timestamp.getTime()
+              );
+              
+              setPendingTasks(sortedPendingTasks);
             } else {
               console.log("No partner found, no pending tasks to load");
               setPendingTasks([]);
