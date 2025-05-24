@@ -10,6 +10,7 @@ export interface AppContextType {
   rewards: Reward[];
   summary: any;
   availablePoints: number;
+  totalPointsEarned: number;
   isLoading: boolean;
   refreshData: () => void;
   addNewTask: (task: Omit<Task, "id" | "status">) => Promise<void>;

@@ -34,6 +34,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [availablePoints, setAvailablePoints] = useState<number>(0);
+  const [totalPointsEarned, setTotalPointsEarned] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPartner, setHasPartner] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -218,8 +219,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           const { data: sentPoints, error: sentPointsError } = await supabase
             .from('brownie_points')
             .select('*')
-            .eq('from_user_id', user.id)
-            .gte('created_at', oneWeekAgo.toISOString());
+            .eq('from_user_id', user.id);
 
           if (sentPointsError) {
             console.error('Error fetching sent brownie points:', sentPointsError);
@@ -230,8 +230,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           const { data: receivedPoints, error: receivedPointsError } = await supabase
             .from('brownie_points')
             .select('*')
-            .eq('to_user_id', user.id)
-            .gte('created_at', oneWeekAgo.toISOString());
+            .eq('to_user_id', user.id);
 
           if (receivedPointsError) {
             console.error('Error fetching received brownie points:', receivedPointsError);
@@ -270,6 +269,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             }
           } catch (error) {
             console.error('Error calculating available points:', error);
+          }
+          
+          // Calculate total points earned (from points history)
+          try {
+            console.log("Calculating total points earned for user:", user.id);
+            const { data: pointsHistoryData, error: pointsHistoryError } = await supabase
+              .from('points_history')
+              .select('points')
+              .eq('user_id', user.id);
+            
+            if (!pointsHistoryError && pointsHistoryData) {
+              const totalPoints = pointsHistoryData.reduce((sum, record) => sum + record.points, 0);
+              console.log("Total points earned:", totalPoints);
+              setTotalPointsEarned(totalPoints);
+            } else if (pointsHistoryError) {
+              console.error('Error fetching points history:', pointsHistoryError);
+              setTotalPointsEarned(0); // Set to 0 if there's an error
+            }
+          } catch (error) {
+            console.error('Error calculating total points earned:', error);
           }
           
           // Get rewards
@@ -405,6 +424,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         rewards,
         summary,
         availablePoints,
+        totalPointsEarned,
         isLoading,
         refreshData: fetchData,
         addNewTask: handleAddNewTask,

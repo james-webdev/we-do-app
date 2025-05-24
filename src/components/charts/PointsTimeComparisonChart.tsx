@@ -1,47 +1,121 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
 
 type TimeFrame = 'week' | 'month' | 'year';
 
 const PointsTimeComparisonChart = () => {
-  const { browniePoints, currentUser, partner } = useApp();
+  const { currentUser, partner, totalPointsEarned } = useApp();
   const [timeFrame, setTimeFrame] = useState<TimeFrame>('week');
+  const [userPointsByTimeFrame, setUserPointsByTimeFrame] = useState({ week: 0, month: 0, year: 0 });
+  const [partnerPointsByTimeFrame, setPartnerPointsByTimeFrame] = useState({ week: 0, month: 0, year: 0 });
   
   // Calculate the date cutoffs for different timeframes
-  const getDateCutoff = () => {
+  const getDateCutoff = useCallback(() => {
     const now = new Date();
+    
     if (timeFrame === 'week') {
-      const weekAgo = new Date();
-      weekAgo.setDate(now.getDate() - 7);
-      return weekAgo;
+      // Get the start of the current week (Sunday)
+      const startOfWeek = new Date(now);
+      const day = startOfWeek.getDay(); // 0 is Sunday, 1 is Monday, etc.
+      // If today is not Sunday, go back to the previous Sunday
+      if (day !== 0) {
+        startOfWeek.setDate(startOfWeek.getDate() - day);
+      }
+      startOfWeek.setHours(0, 0, 0, 0); // Set to midnight
+      return startOfWeek;
     } else if (timeFrame === 'month') {
-      const monthAgo = new Date();
-      monthAgo.setMonth(now.getMonth() - 1);
-      return monthAgo;
+      // Get the start of the current month (1st day)
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      startOfMonth.setHours(0, 0, 0, 0); // Set to midnight
+      return startOfMonth;
     } else {
-      const yearAgo = new Date();
-      yearAgo.setFullYear(now.getFullYear() - 1);
-      return yearAgo;
+      // Get the start of the current year (January 1st)
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      startOfYear.setHours(0, 0, 0, 0); // Set to midnight
+      return startOfYear;
     }
+  }, [timeFrame]);
+  
+  // We're using the getDateCutoff function defined above
+  
+  // Fetch points history data from the database
+  useEffect(() => {
+    const fetchPointsHistory = async () => {
+      if (!currentUser?.id) return;
+      
+      try {
+        // Fetch all points history for the user
+        const { data: userPointsHistory, error: userError } = await supabase
+          .from('points_history')
+          .select('points, created_at')
+          .eq('user_id', currentUser.id);
+        
+        if (userError) {
+          console.error('Error fetching user points history:', userError);
+          return;
+        }
+        
+        // Fetch all points history for the partner if exists
+        let partnerPointsHistory = [];
+        if (partner?.id) {
+          const { data: partnerData, error: partnerError } = await supabase
+            .from('points_history')
+            .select('points, created_at')
+            .eq('user_id', partner.id);
+            
+          if (!partnerError && partnerData) {
+            partnerPointsHistory = partnerData;
+          }
+        }
+        
+        // Get date cutoffs for filtering
+        const dateCutoff = getDateCutoff();
+        
+        // Filter and calculate totals
+        const userTotal = userPointsHistory
+          ? userPointsHistory
+              .filter(record => new Date(record.created_at) >= dateCutoff)
+              .reduce((sum, record) => sum + record.points, 0)
+          : 0;
+          
+        const partnerTotal = partnerPointsHistory.length > 0
+          ? partnerPointsHistory
+              .filter(record => new Date(record.created_at) >= dateCutoff)
+              .reduce((sum, record) => sum + record.points, 0)
+          : 0;
+        
+        // Update state with the filtered totals
+        setUserPointsByTimeFrame(prev => ({
+          ...prev,
+          [timeFrame]: userTotal
+        }));
+        
+        setPartnerPointsByTimeFrame(prev => ({
+          ...prev,
+          [timeFrame]: partnerTotal
+        }));
+        
+      } catch (error) {
+        console.error('Error processing points history:', error);
+      }
+    };
+    
+    fetchPointsHistory();
+  }, [currentUser?.id, partner?.id, timeFrame, getDateCutoff]);
+  
+  // Get points data based on selected time frame
+  const getPointsForTimeFrame = () => {
+    return {
+      userPoints: userPointsByTimeFrame[timeFrame],
+      partnerPoints: partnerPointsByTimeFrame[timeFrame]
+    };
   };
   
-  // Filter points by timeframe
-  const filteredPoints = browniePoints.filter(point => 
-    point.createdAt >= getDateCutoff()
-  );
-  
-  // Calculate total points for each user within the selected time frame
-  const pointsData = filteredPoints.reduce((acc, point) => {
-    if (point.toUserId === currentUser?.id) {
-      acc.userPoints += point.points;
-    } else if (point.toUserId === partner?.id) {
-      acc.partnerPoints += point.points;
-    }
-    return acc;
-  }, { userPoints: 0, partnerPoints: 0 });
+  const pointsData = getPointsForTimeFrame();
   
   const data = [
     {
@@ -73,11 +147,11 @@ const PointsTimeComparisonChart = () => {
   const getTimeframeTitle = () => {
     switch (timeFrame) {
       case 'week':
-        return 'Past Week';
+        return 'Current Week';
       case 'month':
-        return 'Past Month';
+        return 'Current Month';
       case 'year':
-        return 'Past Year';
+        return 'Current Year';
       default:
         return 'Points Competition';
     }
