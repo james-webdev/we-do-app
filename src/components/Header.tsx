@@ -45,7 +45,7 @@ const Header = () => {
             <Handshake className="w-6 h-6 text-secondary ml-1" />
           </div>
           <span className="text-2xl font-bold text-primary">
-            We<span className="text-secondary">Do</span>
+            We-<span className="text-secondary">Do</span>
           </span>
         </Link>
         
