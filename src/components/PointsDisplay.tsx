@@ -13,7 +13,7 @@ const PointsDisplay = () => {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Trophy size={18} className="text-yellow-500" />
+            <Trophy size={24} className="text-yellow-500" />
             Available Points
           </CardTitle>
         </CardHeader>

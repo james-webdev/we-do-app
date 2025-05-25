@@ -21,15 +21,15 @@ const Dashboard = () => {
   if (!hasPartner) {
     return (
       <div className="container py-8 max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold mb-12">Welcome to WeDo</h1>
+        <h1 className="text-4xl font-bold mb-12">Welcome to We-Do</h1>
         
         <div className="mb-8">
           <ConnectPartner />
         </div>
         
         <div className="text-center text-gray-600 mt-12">
-          <p className="mb-4">To start using WeDo, connect with your partner first.</p>
-          <p>Don't have a partner on WeDo yet? Ask them to sign up and then connect using their email address.</p>
+          <p className="mb-4">To start using We-Do, connect with your partner first.</p>
+          <p>Don't have a partner on We-Do yet? Ask them to sign up and then connect using their email address.</p>
         </div>
       </div>
     );
@@ -56,7 +56,6 @@ const Dashboard = () => {
       
       {/* Points Display centered at the top */}
       <div className="mb-8 max-w-md mx-auto">
-        <h2 className="text-xl font-semibold mb-4 text-center">Points</h2>
         <PointsDisplay />
       </div>
       

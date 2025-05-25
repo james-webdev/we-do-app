@@ -1,8 +1,8 @@
-# WeDo App
+# We-Do App
 
 ## About
 
-WeDo is a collaborative parenting app designed to help partners track and reward parenting actions. The app allows users to:
+We-Do is a collaborative parenting app designed to help partners track and reward parenting actions. The app allows users to:
 
 - Record parenting actions they've completed
 - Send brownie points to their partner as appreciation
@@ -45,10 +45,10 @@ This project is built with:
 
 ```sh
 # Clone the repository
-git clone https://github.com/yourusername/wedo-app.git
+git clone https://github.com/yourusername/we-do-app.git
 
 # Navigate to the project directory
-cd wedo-app
+cd we-do-app
 
 # Install dependencies
 npm install
