@@ -124,7 +124,6 @@ export function CreateRewardForm({ onSuccess }: CreateRewardFormProps) {
             name="pointsCost"
             type="number"
             min={1}
-            max={100}
             value={formData.pointsCost}
             onChange={handleChange}
             required
