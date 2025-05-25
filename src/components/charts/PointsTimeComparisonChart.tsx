@@ -18,13 +18,15 @@ const PointsTimeComparisonChart = () => {
     const now = new Date();
     
     if (timeFrame === 'week') {
-      // Get the start of the current week (Sunday)
+      // Get the start of the current week (Monday)
       const startOfWeek = new Date(now);
       const day = startOfWeek.getDay(); // 0 is Sunday, 1 is Monday, etc.
-      // If today is not Sunday, go back to the previous Sunday
-      if (day !== 0) {
-        startOfWeek.setDate(startOfWeek.getDate() - day);
-      }
+      // If today is not Monday, go back to the previous Monday
+      // For Monday, day = 1, so we don't need to adjust
+      // For other days, we calculate how many days to go back to reach Monday
+      // Sunday (0) needs to go back 6 days to reach previous Monday
+      const daysToSubtract = day === 0 ? 6 : day - 1;
+      startOfWeek.setDate(startOfWeek.getDate() - daysToSubtract);
       startOfWeek.setHours(0, 0, 0, 0); // Set to midnight
       return startOfWeek;
     } else if (timeFrame === 'month') {
