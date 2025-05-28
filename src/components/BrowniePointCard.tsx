@@ -55,7 +55,7 @@ const BrowniePointCard = ({ browniePoint }: BrowniePointCardProps) => {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-sm font-medium">
+          <div className="flex flex-shrink-0 items-center gap-1 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-sm font-medium">
             <Award size={16} className="mr-1" />
             {browniePoint.points} {browniePoint.points === 1 ? 'point' : 'points'}
           </div>

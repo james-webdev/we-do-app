@@ -54,8 +54,9 @@ export const BrowniePointBadge = ({ type, className }: BrowniePointBadgeProps) =
   
   const typeClasses = {
     time: "bg-time text-time-foreground",
-    effort: "bg-effort text-effort-foreground",
-    fun: "bg-fun text-fun-foreground"
+    effort: "bg-fun text-fun-foreground",
+    fun: "bg-fun text-fun-foreground",
+    custom: "bg-effort text-effort-foreground"
   };
   
   return (

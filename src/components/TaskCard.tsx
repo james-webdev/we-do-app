@@ -56,7 +56,7 @@ const TaskCard = ({ task, userName }: TaskCardProps) => {
           <h3 className="font-medium text-lg text-gray-900">{task.title}</h3>
           <div className="flex gap-2">
             <TypeBadge type={task.type} />
-            <Badge variant="outline" className={`font-semibold ${ratingBadgeColor}`}>
+            <Badge variant="outline" className={`font-semibold flex-shrink-0 ${ratingBadgeColor}`}>
               {task.rating} ★
             </Badge>
           </div>
