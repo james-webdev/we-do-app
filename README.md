@@ -1,4 +1,6 @@
+
 # We-Do App
+<img src="public/brownie-icon.png" alt="Brownie Icon" width="80" height="80">
 
 ## About
 
