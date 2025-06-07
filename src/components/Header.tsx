@@ -50,16 +50,16 @@ const Header = () => {
         </Link>
         
         <nav className="hidden md:flex items-center space-x-3">
-          <Link to="/" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
+          <Link to="/" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-sm hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             Dashboard
           </Link>
-          <Link to="/add-task" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
+          <Link to="/add-task" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-sm hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             Add Action
           </Link>
-          <Link to="/give-brownie-point" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
+          <Link to="/give-brownie-point" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-sm hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             Give Brownie Point
           </Link>
-          <Link to="/rewards" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-lg hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
+          <Link to="/rewards" className="px-3 py-2 text-sm font-medium text-gray-800 bg-gradient-to-r from-purple-300 to-indigo-400 rounded-sm hover:from-purple-400 hover:to-indigo-500 shadow-[0_2px_4px_rgba(147,51,234,0.15)] transition-all duration-300 hover:shadow-[0_3px_6px_rgba(147,51,234,0.2)] hover:text-white">
             Rewards
           </Link>
         </nav>
