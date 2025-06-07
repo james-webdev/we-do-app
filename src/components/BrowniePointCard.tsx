@@ -1,12 +1,13 @@
 
 import { BrowniePoint } from '@/types';
 import { format } from 'date-fns';
-import { BrowniePointBadge } from './LoadBadge';
+import { BrowniePointBadge as BrownieTypeBadge } from './LoadBadge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, Award } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useState } from 'react';
+import BrowniePointBadge from './BrowniePointBadge';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -48,17 +49,14 @@ const BrowniePointCard = ({ browniePoint }: BrowniePointCardProps) => {
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-lg text-gray-900">Brownie Point</h3>
-            <BrowniePointBadge type={browniePoint.type} />
+            <BrownieTypeBadge type={browniePoint.type} />
             {browniePoint.redeemed && (
               <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
                 Redeemed
               </span>
             )}
           </div>
-          <div className="flex flex-shrink-0 items-center gap-1 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-sm font-medium">
-            <Award size={16} className="mr-1" />
-            {browniePoint.points} {browniePoint.points === 1 ? 'point' : 'points'}
-          </div>
+          <BrowniePointBadge points={browniePoint.points} />
         </div>
         <p className="text-sm text-gray-700 my-2">"{browniePoint.message}"</p>
         <div className="flex justify-between items-center mt-2 text-sm">

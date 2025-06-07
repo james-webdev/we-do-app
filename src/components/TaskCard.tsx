@@ -4,10 +4,10 @@ import { format } from 'date-fns';
 import { TypeBadge } from './LoadBadge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Trash2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useState } from 'react';
+import BrowniePointBadge from '@/components/BrowniePointBadge';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -25,14 +25,7 @@ interface TaskCardProps {
   userName?: string;
 }
 
-// Function to get the appropriate color for each rating
-const getRatingBadgeColor = (rating: TaskRating): string => {
-  if (rating <= 2) return 'bg-green-100 text-green-800 hover:bg-green-200';
-  if (rating <= 4) return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-  if (rating <= 6) return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
-  if (rating <= 8) return 'bg-red-100 text-red-800 hover:bg-red-200';
-  return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
-};
+// Using the getRatingBadgeColor function from taskUtils.ts for consistency
 
 const TaskCard = ({ task, userName }: TaskCardProps) => {
   const { deleteTask, currentUser } = useApp();
@@ -47,7 +40,7 @@ const TaskCard = ({ task, userName }: TaskCardProps) => {
     setIsDeleting(false);
   };
 
-  const ratingBadgeColor = getRatingBadgeColor(task.rating);
+  // Using BrowniePointBadge component instead of manual badge styling
 
   return (
     <Card className="w-full">
@@ -56,9 +49,7 @@ const TaskCard = ({ task, userName }: TaskCardProps) => {
           <h3 className="font-medium text-lg text-gray-900">{task.title}</h3>
           <div className="flex gap-2">
             <TypeBadge type={task.type} />
-            <Badge variant="outline" className={`font-semibold flex-shrink-0 ${ratingBadgeColor}`}>
-              {task.rating} ★
-            </Badge>
+            <BrowniePointBadge points={task.rating} size="sm" />
           </div>
         </div>
         {userName && (

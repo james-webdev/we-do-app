@@ -9,6 +9,7 @@ import { calculateTaskPointsDescription } from '@/utils/taskUtils';
 import TaskHeader from '@/components/task/TaskHeader';
 import TaskActions from '@/components/task/TaskActions';
 import RejectTaskDialog from '@/components/task/RejectTaskDialog';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,

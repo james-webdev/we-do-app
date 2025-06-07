@@ -5,6 +5,7 @@ import ConnectPartner from '@/components/ConnectPartner';
 import TaskList from '@/components/TaskList';
 import PointsDisplay from '@/components/PointsDisplay';
 import PendingTasksList from '@/components/PendingTasksList';
+import MyPendingTasksList from '@/components/MyPendingTasksList';
 import DashboardCharts from '@/components/DashboardCharts';
 import BrowniePointsList from '@/components/BrowniePointsList';
 import { Button } from '@/components/ui/button';
@@ -51,13 +52,16 @@ const Dashboard = () => {
         </Button>
       </div>
       
-      {/* Show pending tasks first */}
-      <PendingTasksList />
-      
       {/* Points Display centered at the top */}
       <div className="mb-8 max-w-md mx-auto">
         <PointsDisplay />
       </div>
+      
+      {/* Show my pending tasks first - limit to 5 most recent */}
+      <MyPendingTasksList limit={5} />
+      
+      {/* Show partner's pending tasks that need my approval */}
+      <PendingTasksList limit={5} />
       
       {/* Actions and Brownie Points in two columns on desktop, stacked on mobile */}
       <div className="flex flex-col md:flex-row gap-6 mb-8">
@@ -70,7 +74,7 @@ const Dashboard = () => {
               height={24} 
               className="object-contain"
             />
-            <h2 className="text-xl font-semibold">Your Actions</h2>
+            <h2 className="text-xl font-semibold"> Your Recent Actions</h2>
           </div>
           <TaskList limit={4} />
         </div>

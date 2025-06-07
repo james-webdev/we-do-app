@@ -30,6 +30,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [partner, setPartner] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
+  const [myPendingTasks, setMyPendingTasks] = useState<Task[]>([]);
   const [browniePoints, setBrowniePoints] = useState<BrowniePoint[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [summary, setSummary] = useState<any>(null);
@@ -197,9 +198,37 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               );
               
               setPendingTasks(sortedPendingTasks);
+              
+              // Filter for my pending tasks waiting for partner approval
+              console.log("Checking for my pending tasks waiting for approval");
+              const myPendingTasksData = fetchedTasksData.filter(task => 
+                task.status === 'pending' && 
+                task.user_id === user.id
+              );
+              
+              console.log("Found my pending tasks:", myPendingTasksData.length);
+              
+              const formattedMyPendingTasks: Task[] = myPendingTasksData.map(task => ({
+                id: task.id,
+                title: task.title,
+                type: task.type as TaskType,
+                rating: task.rating as TaskRating,
+                userId: task.user_id,
+                timestamp: new Date(task.timestamp),
+                status: task.status as TaskStatus,
+                comment: task.comment
+              }));
+              
+              // Sort my pending tasks by timestamp in descending order (most recent first)
+              const sortedMyPendingTasks = [...formattedMyPendingTasks].sort((a, b) => 
+                b.timestamp.getTime() - a.timestamp.getTime()
+              );
+              
+              setMyPendingTasks(sortedMyPendingTasks);
             } else {
               console.log("No partner found, no pending tasks to load");
               setPendingTasks([]);
+              setMyPendingTasks([]);
             }
             
             // Calculate summary stats using the fetched data
@@ -420,6 +449,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         partner,
         tasks,
         pendingTasks,
+        myPendingTasks,
         browniePoints,
         rewards,
         summary,

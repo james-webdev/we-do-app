@@ -1,9 +1,8 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { TypeBadge } from '@/components/LoadBadge';
-import { getRatingBadgeColor } from '@/utils/taskUtils';
 import { TaskType } from '@/types';
+import BrowniePointBadge from '@/components/BrowniePointBadge';
 
 interface TaskHeaderProps {
   title: string;
@@ -13,17 +12,13 @@ interface TaskHeaderProps {
 }
 
 const TaskHeader = ({ title, type, rating, userName }: TaskHeaderProps) => {
-  const ratingBadgeColor = getRatingBadgeColor(rating);
-  
   return (
     <>
       <div className="flex justify-between items-start mb-2">
         <h3 className="font-medium text-lg text-gray-900">{title}</h3>
         <div className="flex gap-2">
           <TypeBadge type={type} />
-          <Badge variant="outline" className={`font-semibold ${ratingBadgeColor}`}>
-            {rating} ★
-          </Badge>
+          <BrowniePointBadge points={rating} />
         </div>
       </div>
       {userName && (

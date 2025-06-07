@@ -6,6 +6,7 @@ export interface AppContextType {
   partner: User | null;
   tasks: Task[];
   pendingTasks: Task[];
+  myPendingTasks: Task[];
   browniePoints: BrowniePoint[];
   rewards: Reward[];
   summary: any;
