@@ -49,7 +49,7 @@ const BrowniePointCard = ({ browniePoint }: BrowniePointCardProps) => {
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-lg text-gray-900">Brownie Point</h3>
-            <BrownieTypeBadge type={browniePoint.type} />
+            {/* <BrownieTypeBadge type={browniePoint.type} /> */}
             {browniePoint.redeemed && (
               <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
                 Redeemed
