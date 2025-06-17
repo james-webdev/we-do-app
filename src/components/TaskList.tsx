@@ -37,18 +37,16 @@ const TaskList: FC<TaskListProps> = ({ limit = 8 }) => {
         <TaskFeedbackList />
         <div className="space-y-4">
           {Array(3).fill(0).map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <Skeleton className="h-5 w-3/4" />
-                  <div className="flex gap-2">
-                    <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-6 w-12" />
-                  </div>
+            <div key={i} className="p-4 border border-gray-100 rounded-md">
+              <div className="flex justify-between items-start mb-4">
+                <Skeleton className="h-5 w-3/4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-6 w-12" />
                 </div>
-                <Skeleton className="h-4 w-1/4 mt-4" />
-              </CardContent>
-            </Card>
+              </div>
+              <Skeleton className="h-4 w-1/4 mt-4" />
+            </div>
           ))}
         </div>
       </div>
@@ -73,20 +71,18 @@ const TaskList: FC<TaskListProps> = ({ limit = 8 }) => {
         </div>
         
         {userTasks.length === 0 ? (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-center">
-                <p className="text-center text-gray-500 w-full">No actions yet. Add an action to get started!</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex justify-between items-center p-4">
+            <p className="text-center text-gray-500 w-full">No actions yet. Add an action to get started!</p>
+          </div>
         ) : (
-          userTasks.map(task => (
-            <TaskCard 
-              key={task.id} 
-              task={task}
-            />
-          ))
+          <div className="space-y-4">
+            {userTasks.map(task => (
+              <TaskCard 
+                key={task.id} 
+                task={task}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>

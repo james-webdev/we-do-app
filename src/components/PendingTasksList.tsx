@@ -34,11 +34,11 @@ const PendingTasksList = ({ limit = 5 }: { limit?: number }) => {
   // Always show the section, even if there are no pending tasks
 
   return (
-    <Card className="mb-8 border-amber-200 bg-amber-50/80">
+    <Card className="mb-8 border-purple-100 bg-purple-50/20">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-amber-500" />
+            <AlertCircle className="h-5 w-5 text-purple-500" />
             <CardTitle>Actions Pending Your Approval</CardTitle>
           </div>
           <Button
@@ -84,8 +84,8 @@ const PendingTasksList = ({ limit = 5 }: { limit?: number }) => {
             ))
           ) : (
             <div className="flex flex-col items-center justify-center py-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-2">
-                <ClipboardCheck className="h-7 w-7 text-amber-500" />
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                <ClipboardCheck className="h-7 w-7 text-blue-500" />
               </div>
               <p className="text-lg font-medium">No pending actions</p>
               <p className="text-sm text-muted-foreground">

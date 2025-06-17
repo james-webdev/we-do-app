@@ -123,17 +123,29 @@ const PointsTimeComparisonChart = () => {
     {
       name: currentUser?.name || 'You',
       value: pointsData.userPoints,
-      color: '#9b87f5' // primary purple
+      color: '#78c2fa' // lighter purple (violet-300)
     },
     {
       name: partner?.name || 'Partner',
       value: pointsData.partnerPoints,
-      color: '#f97316' // orange
+      color: '#7659ff' // even lighter purple (violet-200)
     }
   ];
   
   // Custom tooltip formatter
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface TooltipProps {
+    active?: boolean;
+    payload?: Array<{
+      name: string;
+      value: number;
+      payload: {
+        name: string;
+        value: number;
+      };
+    }>;
+  }
+  
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-2 border border-gray-200 rounded shadow-sm text-xs">

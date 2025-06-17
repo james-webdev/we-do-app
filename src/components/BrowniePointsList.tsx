@@ -36,54 +36,48 @@ const BrowniePointsList: FC<BrowniePointsListProps> = ({ limit = 8 }) => {
     return (
       <div className="space-y-4">
         {Array(3).fill(0).map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <Skeleton className="h-5 w-3/4" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-6 w-16" />
-                </div>
+          <div key={i} className="p-4 border border-gray-100 rounded-md">
+            <div className="flex justify-between items-start mb-4">
+              <Skeleton className="h-5 w-3/4" />
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-16" />
               </div>
-              <Skeleton className="h-4 w-1/2 mt-4" />
-            </CardContent>
-          </Card>
+            </div>
+            <Skeleton className="h-4 w-1/2 mt-4" />
+          </div>
         ))}
       </div>
     );
   }
   
   return (
-    <div>
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <Button 
-            variant="ghost" 
-            onClick={handleRefresh} 
-            size="sm"
-            title="Refresh brownie points"
-            disabled={localRefreshing}
-          >
-            <RefreshCcw className={`h-4 w-4 ${localRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button 
+          variant="ghost" 
+          onClick={handleRefresh} 
+          size="sm"
+          title="Refresh brownie points"
+          disabled={localRefreshing}
+        >
+          <RefreshCcw className={`h-4 w-4 ${localRefreshing ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
+      
+      {userBrowniePoints.length === 0 ? (
+        <div className="flex justify-between items-center p-4">
+          <p className="text-center text-gray-500 w-full">No custom brownie points yet. Send one to your partner!</p>
         </div>
-        
-        {userBrowniePoints.length === 0 ? (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-center">
-                <p className="text-center text-gray-500 w-full">No custom brownie points yet. Send one to your partner!</p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          userBrowniePoints.map(point => (
+      ) : (
+        <div className="space-y-4">
+          {userBrowniePoints.map(point => (
             <BrowniePointCard 
               key={point.id} 
               browniePoint={point}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

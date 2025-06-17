@@ -11,9 +11,9 @@ export const LoadBadge = ({ load, className }: LoadBadgeProps) => {
   const baseClasses = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
   
   const loadClasses = {
-    light: "bg-green-100 text-green-800",
-    medium: "bg-yellow-100 text-yellow-800",
-    heavy: "bg-red-100 text-red-800"
+    light: "bg-blue-100 text-blue-800",
+    medium: "bg-indigo-100 text-indigo-800",
+    heavy: "bg-purple-200 text-purple-800"
   };
   
   return (
@@ -32,9 +32,9 @@ export const TypeBadge = ({ type, className }: TypeBadgeProps) => {
   const baseClasses = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
   
   const typeClasses = {
-    mental: "bg-mental text-mental-foreground",
-    physical: "bg-physical text-physical-foreground",
-    both: "bg-both text-both-foreground"
+    mental: "bg-blue-100 text-blue-800",
+    physical: "bg-indigo-100 text-indigo-800",
+    both: "bg-purple-100 text-purple-800"
   };
   
   return (
@@ -53,10 +53,10 @@ export const BrowniePointBadge = ({ type, className }: BrowniePointBadgeProps) =
   const baseClasses = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
   
   const typeClasses = {
-    time: "bg-time text-time-foreground",
-    effort: "bg-fun text-fun-foreground",
-    fun: "bg-fun text-fun-foreground",
-    custom: "bg-effort text-effort-foreground"
+    time: "bg-blue-100 text-blue-800",
+    effort: "bg-indigo-100 text-indigo-800",
+    fun: "bg-purple-100 text-purple-800",
+    custom: "bg-violet-100 text-violet-800"
   };
   
   return (

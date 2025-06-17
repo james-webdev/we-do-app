@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useState } from 'react';
-import BrowniePointBadge from '@/components/BrowniePointBadge';
+import ActionPointBadge from '@/components/ActionPointBadge';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -40,7 +40,7 @@ const TaskCard = ({ task, userName }: TaskCardProps) => {
     setIsDeleting(false);
   };
 
-  // Using BrowniePointBadge component instead of manual badge styling
+  // Using ActionPointBadge component instead of manual badge styling
 
   return (
     <Card className="w-full">
@@ -49,7 +49,7 @@ const TaskCard = ({ task, userName }: TaskCardProps) => {
           <h3 className="font-medium text-lg text-gray-900">{task.title}</h3>
           <div className="flex gap-2">
             <TypeBadge type={task.type} />
-            <BrowniePointBadge points={task.rating} size="sm" />
+            <ActionPointBadge points={task.rating} size="sm" />
           </div>
         </div>
         {userName && (

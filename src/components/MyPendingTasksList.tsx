@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { calculateTaskPointsDescription } from '@/utils/taskUtils';
 import { TypeBadge } from '@/components/LoadBadge';
-import BrowniePointBadge from '@/components/BrowniePointBadge';
+import ActionPointBadge from '@/components/ActionPointBadge';
 
 const MyPendingTasksList = ({ limit = 5 }: { limit?: number }) => {
   const { myPendingTasks, partner, refreshData, isLoading } = useApp();
@@ -34,7 +34,7 @@ const MyPendingTasksList = ({ limit = 5 }: { limit?: number }) => {
   };
 
   return (
-    <Card className="mb-8 border-blue-200 bg-blue-50/80">
+    <Card className="mb-8 border-blue-100 bg-blue-50/20">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -85,7 +85,7 @@ const MyPendingTasksList = ({ limit = 5 }: { limit?: number }) => {
                     <div className="flex items-end gap-2">
                       <div className="flex gap-2">
                         <TypeBadge type={task.type} />
-                        <BrowniePointBadge points={task.rating} />
+                        <ActionPointBadge points={task.rating} />
                       </div>
                     </div>
                   </div>

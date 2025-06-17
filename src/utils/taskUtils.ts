@@ -7,30 +7,30 @@
  * @returns CSS class string
  */
 export const getRatingBadgeColor = (rating: number): string => {
-  // Each rating gets its own distinct color
+  // Each rating gets its own distinct shade of blue or purple
   switch(rating) {
     case 1:
-      return 'bg-sky-100 text-sky-800 hover:bg-sky-200 border-sky-300';
+      return 'bg-blue-50 text-blue-800 hover:bg-blue-100 border-blue-200';
     case 2:
-      return 'bg-violet-100 text-violet-800 hover:bg-violet-200 border-violet-300';
+      return 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-300';
     case 3:
-      return 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200';
+      return 'bg-blue-200 text-blue-800 hover:bg-blue-300 border-blue-400';
     case 4:
-      return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+      return 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border-indigo-300';
     case 5:
-      return 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200';
+      return 'bg-indigo-200 text-indigo-800 hover:bg-indigo-300 border-indigo-400';
     case 6:
-      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      return 'bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-300';
     case 7:
-      return 'bg-amber-100 text-amber-800 hover:bg-amber-200';
+      return 'bg-purple-200 text-purple-800 hover:bg-purple-300 border-purple-400';
     case 8:
-      return 'bg-orange-100 text-orange-800 hover:bg-orange-200';
+      return 'bg-violet-100 text-violet-800 hover:bg-violet-200 border-violet-300';
     case 9:
-      return 'bg-red-100 text-red-800 hover:bg-red-200';
+      return 'bg-violet-200 text-violet-800 hover:bg-violet-300 border-violet-400';
     case 10:
-      return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
+      return 'bg-violet-300 text-violet-900 hover:bg-violet-400 border-violet-500';
     default:
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+      return 'bg-blue-50 text-blue-800 hover:bg-blue-100 border-blue-200';
   }
 };
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { TypeBadge } from '@/components/LoadBadge';
 import { TaskType } from '@/types';
-import BrowniePointBadge from '@/components/BrowniePointBadge';
+import ActionPointBadge from '@/components/ActionPointBadge';
 
 interface TaskHeaderProps {
   title: string;
@@ -18,7 +18,7 @@ const TaskHeader = ({ title, type, rating, userName }: TaskHeaderProps) => {
         <h3 className="font-medium text-lg text-gray-900">{title}</h3>
         <div className="flex gap-2">
           <TypeBadge type={type} />
-          <BrowniePointBadge points={rating} />
+          <ActionPointBadge points={rating} />
         </div>
       </div>
       {userName && (
