@@ -2,11 +2,23 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, RefreshCcw } from 'lucide-react';
+import { AlertTriangle, RefreshCcw, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Task } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 const TaskFeedbackList = () => {
   const { tasks, refreshData, isLoading, currentUser } = useApp();
@@ -79,14 +91,62 @@ const TaskFeedbackList = () => {
 
 // Component to display a single rejected task with feedback
 const RejectedTaskCard = ({ task }: { task: Task }) => {
+  const { deleteTask } = useApp();
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const handleDismiss = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteTask(task.id);
+      toast.success('Feedback deleted');
+    } catch (error) {
+      console.error('Error deleting feedback:', error);
+      toast.error('Failed to delete feedback');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+  
   return (
     <Card className="w-full border-red-100">
       <CardContent className="pt-6">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-medium text-lg text-gray-900">{task.title}</h3>
-          <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
-            Rejected
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
+              Rejected
+            </span>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-400 hover:text-red-500"
+                  title="Dismiss feedback"
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Feedback</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this feedback? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDismiss}
+                    disabled={isDeleting}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
         
         <div className="mt-3 bg-white p-3 rounded-md border">

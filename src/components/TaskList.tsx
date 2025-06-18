@@ -54,9 +54,7 @@ const TaskList: FC<TaskListProps> = ({ limit = 8 }) => {
   }
   
   return (
-    <div>
-      <TaskFeedbackList />
-      
+    <div>      
       <div className="space-y-4">
         <div className="flex justify-end">
           <Button 

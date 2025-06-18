@@ -151,14 +151,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             );
             console.log("Filtered tasks to only include user and partner:", fetchedTasksData.length);
             
-            // Filter for approved tasks within the last week
-            const approvedRecentTasks = fetchedTasksData
-              .filter(task => 
-                task.status === 'approved' && 
-                new Date(task.timestamp) >= oneWeekAgo
-              );
+            // Include both approved recent tasks AND rejected tasks that belong to the current user
+            const tasksToInclude = fetchedTasksData.filter(task => 
+              // Include approved recent tasks
+              (task.status === 'approved' && new Date(task.timestamp) >= oneWeekAgo) ||
+              // OR include rejected tasks that belong to the current user
+              (task.status === 'rejected' && task.user_id === user.id)
+            );
 
-            const formattedTasks: Task[] = approvedRecentTasks.map(task => ({
+            const formattedTasks: Task[] = tasksToInclude.map(task => ({
               id: task.id,
               title: task.title,
               type: task.type as TaskType,

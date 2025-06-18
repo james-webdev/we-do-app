@@ -6,6 +6,7 @@ import TaskList from '@/components/TaskList';
 import PointsDisplay from '@/components/PointsDisplay';
 import PendingTasksList from '@/components/PendingTasksList';
 import MyPendingTasksList from '@/components/MyPendingTasksList';
+import TaskFeedbackList from '@/components/TaskFeedbackList';
 import DashboardCharts from '@/components/DashboardCharts';
 import BrowniePointsList from '@/components/BrowniePointsList';
 import { Button } from '@/components/ui/button';
@@ -118,6 +119,9 @@ const Dashboard = () => {
       
       {/* Show my pending tasks first - limit to 5 most recent */}
       <MyPendingTasksList limit={5} />
+      
+      {/* Show rejected tasks with feedback */}
+      <TaskFeedbackList />
       
       {/* Add dashboard charts */}
       <DashboardCharts />
