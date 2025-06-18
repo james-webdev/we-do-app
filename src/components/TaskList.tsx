@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import TaskFeedbackList from './TaskFeedbackList';
 
 interface TaskListProps {
   limit?: number;
@@ -34,7 +33,6 @@ const TaskList: FC<TaskListProps> = ({ limit = 8 }) => {
     // Show skeleton loading state
     return (
       <div>
-        <TaskFeedbackList />
         <div className="space-y-4">
           {Array(3).fill(0).map((_, i) => (
             <div key={i} className="p-4 border border-gray-100 rounded-md">
