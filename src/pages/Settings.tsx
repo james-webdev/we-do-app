@@ -417,10 +417,10 @@ const Settings = () => {
                 
                 <TabsContent value="tasks" className="space-y-6">
                   <Tabs value={taskFilterTab} onValueChange={setTaskFilterTab} className="w-full">
-                    <TabsList className="justify-start mb-4">
-                      <TabsTrigger value="all">All Actions</TabsTrigger>
-                      <TabsTrigger value="my-tasks">My Actions</TabsTrigger>
-                      <TabsTrigger value="partner-tasks">Partner's Actions</TabsTrigger>
+                    <TabsList className="mb-4">
+                      <TabsTrigger value="all">All</TabsTrigger>
+                      <TabsTrigger value="my-tasks">Mine</TabsTrigger>
+                      <TabsTrigger value="partner-tasks">Partner's</TabsTrigger>
                     </TabsList>
                   </Tabs>
                   
@@ -429,10 +429,10 @@ const Settings = () => {
                 
                 <TabsContent value="browniePoints" className="space-y-6">
                   <Tabs value={pointFilterTab} onValueChange={setPointFilterTab} className="w-full">
-                    <TabsList className="justify-start">
-                      <TabsTrigger value="all">All Points</TabsTrigger>
-                      <TabsTrigger value="sent">Points Sent</TabsTrigger>
-                      <TabsTrigger value="received">Points Received</TabsTrigger>
+                    <TabsList className="mb-4">
+                      <TabsTrigger value="all">All</TabsTrigger>
+                      <TabsTrigger value="sent">Sent</TabsTrigger>
+                      <TabsTrigger value="received">Received</TabsTrigger>
                     </TabsList>
                   </Tabs>
                   
