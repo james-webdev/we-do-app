@@ -122,7 +122,13 @@ const Settings = () => {
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
     
-    const filteredBrowniePoints = sortedBrowniePoints.filter(point => {
+    // Filter out brownie points that were awarded for completing actions (type 'effort')
+    // Points of type 'time', 'fun', and 'custom' are considered custom brownie points
+    const customBrowniePoints = sortedBrowniePoints.filter(point => 
+      point.type !== 'effort'
+    );
+    
+    const filteredBrowniePoints = customBrowniePoints.filter(point => {
       if (pointFilterTab === "all") return true;
       if (pointFilterTab === "sent" && currentUser) return point.fromUserId === currentUser.id;
       if (pointFilterTab === "received" && currentUser) return point.toUserId === currentUser.id;
@@ -136,10 +142,10 @@ const Settings = () => {
         <div className="text-center py-4">
           <p className="text-gray-500">
             {pointFilterTab === "all" 
-              ? "No brownie points found yet." 
+              ? "No custom brownie points found yet." 
               : pointFilterTab === "sent"
-                ? "You haven't sent any brownie points yet."
-                : "You haven't received any brownie points yet."}
+                ? "You haven't sent any custom brownie points yet."
+                : "You haven't received any custom brownie points yet."}
           </p>
         </div>
       );
@@ -405,7 +411,7 @@ const Settings = () => {
             <CardHeader>
               <CardTitle>Activity History</CardTitle>
               <CardDescription>
-                View your activity history and contributions
+                View your activity history and custom brownie points
               </CardDescription>
             </CardHeader>
             <CardContent>
