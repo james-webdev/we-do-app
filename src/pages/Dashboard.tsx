@@ -86,7 +86,6 @@ const Dashboard = () => {
               width={64} 
               height={64} 
               className="object-contain" 
-              style={{ mixBlendMode: 'multiply' }}
             />,
       color: "#d8b4fe", // Purple-300
       path: "/add-task"
@@ -99,7 +98,6 @@ const Dashboard = () => {
               width={64} 
               height={64} 
               className="object-contain" 
-              style={{ mixBlendMode: 'multiply' }}
             />,
       color: "#c084fc", // Purple-400
       path: "/give-brownie-point"
@@ -112,7 +110,6 @@ const Dashboard = () => {
               width={80} 
               height={80} 
               className="object-contain" 
-              
             />,
       color: "#a855f7", // Purple-500
       path: "/rewards"
