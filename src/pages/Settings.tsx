@@ -10,9 +10,9 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/sonner';
 import { useForm } from 'react-hook-form';
 import { User, Users, UserX, RefreshCw } from 'lucide-react';
-import TaskCard from '@/components/TaskCard';
-import BrowniePointCard from '@/components/BrowniePointCard';
-import { format } from 'date-fns';
+import BackToMainMenu from '@/components/BackToMainMenu';
+
+
 import { supabase } from '@/integrations/supabase/client';
 import {
   AlertDialog,
@@ -32,142 +32,9 @@ const Settings = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUncoupling, setIsUncoupling] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [taskFilterTab, setTaskFilterTab] = useState<string>("all");
-  const [pointFilterTab, setPointFilterTab] = useState<string>("all");
+
   
-  // Group items by date for displaying in sections
-  const groupByDate = (items: { timestamp?: Date, createdAt?: Date }[]) => {
-    const groups: Record<string, typeof items> = {};
-    
-    items.forEach(item => {
-      const date = item.timestamp || item.createdAt;
-      if (date) {
-        const dateStr = format(new Date(date), 'yyyy-MM-dd');
-        if (!groups[dateStr]) {
-          groups[dateStr] = [];
-        }
-        groups[dateStr].push(item);
-      }
-    });
-    
-    return Object.entries(groups)
-      .sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime())
-      .map(([date, items]) => ({
-        date,
-        items,
-      }));
-  };
-  
-  // Render task history
-  const renderTaskHistory = () => {
-    // Filter and sort tasks
-    const sortedTasks = [...tasks].sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-    
-    // Apply filtering based on task filter tab
-    const filteredTasks = sortedTasks.filter(task => {
-      if (taskFilterTab === "all") return true;
-      if (taskFilterTab === "my-tasks" && currentUser) {
-        return task.userId === currentUser.id;
-      }
-      if (taskFilterTab === "partner-tasks" && partner) {
-        return task.userId === partner.id;
-      }
-      return false;
-    });
-    
-    const groupedTasks = groupByDate(filteredTasks);
-    
-    if (filteredTasks.length === 0) {
-      return (
-        <div className="text-center py-4">
-          <p className="text-gray-500">
-            {taskFilterTab === "all" 
-              ? "No actions found yet. Try adding some actions!" 
-              : taskFilterTab === "my-tasks"
-                ? "You haven't completed any actions yet."
-                : "Your partner hasn't completed any actions yet."}
-          </p>
-        </div>
-      );
-    }
-    
-    return (
-      <div className="space-y-6">
-        {groupedTasks.map(({ date, items }) => (
-          <div key={date} className="space-y-4">
-            <h2 className="text-xl font-semibold sticky top-0 bg-white py-2 border-b">
-              {format(new Date(date), 'EEEE, MMMM d, yyyy')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {items.map((task: any) => (
-                <TaskCard 
-                  key={task.id} 
-                  task={task}
-                  userName={task.userId === currentUser?.id ? currentUser?.name : partner?.name}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-  
-  // Render brownie point history
-  const renderBrowniePointHistory = () => {
-    // Filter and sort brownie points
-    const sortedBrowniePoints = [...browniePoints].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    
-    // Filter out brownie points that were awarded for completing actions (type 'effort')
-    // Points of type 'time', 'fun', and 'custom' are considered custom brownie points
-    const customBrowniePoints = sortedBrowniePoints.filter(point => 
-      point.type !== 'effort'
-    );
-    
-    const filteredBrowniePoints = customBrowniePoints.filter(point => {
-      if (pointFilterTab === "all") return true;
-      if (pointFilterTab === "sent" && currentUser) return point.fromUserId === currentUser.id;
-      if (pointFilterTab === "received" && currentUser) return point.toUserId === currentUser.id;
-      return false;
-    });
-    
-    const groupedBrowniePoints = groupByDate(filteredBrowniePoints);
-    
-    if (filteredBrowniePoints.length === 0) {
-      return (
-        <div className="text-center py-4">
-          <p className="text-gray-500">
-            {pointFilterTab === "all" 
-              ? "No custom brownie points found yet." 
-              : pointFilterTab === "sent"
-                ? "You haven't sent any custom brownie points yet."
-                : "You haven't received any custom brownie points yet."}
-          </p>
-        </div>
-      );
-    }
-    
-    return (
-      <div className="space-y-6">
-        {groupedBrowniePoints.map(({ date, items }) => (
-          <div key={date} className="space-y-4">
-            <h2 className="text-xl font-semibold sticky top-0 bg-white py-2 border-b">
-              {format(new Date(date), 'EEEE, MMMM d, yyyy')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {items.map((point: any) => (
-                <BrowniePointCard key={point.id} browniePoint={point} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
+
   
   const form = useForm({
     defaultValues: {
@@ -284,7 +151,10 @@ const Settings = () => {
   
   return (
     <div className="container py-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-4">
+        <BackToMainMenu />
+      </div>
+      <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Settings</h1>
           <p className="text-gray-500">Manage your profile and application settings</p>
@@ -302,7 +172,6 @@ const Settings = () => {
         <TabsList className="mb-6">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="partner">Partner</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
         </TabsList>
         
@@ -402,49 +271,6 @@ const Settings = () => {
                   </p>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="history" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Activity History</CardTitle>
-              <CardDescription>
-                View your activity history and custom brownie points
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="tasks" className="w-full">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="tasks">Actions</TabsTrigger>
-                  <TabsTrigger value="browniePoints">Brownie Points</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="tasks" className="space-y-6">
-                  <Tabs value={taskFilterTab} onValueChange={setTaskFilterTab} className="w-full">
-                    <TabsList className="mb-4">
-                      <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="my-tasks">Mine</TabsTrigger>
-                      <TabsTrigger value="partner-tasks">Partner's</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                  
-                  {renderTaskHistory()}
-                </TabsContent>
-                
-                <TabsContent value="browniePoints" className="space-y-6">
-                  <Tabs value={pointFilterTab} onValueChange={setPointFilterTab} className="w-full">
-                    <TabsList className="mb-4">
-                      <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="sent">Sent</TabsTrigger>
-                      <TabsTrigger value="received">Received</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                  
-                  {renderBrowniePointHistory()}
-                </TabsContent>
-              </Tabs>
             </CardContent>
           </Card>
         </TabsContent>

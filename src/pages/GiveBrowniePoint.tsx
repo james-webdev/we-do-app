@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/sonner';
 import { Input } from '@/components/ui/input';
 import { CakeIcon } from 'lucide-react';
+import BackToMainMenu from '@/components/BackToMainMenu';
 
 const GiveBrowniePoint = () => {
   const navigate = useNavigate();
@@ -59,7 +60,10 @@ const GiveBrowniePoint = () => {
   
   return (
     <div className="container py-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-4">
+        <BackToMainMenu />
+      </div>
+      <div className="mb-6">
         <h1 className="text-3xl font-bold">Give a Brownie Point</h1>
       </div>
       

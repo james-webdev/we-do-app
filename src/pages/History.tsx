@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TaskCard from '@/components/TaskCard';
 import BrowniePointCard from '@/components/BrowniePointCard';
+import BackToMainMenu from '@/components/BackToMainMenu';
 import { format } from 'date-fns';
+import { Task, BrowniePoint } from '@/types';
 
 const History = () => {
   const { currentUser, partner, tasks, browniePoints } = useApp();
@@ -84,7 +86,10 @@ const History = () => {
   // Fix the tab selection issue - use actual Tabs component state
   return (
     <div className="container py-8">
-      <div className="mb-8">
+      <div className="mb-4">
+        <BackToMainMenu />
+      </div>
+      <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">History</h1>
         <p className="text-gray-500">View your activity history and contributions</p>
       </div>
@@ -111,7 +116,7 @@ const History = () => {
                   {format(new Date(date), 'EEEE, MMMM d, yyyy')}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {items.map((task: any) => (
+                  {items.map((task: Task) => (
                     <TaskCard 
                       key={task.id} 
                       task={task}
@@ -150,7 +155,7 @@ const History = () => {
                   {format(new Date(date), 'EEEE, MMMM d, yyyy')}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {items.map((point: any) => (
+                  {items.map((point: BrowniePoint) => (
                     <BrowniePointCard key={point.id} browniePoint={point} />
                   ))}
                 </div>

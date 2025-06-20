@@ -2,12 +2,19 @@ import React from 'react';
 import { RewardsList } from '@/components/reward/RewardsList';
 import { useApp } from '@/contexts/AppContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import BackToMainMenu from '@/components/BackToMainMenu';
 
 export default function RewardsPage() {
   const { isLoading, hasPartner } = useApp();
   
   return (
     <div className="container py-8 max-w-3xl mx-auto">
+      <div className="mb-4">
+        <BackToMainMenu />
+      </div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Rewards</h1>
+      </div>
       {isLoading ? (
         <div className="space-y-6">
           <div className="flex justify-between items-center">

@@ -7,7 +7,9 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { AppProvider } from "@/contexts/AppContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
+import SimpleHeader from "@/components/SimpleHeader";
 import Dashboard from "@/pages/Dashboard";
+import ActivitySummary from "@/pages/DashboardDetails";
 import AddTask from "@/pages/AddTask";
 import GiveBrowniePoint from "@/pages/GiveBrowniePoint";
 import History from "@/pages/History";
@@ -45,9 +47,20 @@ const AppRoutes = () => {
       <Route path="/" element={
         <ProtectedRoute>
           <div className="min-h-screen flex flex-col bg-gray-50">
-            <Header />
-            <main className="flex-1 pb-12">
+            <SimpleHeader />
+            <main className="flex-1">
               <Dashboard />
+            </main>
+          </div>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/dashboard-details" element={
+        <ProtectedRoute>
+          <div className="min-h-screen flex flex-col bg-gray-50">
+            <SimpleHeader />
+            <main className="flex-1 pb-12">
+              <ActivitySummary />
             </main>
           </div>
         </ProtectedRoute>
@@ -56,7 +69,7 @@ const AppRoutes = () => {
       <Route path="/add-task" element={
         <ProtectedRoute>
           <div className="min-h-screen flex flex-col bg-gray-50">
-            <Header />
+            <SimpleHeader />
             <main className="flex-1 pb-12">
               <AddTask />
             </main>
@@ -67,7 +80,7 @@ const AppRoutes = () => {
       <Route path="/give-brownie-point" element={
         <ProtectedRoute>
           <div className="min-h-screen flex flex-col bg-gray-50">
-            <Header />
+            <SimpleHeader />
             <main className="flex-1 pb-12">
               <GiveBrowniePoint />
             </main>
@@ -78,7 +91,7 @@ const AppRoutes = () => {
       <Route path="/history" element={
         <ProtectedRoute>
           <div className="min-h-screen flex flex-col bg-gray-50">
-            <Header />
+            <SimpleHeader />
             <main className="flex-1 pb-12">
               <History />
             </main>
@@ -89,7 +102,7 @@ const AppRoutes = () => {
       <Route path="/rewards" element={
         <ProtectedRoute>
           <div className="min-h-screen flex flex-col bg-gray-50">
-            <Header />
+            <SimpleHeader />
             <main className="flex-1 pb-12">
               <Rewards />
             </main>
@@ -100,7 +113,7 @@ const AppRoutes = () => {
       <Route path="/settings" element={
         <ProtectedRoute>
           <div className="min-h-screen flex flex-col bg-gray-50">
-            <Header />
+            <SimpleHeader />
             <main className="flex-1 pb-12">
               <Settings />
             </main>

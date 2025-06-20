@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/components/ui/sonner';
 import { TaskRating, TaskType } from '@/types';
 import { Slider } from '@/components/ui/slider';
+import BackToMainMenu from '@/components/BackToMainMenu';
 
 const AddTask = () => {
   const navigate = useNavigate();
@@ -75,7 +76,10 @@ const AddTask = () => {
   
   return (
     <div className="container py-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-4">
+        <BackToMainMenu />
+      </div>
+      <div className="mb-6">
         <h1 className="text-3xl font-bold">Add New Action</h1>
       </div>
       

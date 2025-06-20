@@ -1,23 +1,55 @@
-
 import React from 'react';
 import { useApp } from '@/contexts/AppContext';
 import ConnectPartner from '@/components/ConnectPartner';
-import TaskList from '@/components/TaskList';
-import PointsDisplay from '@/components/PointsDisplay';
-import PendingTasksList from '@/components/PendingTasksList';
-import MyPendingTasksList from '@/components/MyPendingTasksList';
-import TaskFeedbackList from '@/components/TaskFeedbackList';
-import DashboardCharts from '@/components/DashboardCharts';
-import BrowniePointsList from '@/components/BrowniePointsList';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RefreshCcw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  PlusCircle, 
+  Gift, 
+  History as HistoryIcon, 
+  Award,
+  CheckCircle,
+  Star
+} from 'lucide-react';
 
 const Dashboard = () => {
-  const { hasPartner, partner, refreshData, isLoading } = useApp();
+  const { hasPartner } = useApp();
+  const navigate = useNavigate();
   
-  const handleRefresh = () => {
-    refreshData();
+  // Function to determine text color based on background color
+  const getTextColor = (bgColor: string) => {
+    switch(bgColor) {
+      case "#e9d5ff": // Purple-200
+        return "text-purple-950";
+      case "#d8b4fe": // Purple-300
+        return "text-purple-900";
+      case "#c084fc": // Purple-400 (Brownie Point)
+        return "text-white";
+      case "#a855f7": // Purple-500
+        return "text-purple-100";
+      case "#9333ea": // Purple-600
+        return "text-white";
+      default:
+        return "text-white";
+    }
+  };
+  
+  // Function to determine icon color based on background color
+  const getIconColor = (bgColor: string) => {
+    switch(bgColor) {
+      case "#e9d5ff": // Purple-200
+        return "#4c1d95"; // Purple-950
+      case "#d8b4fe": // Purple-300
+        return "#581c87"; // Purple-900
+      case "#c084fc": // Purple-400
+        return "#6b21a8"; // Purple-800
+      case "#a855f7": // Purple-500
+        return "#f5f3ff"; // Purple-100
+      case "#9333ea": // Purple-600
+        return "#ffffff"; // White
+      default:
+        return "#ffffff"; // White
+    }
   };
   
   // If user doesn't have a partner, show the connect partner flow
@@ -37,94 +69,82 @@ const Dashboard = () => {
       </div>
     );
   }
-  
-  // If user has a partner, show the dashboard
+
+  // Navigation buttons configuration
+  const navigationButtons = [
+    {
+      title: "Activity",
+      icon: <LayoutDashboard size={64} color={getIconColor("#e9d5ff")} />,
+      color: "#e9d5ff", // Purple-200
+      path: "/dashboard-details"
+    },
+    {
+      title: "Add Action",
+      icon: <img 
+              src="/action-icon.png" 
+              alt="Action Icon" 
+              width={64} 
+              height={64} 
+              className="object-contain" 
+              style={{ mixBlendMode: 'multiply' }}
+            />,
+      color: "#d8b4fe", // Purple-300
+      path: "/add-task"
+    },
+    {
+      title: "Add Brownie Point",
+      icon: <img 
+              src="/brownie-icon.png" 
+              alt="Brownie Icon" 
+              width={64} 
+              height={64} 
+              className="object-contain" 
+              style={{ mixBlendMode: 'multiply' }}
+            />,
+      color: "#c084fc", // Purple-400
+      path: "/give-brownie-point"
+    },
+    {
+      title: "Rewards",
+      icon: <img 
+              src="/cool.png" 
+              alt="Reward Icon" 
+              width={80} 
+              height={80} 
+              className="object-contain" 
+              
+            />,
+      color: "#a855f7", // Purple-500
+      path: "/rewards"
+    },
+    {
+      title: "History",
+      icon: <HistoryIcon size={64} color={getIconColor("#9333ea")} />,
+      color: "#9333ea", // Purple-600
+      path: "/history"
+    }
+  ];
+
+  // If user has a partner, show the grid of buttons
   return (
-    <div className="container py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleRefresh} 
-          disabled={isLoading}
-        >
-          <RefreshCcw size={16} className={`mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh Data
-        </Button>
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] w-full p-4 bg-gray-50">
+      <div className="grid gap-4 md:gap-6 w-full max-w-[1000px] p-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gridAutoRows: 'minmax(150px, auto)' }}>
+        {navigationButtons.map((button, index) => (
+          <div
+            key={index}
+            onClick={() => navigate(button.path)}
+            className="flex flex-col items-center justify-center rounded-lg p-4 md:p-8 cursor-pointer text-purple-900 h-[150px] md:h-[200px] transition-all duration-300 hover:scale-105 hover:shadow-xl shadow-md"
+            style={{ backgroundColor: button.color }}
+          >
+            <div className="mb-1">
+              {button.icon}
+            </div>
+            <h2 className={`text-lg md:text-xl lg:text-2xl font-bold text-center break-words ${getTextColor(button.color)}`}>
+              {button.title}
+            </h2>
+          </div>
+        ))}
       </div>
-      
-      {/* Points Display centered at the top */}
-      <div className="mb-8 max-w-md mx-auto">
-        <PointsDisplay />
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-6 mb-8">
-        <div className="w-full md:w-1/2">
-          <Card className="border-purple-100 bg-purple-50/20">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <img 
-                    src="/brownie-icon.png" 
-                    alt="Brownie Icon" 
-                    width={24} 
-                    height={24} 
-                    className="object-contain"
-                    style={{ mixBlendMode: 'multiply' }}
-                  />
-                  <CardTitle>Brownie Points from {partner?.name || 'Partner'}</CardTitle>
-                </div>
-              </div>
-              <CardDescription>
-                Brownie points you've received from your partner
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <BrowniePointsList limit={4} />
-            </CardContent>
-          </Card>
-        </div>
-        <div className="w-full md:w-1/2">
-          <Card className="border-blue-100 bg-blue-50/20">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <img 
-                    src="/action-icon.png" 
-                    alt="Action Icon" 
-                    width={24} 
-                    height={24} 
-                    className="object-contain"
-                    style={{ mixBlendMode: 'multiply' }}
-
-                  />
-                  <CardTitle>Your Recent Actions</CardTitle>
-                </div>
-              </div>
-              <CardDescription>
-                Your recently completed and approved actions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TaskList limit={4} />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      
-      
-      {/* Show partner's pending tasks that need my approval */}
-      <PendingTasksList limit={5} />
-      
-      {/* Show my pending tasks first - limit to 5 most recent */}
-      <MyPendingTasksList limit={5} />
-      
-      {/* Show rejected tasks with feedback */}
-      <TaskFeedbackList />
-      
-      {/* Add dashboard charts */}
-      <DashboardCharts />
     </div>
   );
 };
