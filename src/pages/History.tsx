@@ -75,6 +75,10 @@ const History = () => {
   );
   
   const filteredBrowniePoints = sortedBrowniePoints.filter(point => {
+    // First filter by custom type
+    if (point.type !== 'custom') return false;
+    
+    // Then apply the tab filters
     if (pointFilterTab === "all") return true;
     if (pointFilterTab === "sent" && currentUser) return point.fromUserId === currentUser.id;
     if (pointFilterTab === "received" && currentUser) return point.toUserId === currentUser.id;

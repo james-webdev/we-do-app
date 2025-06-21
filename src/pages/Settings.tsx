@@ -27,12 +27,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Settings = () => {
-  const { currentUser, partner, hasPartner, refreshData, tasks, browniePoints } = useApp();
+  const { currentUser, partner, hasPartner, refreshData } = useApp();
   const { signOut } = useAuth();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUncoupling, setIsUncoupling] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-
   
 
   
