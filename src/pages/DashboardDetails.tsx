@@ -28,10 +28,7 @@ const ActivitySummary = () => {
         <h1 className="text-3xl font-bold">Activity</h1>
       </div>
       
-      {/* Points Display centered at the top */}
-      <div className="mb-8 max-w-md mx-auto">
-        <PointsDisplay />
-      </div>
+
 
       <div className="flex flex-col md:flex-row gap-6 mb-8">
         <div className="w-full md:w-1/2">
@@ -95,8 +92,7 @@ const ActivitySummary = () => {
       {/* Show rejected tasks with feedback */}
       <TaskFeedbackList />
       
-      {/* Add dashboard charts */}
-      <DashboardCharts />
+
     </div>
   );
 };

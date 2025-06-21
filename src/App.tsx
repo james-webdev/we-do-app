@@ -15,6 +15,7 @@ import GiveBrowniePoint from "@/pages/GiveBrowniePoint";
 import History from "@/pages/History";
 import Settings from "@/pages/Settings";
 import Rewards from "@/pages/Rewards";
+import Stats from "@/pages/Stats";
 import NotFound from "@/pages/NotFound";
 import Auth from "@/pages/Auth";
 
@@ -105,6 +106,17 @@ const AppRoutes = () => {
             <SimpleHeader />
             <main className="flex-1 pb-12">
               <Rewards />
+            </main>
+          </div>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/stats" element={
+        <ProtectedRoute>
+          <div className="min-h-screen flex flex-col bg-gray-50">
+            <SimpleHeader />
+            <main className="flex-1 pb-12">
+              <Stats />
             </main>
           </div>
         </ProtectedRoute>

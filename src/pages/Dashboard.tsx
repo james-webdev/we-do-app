@@ -9,7 +9,8 @@ import {
   History as HistoryIcon, 
   Award,
   CheckCircle,
-  Star
+  Star,
+  
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -26,8 +27,10 @@ const Dashboard = () => {
       case "#c084fc": // Purple-400 (Brownie Point)
         return "text-white";
       case "#a855f7": // Purple-500
-        return "text-purple-100";
+        return "text-white";
       case "#9333ea": // Purple-600
+        return "text-white";
+      case "#7e22ce": // Purple-700
         return "text-white";
       default:
         return "text-white";
@@ -46,6 +49,8 @@ const Dashboard = () => {
       case "#a855f7": // Purple-500
         return "#f5f3ff"; // Purple-100
       case "#9333ea": // Purple-600
+        return "#ffffff"; // White
+      case "#7e22ce": // Purple-700
         return "#ffffff"; // White
       default:
         return "#ffffff"; // White
@@ -119,6 +124,18 @@ const Dashboard = () => {
       icon: <HistoryIcon size={64} color={getIconColor("#9333ea")} />,
       color: "#9333ea", // Purple-600
       path: "/history"
+    },
+    {
+      title: "Stats",
+      icon: <img 
+              src="/stats-icon.png" 
+              alt="Stats Icon" 
+              width={75} 
+              height={75} 
+              className="object-contain" 
+            />,
+      color: "#7e22ce", // Purple-700 (darkest)
+      path: "/stats"
     }
   ];
 
