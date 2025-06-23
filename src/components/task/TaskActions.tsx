@@ -18,12 +18,8 @@ const TaskActions = ({ isSubmitting, onApprove, onReject }: TaskActionsProps) =>
         onClick={onReject}
         disabled={isSubmitting}
       >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing...
-          </>
-        ) : 'Reject'}
+        {/* Reject button never shows a loader */}
+        Reject
       </Button>
       <Button 
         onClick={onApprove}

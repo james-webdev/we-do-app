@@ -112,8 +112,8 @@ const Dashboard = () => {
       icon: <img 
               src="/cool.png" 
               alt="Reward Icon" 
-              width={80} 
-              height={80} 
+              width={90} 
+              height={90} 
               className="object-contain" 
             />,
       color: "#a855f7", // Purple-500
