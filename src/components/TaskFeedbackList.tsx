@@ -51,15 +51,6 @@ const TaskFeedbackList = () => {
             <AlertTriangle className="h-5 w-5 text-red-500" />
             <CardTitle>Actions Feedback</CardTitle>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleManualRefresh}
-            disabled={isLoading || localRefreshing}
-            className="h-8 px-2"
-          >
-            <RefreshCcw className={`h-4 w-4 ${(isLoading || localRefreshing) ? 'animate-spin' : ''}`} />
-          </Button>
         </div>
         <CardDescription>
           Review feedback on your rejected actions
