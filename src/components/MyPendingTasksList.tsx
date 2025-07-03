@@ -41,15 +41,6 @@ const MyPendingTasksList = ({ limit = 5 }: { limit?: number }) => {
             <HourglassIcon className="h-5 w-5 text-blue-500" />
             <CardTitle>Your Actions Pending Approval</CardTitle>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleManualRefresh}
-            disabled={isLoading || localRefreshing}
-            className="h-8 px-2"
-          >
-            <RefreshCcw className={`h-4 w-4 ${(isLoading || localRefreshing) ? 'animate-spin' : ''}`} />
-          </Button>
         </div>
         <CardDescription>
           Actions you've submitted waiting for {partner?.name || 'your partner'} to approve

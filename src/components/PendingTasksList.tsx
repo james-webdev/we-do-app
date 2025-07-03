@@ -41,15 +41,6 @@ const PendingTasksList = ({ limit = 5 }: { limit?: number }) => {
             <AlertCircle className="h-5 w-5 text-purple-500" />
             <CardTitle>Actions Pending Your Approval</CardTitle>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleManualRefresh}
-            disabled={isLoading || localRefreshing}
-            className="h-8 px-2"
-          >
-            <RefreshCcw className={`h-4 w-4 ${(isLoading || localRefreshing) ? 'animate-spin' : ''}`} />
-          </Button>
         </div>
         <CardDescription>
           Review and approve actions submitted by your partner
